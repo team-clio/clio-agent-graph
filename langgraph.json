@@ -1,0 +1,9 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "clio_agent": "./src/clio_agent_graph/graph.py:graph"
+  },
+  "env": ".env"
+}
+
