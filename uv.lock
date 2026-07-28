@@ -235,6 +235,7 @@ source = { editable = "." }
 dependencies = [
     { name = "langchain" },
     { name = "langgraph" },
+    { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
 
@@ -255,6 +256,7 @@ requires-dist = [
     { name = "langchain-openai", marker = "extra == 'openai'", specifier = ">=1.0,<2.0" },
     { name = "langgraph", specifier = ">=1.0,<2.0" },
     { name = "langgraph-cli", extras = ["inmem"], marker = "extra == 'dev'", specifier = ">=0.4,<1.0" },
+    { name = "pydantic", specifier = ">=2.0,<3.0" },
     { name = "pydantic-settings", specifier = ">=2.0,<3.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0,<9.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24,<2.0" },
