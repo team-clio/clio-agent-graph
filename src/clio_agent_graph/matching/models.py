@@ -57,11 +57,14 @@ class IssueRetrievalResponse(ContractModel):
 
     @model_validator(mode="after")
     def reject_duplicate_issue_ids(self) -> "IssueRetrievalResponse":
-        """같은 Issue가 여러 검색 경로에서 중복 반환되는 것을 막는다."""
+        """중복 후보를 막고 retrieval 점수 내림차순 계약을 검사한다."""
 
         issue_ids = [candidate.issue_id for candidate in self.candidates]
         if len(issue_ids) != len(set(issue_ids)):
             raise ValueError("Issue candidates must have unique issue IDs.")
+        scores = [candidate.retrieval_score for candidate in self.candidates]
+        if scores != sorted(scores, reverse=True):
+            raise ValueError("Issue candidates must be ordered by retrieval score.")
         return self
 
 
