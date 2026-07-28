@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
   "langchain>=1.0,<2.0",
   "langgraph>=1.0,<2.0",
+  "pydantic>=2.0,<3.0",
   "pydantic-settings>=2.0,<3.0",
 ]
 
@@ -38,4 +39,3 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-
