@@ -14,17 +14,20 @@ from pydantic import (
 )
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+# Annotated는 str 타입에 "공백을 제거하고 빈 문자열은 거부한다"는 Pydantic 검증 규칙을 덧붙인다.
 
 
 class ContractModel(BaseModel):
     """오타 난 필드가 조용히 통과하지 않도록 하는 NM 계약의 공통 설정."""
 
+    # extra="forbid"는 모델에 정의하지 않은 필드가 들어오면 즉시 검증 오류를 낸다.
     model_config = ConfigDict(extra="forbid")
 
 
 class MissingField(StrEnum):
     """원본 BugReport에서 확인할 수 없는 중요 정보."""
 
+    # StrEnum은 enum 값이 JSON으로 변환될 때 일반 문자열처럼 표현된다.
     OBSERVED_BEHAVIOR = "OBSERVED_BEHAVIOR"
     EXPECTED_BEHAVIOR = "EXPECTED_BEHAVIOR"
     REPRODUCTION_CONDITIONS = "REPRODUCTION_CONDITIONS"
@@ -41,15 +44,18 @@ class NormalizeReportInput(ContractModel):
     """Clio Server가 NM에 전달하는 원본 BugReport."""
 
     bug_report_id: int = Field(gt=0)
+    # `타입 | None`은 값이 해당 타입이거나 없을 수 있다는 Python 3.10+ 표기다.
     title: NonEmptyText | None = None
     description: NonEmptyText | None = None
     source: NonEmptyText | None = None
     error_type: NonEmptyText | None = None
     message: NonEmptyText | None = None
+    # default_factory는 인스턴스마다 새로운 list/dict를 만들어 가변 객체 공유를 막는다.
     stack_trace: list[NonEmptyText] = Field(default_factory=list)
     occurred_at: datetime | None = None
     raw_payload: dict[str, Any] = Field(default_factory=dict)
 
+    # 이 decorator는 각 필드 검증이 끝난 뒤 모델 전체를 한 번 더 검사하게 한다.
     @model_validator(mode="after")
     def require_report_content(self) -> "NormalizeReportInput":
         """식별자와 source만 있는 빈 리포트는 모델 호출 전에 거부한다."""
@@ -117,6 +123,7 @@ class NormalizedReport(ContractModel):
     error_signals: ErrorSignals = Field(default_factory=ErrorSignals)
     missing_fields: list[MissingField] = Field(default_factory=list)
 
+    # field_validator는 지정한 필드 하나에 추가 검증 규칙을 적용한다.
     @field_validator("missing_fields")
     @classmethod
     def reject_duplicate_missing_fields(
