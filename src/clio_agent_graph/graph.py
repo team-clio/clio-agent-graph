@@ -1,30 +1,32 @@
-"""LangGraph Agent Server에 노출할 컴파일된 그래프 정의."""
+"""LangGraph Agent Server에 노출할 Clio 도메인 그래프."""
 
 from langgraph.graph import END, START, StateGraph
 
-from clio_agent_graph.nodes import execute_plan, finalize, normalize_request, plan_request
-from clio_agent_graph.state import ClioState
+from clio_agent_graph.normalization.langchain_adapter import LangChainNormalizationModel
+from clio_agent_graph.normalization.node import create_normalize_report_node
+from clio_agent_graph.normalization.ports import NormalizationModel
+from clio_agent_graph.normalization.service import ReportNormalizer
+from clio_agent_graph.state import ClioInput, ClioOutput, ClioState
 
 
-def build_graph():
-    """테스트마다 새 인스턴스를 만들 수 있도록 그래프 조립을 분리한다."""
+def build_graph(model: NormalizationModel | None = None):
+    """주입된 모델로 NM 그래프를 만들며, 생략하면 실제 LangChain adapter를 사용한다."""
 
-    # 상태 스키마를 먼저 고정해 두면 각 노드가 어떤 키를 읽고 쓰는지 명확해진다.
-    builder = StateGraph(ClioState)
-    # 각 노드는 요청 정규화 → 계획 수립 → 실행 → 응답 생성 순서로 이어진다.
-    builder.add_node("normalize_request", normalize_request)
-    builder.add_node("plan_request", plan_request)
-    builder.add_node("execute_plan", execute_plan)
-    builder.add_node("finalize", finalize)
+    # `or` 대신 명시적인 None 검사를 사용해 False처럼 평가되는 테스트 객체도 그대로 보존한다.
+    normalization_model = model if model is not None else LangChainNormalizationModel()
+    normalizer = ReportNormalizer(normalization_model)
 
-    # 시작점과 종료점을 명시적으로 연결해 두면 그래프 흐름을 한눈에 읽을 수 있다.
-    builder.add_edge(START, "normalize_request")
-    builder.add_edge("normalize_request", "plan_request")
-    builder.add_edge("plan_request", "execute_plan")
-    builder.add_edge("execute_plan", "finalize")
-    builder.add_edge("finalize", END)
+    # input/output schema를 분리하면 내부 state가 늘어나도 공개 API 필드는 안정적으로 유지된다.
+    builder = StateGraph(
+        ClioState,
+        input_schema=ClioInput,
+        output_schema=ClioOutput,
+    )
+    builder.add_node("normalize_report", create_normalize_report_node(normalizer))
+    builder.add_edge(START, "normalize_report")
+    builder.add_edge("normalize_report", END)
     return builder.compile()
 
 
-# Agent Server는 이 모듈 전역의 `graph` 객체를 진입점으로 사용한다.
+# Agent Server는 이 모듈 전역의 `graph`를 읽는다. 실제 chat model은 첫 invoke까지 생성되지 않는다.
 graph = build_graph()
