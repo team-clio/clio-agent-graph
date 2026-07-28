@@ -38,7 +38,39 @@ class ReportMatcher:
     ) -> MatchDecision:
         """후보가 없으면 즉시 신규 제안을, 있으면 비교 뒤 정책 결과를 반환한다."""
 
+        comparisons = self.compare(report=report, candidates=candidates)
+        return self.decide(
+            bug_id=bug_id,
+            report=report,
+            candidates=candidates,
+            comparisons=comparisons,
+        )
+
+    def compare(
+        self,
+        *,
+        report: NormalizedReport,
+        candidates: list[IssueCandidate],
+    ) -> list[CandidateComparison]:
+        """후보를 비교하며, 후보가 없으면 모델 호출 없이 빈 목록을 반환한다."""
+
         if not candidates:
+            return []
+        return self._compare_with_one_retry(report, candidates)
+
+    def decide(
+        self,
+        *,
+        bug_id: int,
+        report: NormalizedReport,
+        candidates: list[IssueCandidate],
+        comparisons: list[CandidateComparison],
+    ) -> MatchDecision:
+        """검증된 후보 비교를 최종 MatchDecision으로 바꾼다."""
+
+        if not candidates:
+            if comparisons:
+                raise ValueError("Comparisons must be empty when there are no candidates.")
             return MatchDecision(
                 bug_id=bug_id,
                 action=MatchAction.CREATE_NEW,
@@ -46,12 +78,13 @@ class ReportMatcher:
                 supporting_reasons=["유사한 기존 Issue 후보가 없습니다."],
             )
 
-        comparisons = self._compare_with_one_retry(report, candidates)
+        draft = MatchComparisonDraft(comparisons=comparisons)
+        self._validate_candidate_ids(draft, candidates)
         return self._apply_policy(
             bug_id=bug_id,
             report=report,
             candidates=candidates,
-            comparisons=comparisons,
+            comparisons=draft.comparisons,
         )
 
     def _compare_with_one_retry(
