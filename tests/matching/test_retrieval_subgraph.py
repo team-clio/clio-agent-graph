@@ -68,6 +68,26 @@ def test_retriever_is_retried_once_then_succeeds() -> None:
     assert result["issue_candidates"] == []
 
 
+def test_bug_id_allows_retriever_to_exclude_an_already_linked_issue() -> None:
+    all_candidates = [
+        IssueCandidate(issue_id=19, title="이미 연결된 Issue", retrieval_score=0.95),
+        IssueCandidate(issue_id=20, title="검토할 Issue", retrieval_score=0.88),
+    ]
+    linked_issue_ids_by_bug = {72: {19}}
+
+    def retrieve(request: IssueRetrievalRequest) -> IssueRetrievalResponse:
+        excluded_ids = linked_issue_ids_by_bug.get(request.bug_id, set())
+        return IssueRetrievalResponse(
+            candidates=[
+                candidate for candidate in all_candidates if candidate.issue_id not in excluded_ids
+            ]
+        )
+
+    result = build_issue_retrieval_subgraph(retrieve).invoke(_input())
+
+    assert [candidate.issue_id for candidate in result["issue_candidates"]] == [20]
+
+
 def test_retriever_fails_after_one_retry() -> None:
     attempts = 0
 

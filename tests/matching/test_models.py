@@ -22,6 +22,16 @@ def test_retrieval_response_rejects_duplicate_issue_ids() -> None:
         IssueRetrievalResponse(candidates=[candidate, candidate])
 
 
+def test_retrieval_response_accepts_at_most_five_issues() -> None:
+    candidates = [
+        IssueCandidate(issue_id=index, title=f"후보 {index}", retrieval_score=0.8)
+        for index in range(1, 7)
+    ]
+
+    with pytest.raises(ValidationError):
+        IssueRetrievalResponse(candidates=candidates)
+
+
 def test_create_new_decision_rejects_existing_issue_id() -> None:
     with pytest.raises(ValidationError):
         MatchDecision(

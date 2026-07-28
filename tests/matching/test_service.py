@@ -8,7 +8,7 @@ from clio_agent_graph.matching.models import (
     MatchComparisonDraft,
     RepresentativeBug,
 )
-from clio_agent_graph.matching.service import ReportMatcher
+from clio_agent_graph.matching.service import ReportMatcher, load_match_policy_settings
 from clio_agent_graph.normalization.models import (
     AffectedSurface,
     ErrorSignals,
@@ -253,3 +253,15 @@ def test_provider_failure_twice_fails() -> None:
         )
 
     assert len(model.calls) == 2
+
+
+def test_policy_thresholds_are_loaded_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CLIO_RM_AUTO_LINK_THRESHOLD", "0.96")
+    monkeypatch.setenv("CLIO_RM_REVIEW_THRESHOLD", "0.71")
+    monkeypatch.setenv("CLIO_RM_CANDIDATE_MARGIN", "0.12")
+
+    settings = load_match_policy_settings()
+
+    assert settings.auto_link_threshold == 0.96
+    assert settings.review_threshold == 0.71
+    assert settings.candidate_margin == 0.12
