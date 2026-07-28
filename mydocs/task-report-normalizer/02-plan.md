@@ -6,12 +6,12 @@
 ## 1. 목표 흐름
 
 ```text
-NormalizeReportInput
+NormalizeReportInput(bug_report_id + raw report)
   → source document 구성
   → ReportNormalizer
        ├─ 모델 structured output
-       └─ evidence 검증
-  → NormalizedReport
+       └─ structured output 검증
+  → NormalizedReport(bug_report_id 유지)
   → LangGraph state 반영
 ```
 
@@ -29,9 +29,9 @@ RM·IA를 붙일 때 이 그래프를 확장한다. 채팅 메시지와 고정 �
 ### S1. NM 입력·출력 모델
 
 - 원본 리포트 식별자와 source별 payload를 받는 입력 모델
-- NM이 탐색할 수 있도록 payload를 안정적인 source field 목록으로 펼치는 로직
-- 추출값, 근거 위치, 누락 항목, 오류 signature 출력 모델
-- 비어 있는 원문과 잘못된 범위를 거부하는 Pydantic 검증
+- NM이 읽을 수 있도록 원본 payload를 안정적인 텍스트로 렌더링하는 로직
+- `bug_report_id`, 추출값, 누락 항목, 오류 signature 출력 모델
+- 비어 있는 원문과 잘못된 structured output을 거부하는 Pydantic 검증
 
 관련 결정: **N1, N2, N3, N8**
 
@@ -40,17 +40,16 @@ RM·IA를 붙일 때 이 그래프를 확장한다. 채팅 메시지와 고정 �
 - NM 도메인이 구체적인 모델 SDK를 모르도록 모델 호출 경계 정의
 - structured output 스키마와 도메인 결과를 분리
 - 원문을 명령이 아닌 비신뢰 데이터로 취급하는 시스템 지침
-- 근거 없는 보충, 번역 과정의 의미 변경, 임의 원인 추론 금지
+- 원문에 없는 보충, 번역 과정의 의미 변경, 임의 원인 추론 금지
 - 테스트용 fake 모델 구현
 
 관련 결정: **N3, N4, N7, N8**
 
-### S3. evidence 검증과 실패 정책
+### S3. source reference 검증과 실패 정책
 
-- 모델이 반환한 JSON 경로가 입력 payload에 존재하는지 확인
-- 해당 경로의 텍스트와 문자 범위가 실제 excerpt와 일치하는지 확인
-- 동일한 근거 중복 제거
-- 잘못된 structured output과 evidence를 정상 결과로 통과시키지 않음
+- 입력과 출력의 `bug_report_id` 연결 유지
+- 모델이 식별자를 생성하거나 변경하지 못하도록 애플리케이션에서 주입
+- 잘못된 structured output을 정상 결과로 통과시키지 않음
 - 결정된 정책에 따라 재시도 또는 명시적 실패
 
 관련 결정: **N1, N5**
@@ -69,7 +68,7 @@ RM·IA를 붙일 때 이 그래프를 확장한다. 채팅 메시지와 고정 �
 - 입력·출력 모델 단위 테스트
 - 정상 리포트 fixture
 - 주요 정보가 누락된 리포트 fixture
-- 잘못된 JSON 경로·문자 범위 fixture
+- 잘못된 structured output fixture
 - 비어 있는 payload 테스트
 - fake 모델 기반 그래프 테스트
 - 실제 모델 adapter가 포함되면 API를 호출하지 않는 배선 테스트
@@ -85,27 +84,21 @@ RM·IA를 붙일 때 이 그래프를 확장한다. 채팅 메시지와 고정 �
 
 ## 3. 결정 포인트
 
-### N1. 입력 원문과 evidence 좌표
+### N1. NM의 원본 연결과 evidence 책임
 
-#### (a) 직렬화된 단일 텍스트 + 전체 문자 offset
+#### (a) 각 추출값에 원문 pointer·offset·excerpt 저장
 
-- 구현이 단순하다.
-- JSON 직렬화 방식이나 key 순서가 바뀌면 offset이 달라진다.
-- source별 구조를 잃는다.
+- 추출 근거를 세밀하게 추적할 수 있다.
+- NM이 조사 evidence까지 소유하게 되고 계약이 복잡해진다.
 
-#### (b) JSON Pointer만 사용
+#### (b) `bug_report_id`만 유지
 
-- payload 구조를 안정적으로 가리킨다.
-- 한 필드 안의 어느 문장이 근거인지 표현하기 어렵다.
+- NM은 정규화와 원본 계보만 담당한다.
+- 후속 에이전트가 필요할 때 식별자로 원본 전체를 다시 읽는다.
+- 코드·문서·로그 조사 evidence는 IA와 탐색 에이전트가 만든다.
 
-#### (c) JSON Pointer + 필드 내부 문자 범위
-
-- `source_path=/description`, `start=10`, `end=32` 형태다.
-- 구조와 정확한 인용 범위를 모두 보존한다.
-- 배열과 비문자 scalar를 source field로 펼치는 규칙이 필요하다.
-
-**추천: (c).** Clio의 원본은 `BugOccurrence.raw_payload` JSON이므로 JSON Pointer로 필드를 찾고, 해당 필드의
-문자열 안에서 offset을 검증하는 방식이 가장 안정적이다.
+**결정: (b).** NM에는 pointer·offset·excerpt를 두지 않는다. 원본 BugReport는 변경되지 않게 보존한다는
+전제에서 `bug_report_id`만 출력에 유지한다. 조사 evidence의 짧은 코드 스냅샷과 관계 구조는 IA 작업에서 결정한다.
 
 ### N2. 오류 signature 출력 구조
 
@@ -149,10 +142,10 @@ LLM 자기평가 confidence를 핵심 계약에 넣지 않는다.
 - fake 테스트가 단순하고 모델 SDK를 교체할 수 있다.
 - 얇은 adapter 코드가 추가된다.
 
-**추천: (b).** 포트는 `normalize(source_document) -> NormalizationDraft`만 노출하고, evidence 검증과 최종
+**추천: (b).** 포트는 `normalize(source_document) -> NormalizationDraft`만 노출하고, 출력 검증과 최종
 `NormalizedReport` 조립은 NM 서비스가 담당한다.
 
-### N5. structured output 또는 evidence 검증 실패 정책
+### N5. structured output 검증 실패 정책
 
 #### (a) 즉시 노드 실패
 
@@ -213,7 +206,7 @@ README에서 breaking change를 명시한다.
 
 - 증상·기대 동작·재현 절차는 간결하게 정규화한다.
 - 예외 타입, 오류 코드, 파일·심볼, stack frame은 원문을 그대로 둔다.
-- 모든 정규화 값은 evidence span으로 원문과 연결한다.
+- 원문에 없는 내용을 새 사실로 추가하지 않는다.
 
 **추천: (b).** 별도 번역은 하지 않고 입력 언어를 유지한다. 후속 검색에서 번역/확장이 필요하면 RM 검색 계획의
 책임으로 둔다.
@@ -222,7 +215,7 @@ README에서 breaking change를 명시한다.
 
 | ID | 주제 | 추천 |
 |---|---|---|
-| N1 | evidence 좌표 | JSON Pointer + 필드 내부 문자 범위 |
+| N1 | 원본 연결 | `bug_report_id`만 유지, evidence는 후속 조사 책임 |
 | N2 | 오류 signature | 타입·메시지·코드·stack frame 분리 |
 | N3 | 추론 허용 | 명시적 표현·의미 보존 paraphrase만 |
 | N4 | 모델 경계 | NM 전용 프로토콜 + LangChain adapter |
@@ -237,7 +230,7 @@ README에서 breaking change를 명시한다.
 
 ```text
 docs: NM 구현 계획 및 결정 기록
-feat: NM 입력·출력과 evidence 모델
+feat: NM 입력·출력 모델
 feat: NM 모델 포트와 근거 검증 서비스
 feat: NM LangChain adapter와 프롬프트
 feat: NM LangGraph 노드 연결
@@ -258,13 +251,13 @@ ruff format --check .
 추가로 테스트는 다음 성질을 검증한다.
 
 - 동일한 fake 응답은 동일한 `NormalizedReport`를 만든다.
-- 모든 evidence가 실제 payload 위치와 excerpt에 대응한다.
+- 출력의 `bug_report_id`가 입력 식별자와 일치한다.
 - 누락 정보는 빈 문자열이 아니라 명시적인 missing field로 표현된다.
 - 모델은 원본 payload를 변경하지 않는다.
-- 잘못된 evidence는 교정 1회 후에도 유효하지 않으면 실패한다.
+- 잘못된 structured output은 교정 1회 후에도 유효하지 않으면 실패한다.
 - API key가 없는 테스트 환경에서도 import와 그래프 실행 테스트가 가능하다.
 
 ## 7. 이번 작업 이후
 
 NM 결과가 안정화되면 작업 브랜치를 `taek`에 병합한다. 다음 RM 작업은 `taek`에서 별도 브랜치를 만들고,
-RM이 실제로 요구하는 검색 입력과 evidence를 확인한 뒤 NM 전용 계약 중 공통으로 승격할 항목을 결정한다.
+RM이 실제로 요구하는 검색 입력을 확인한 뒤 NM 전용 계약 중 공통으로 승격할 항목을 결정한다.

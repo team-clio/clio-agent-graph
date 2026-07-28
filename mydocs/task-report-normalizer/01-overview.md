@@ -24,8 +24,9 @@ NM은 수집된 원본 버그 리포트를 읽고 후속 에이전트가 사용�
 - stack frame 등 코드 탐색 단서
 - 누락된 정보
 
-추출된 값은 반드시 원문의 근거 위치와 연결한다. 원문에 없는 정보를 사실처럼 보충하지 않으며,
-값을 찾지 못한 경우에는 누락으로 명시한다.
+정규화 결과는 입력 원본의 `bug_report_id`와 연결한다. 원문에 없는 정보를 사실처럼 보충하지 않으며,
+값을 찾지 못한 경우에는 누락으로 명시한다. 코드·문서·로그를 조사해 Bug의 evidence를 만드는 것은
+후속 IA와 탐색 에이전트의 책임으로 둔다.
 
 ## 3. 현재 상태
 
@@ -47,7 +48,7 @@ START
 
 - 원본 리포트 입력 모델
 - NM의 구조화 출력 모델
-- evidence span 표현
+- 원본 BugReport 식별자와 정규화 결과의 연결
 - 구조화 출력을 생성하는 모델 호출 경계
 - 출력 스키마 검증과 실패 처리
 - NM 단독 평가 fixture와 테스트
@@ -65,10 +66,11 @@ RM과 IA의 실제 데이터 요구가 아직 구현으로 검증되지 않았�
 반대로 자유 형식 `dict`나 자연어 응답으로 시작하면 NM 출력이 프롬프트, 그래프 상태, 저장 모델에
 동시에 결합된다. 후속 RM 연결 시 필드 의미와 누락 처리 방식을 다시 정의해야 한다.
 
-### 4.3 근거 추적이 NM 단계부터 필요하다
+### 4.3 원본 리포트 계보는 NM 단계부터 필요하다
 
-증상이나 환경 값만 저장하고 원문 근거를 잃으면 후속 에이전트와 Quality Gate가 추출의 정확성을
-검증할 수 없다. 따라서 범용 evidence 시스템은 미루더라도 NM 전용 evidence span은 첫 구현에 필요하다.
+정규화 결과가 어떤 원본에서 만들어졌는지는 후속 에이전트가 다시 원문을 읽고 검증할 수 있도록 남겨야 한다.
+다만 NM이 원문의 각 구절을 별도 evidence로 만들지는 않는다. 변경되지 않는 BugReport를
+`bug_report_id`로 참조하고, 조사 evidence는 후속 에이전트가 별도로 만든다.
 
 ## 5. 개선 방향
 
@@ -77,24 +79,23 @@ RM과 IA의 실제 데이터 요구가 아직 구현으로 검증되지 않았�
 이번에는 다음 세 종류의 NM 전용 모델만 정의한다.
 
 ```text
-NormalizeReportInput
+NormalizeReportInput(bug_report_id + raw report)
   → ReportNormalizer
-  → NormalizedReport
-       └─ NM 전용 EvidenceSpan
+  → NormalizedReport(bug_report_id + normalized fields)
 ```
 
-이 모델을 곧바로 범용 공통 계약으로 선언하지 않는다. RM·IA 구현 중 실제 공통점이 확인되면 별도
-작업에서 공통 `Evidence`와 메인 `GraphState`로 승격한다.
+이 모델을 곧바로 범용 공통 계약으로 선언하지 않는다. RM·IA 구현 중 조사 evidence의 실제 요구가
+확인되면 별도 작업에서 공통 `Evidence`와 메인 `GraphState`를 설계한다.
 
 ### 5.2 LLM 호출과 NM 도메인 로직을 분리한다
 
 NM은 구체적인 LLM SDK에 직접 결합하지 않는다. 테스트에서 결정적인 fake 구현을 주입할 수 있는
 경계를 두고, 모델 응답은 NM 출력 스키마로 검증한다.
 
-### 5.3 원문 근거를 기계적으로 검증한다
+### 5.3 BugReport 연결과 출력 구조를 검증한다
 
-각 evidence span이 실제 원문에 존재하는지 확인한다. 잘못된 span, 빈 근거, 허용되지 않은 출력은
-정상 결과로 저장하지 않는다. 모델이 반환한 confidence만으로 근거 유효성을 대신하지 않는다.
+입력과 출력의 `bug_report_id`가 동일한지 확인하고, 필수 출력과 누락 정보 표현을 검증한다.
+자유 형식 응답이나 원문에 없는 임의 보충은 정상 결과로 저장하지 않는다.
 
 ### 5.4 NM을 독립적으로 실행하고 평가할 수 있게 한다
 
@@ -103,7 +104,7 @@ NM은 구체적인 LLM SDK에 직접 결합하지 않는다. 테스트에서 결
 ```text
 raw report fixture
   → NM node
-  → schema/evidence validation
+  → schema/source-reference validation
   → NormalizedReport
 ```
 
@@ -113,12 +114,12 @@ raw report fixture
 
 - NM 최소 입력·출력 모델
 - 증상·기대 동작·재현 절차·환경·오류 signature·누락 정보 표현
-- NM 전용 evidence span
+- 원본 `bug_report_id`를 유지하는 source reference
 - Report Normalizer 서비스/노드
 - 구조화 모델 출력 검증
 - LangGraph에서 NM 단독 실행이 가능한 그래프 경로
 - fake 모델을 사용한 단위 테스트와 그래프 테스트
-- 정상, 필드 누락, 잘못된 evidence, 비어 있는 입력 fixture
+- 정상, 필드 누락, 잘못된 structured output, 비어 있는 입력 fixture
 - README의 현재 그래프 설명 갱신
 
 ### 제외
@@ -135,7 +136,7 @@ raw report fixture
 ## 7. 완료 기준
 
 - 원본 리포트를 NM 입력 모델로 받아 구조화된 `NormalizedReport`를 반환한다.
-- 모든 추출값은 유효한 원문 근거를 가지거나 명시적으로 누락 처리된다.
+- 정규화 결과는 입력 `bug_report_id`를 유지하고 찾지 못한 값은 명시적으로 누락 처리한다.
 - LLM의 잘못된 구조화 출력이 조용히 통과하지 않는다.
 - 외부 API 키 없이 전체 테스트를 재현할 수 있다.
 - 현재 데모 그래프가 NM 중심의 도메인 그래프로 정리된다.
@@ -146,7 +147,7 @@ raw report fixture
 구현 전에 다음 항목을 선택해야 한다.
 
 1. **NM 입력 원문 형식**: 단일 텍스트 중심인지, source별 `raw_payload`를 그대로 받을지
-2. **근거 위치 표현**: 문자 offset, JSON Pointer, 또는 둘의 조합
+2. **원본 연결 방식**: NM에는 `bug_report_id`만 두고 조사 evidence는 후속 에이전트에서 생성
 3. **오류 signature 범위**: 예외 타입·메시지·stack frame을 하나로 둘지 분리할지
 4. **모델 호출 경계**: LangChain structured output을 직접 감쌀지 별도 포트를 둘지
 5. **검증 실패 처리**: 노드 실패, 제한 재시도, 부분 결과 반환 중 어떤 정책을 사용할지
@@ -174,7 +175,7 @@ tests/
 ## 10. 주요 위험
 
 - Clio Server 입력 계약이 확정되기 전에 NM 입력을 DB 구조에 과도하게 맞출 수 있다.
-- evidence span의 기준을 늦게 바꾸면 fixture와 RM 입력이 함께 깨질 수 있다.
+- BugReport가 수정 가능한 모델이면 식별자만으로 당시 입력을 재현할 수 없으므로 원본 불변 정책이 필요하다.
 - 모델 응답 스키마와 도메인 모델을 동일시하면 모델 교체와 검증 정책 변경이 어려워질 수 있다.
 - 너무 많은 필드를 첫 버전에 넣으면 NM 평가 기준이 흐려질 수 있다.
 - 현재 데모 그래프를 즉시 제거하면 비교 가능한 최소 실행 예제가 사라질 수 있다.
