@@ -11,6 +11,10 @@ from clio_agent_graph.normalization.models import (
     Reproduction,
 )
 from clio_agent_graph.normalization.ports import NormalizationModel, NormalizationOutputError
+from clio_agent_graph.normalization.service import (
+    ReportNormalizer,
+    ReportPayloadTooLargeError,
+)
 
 __all__ = [
     "AffectedSurface",
@@ -23,4 +27,6 @@ __all__ = [
     "Reproduction",
     "NormalizationModel",
     "NormalizationOutputError",
+    "ReportNormalizer",
+    "ReportPayloadTooLargeError",
 ]

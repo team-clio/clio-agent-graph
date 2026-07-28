@@ -20,6 +20,8 @@ class NormalizationModel(Protocol):
     ) -> NormalizationDraft:
         """리포트를 구조화하고, 필요하면 이전 검증 오류를 반영해 교정한다."""
 
+        ...
+
 
 class NormalizationOutputError(ValueError):
     """모델 응답을 NormalizationDraft로 검증할 수 없을 때 발생하는 오류."""
