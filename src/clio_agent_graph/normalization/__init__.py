@@ -5,17 +5,22 @@ from clio_agent_graph.normalization.models import (
     Environment,
     ErrorSignals,
     MissingField,
+    NormalizationDraft,
     NormalizedReport,
     NormalizeReportInput,
     Reproduction,
 )
+from clio_agent_graph.normalization.ports import NormalizationModel, NormalizationOutputError
 
 __all__ = [
     "AffectedSurface",
     "Environment",
     "ErrorSignals",
     "MissingField",
+    "NormalizationDraft",
     "NormalizedReport",
     "NormalizeReportInput",
     "Reproduction",
+    "NormalizationModel",
+    "NormalizationOutputError",
 ]

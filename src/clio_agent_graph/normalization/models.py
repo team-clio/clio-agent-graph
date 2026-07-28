@@ -111,6 +111,20 @@ class ErrorSignals(ContractModel):
     stack_frames: list[NonEmptyText] = Field(default_factory=list)
 
 
+class NormalizationDraft(ContractModel):
+    """LLM이 원문에서 추출하는 임시 결과.
+
+    원본 식별자와 누락 목록은 모델이 판단하지 않고 ReportNormalizer가 최종 결과에 추가한다.
+    """
+
+    observed_behavior: NonEmptyText | None = None
+    expected_behavior: NonEmptyText | None = None
+    reproduction: Reproduction = Field(default_factory=Reproduction)
+    environment: Environment = Field(default_factory=Environment)
+    affected_surface: AffectedSurface = Field(default_factory=AffectedSurface)
+    error_signals: ErrorSignals = Field(default_factory=ErrorSignals)
+
+
 class NormalizedReport(ContractModel):
     """소스 형식과 무관하게 RM이 소비하는 표준 BugReport 표현."""
 

@@ -8,6 +8,7 @@ from clio_agent_graph.normalization import (
     Environment,
     ErrorSignals,
     MissingField,
+    NormalizationDraft,
     NormalizedReport,
     NormalizeReportInput,
     Reproduction,
@@ -72,6 +73,15 @@ def test_normalized_report_rejects_unknown_fields() -> None:
         NormalizedReport(
             bug_report_id=351,
             root_cause="PaymentService is broken",
+        )
+
+
+def test_normalization_draft_does_not_accept_application_owned_fields() -> None:
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        NormalizationDraft(
+            observed_behavior="결제에 실패한다.",
+            bug_report_id=351,
+            missing_fields=[MissingField.EXPECTED_BEHAVIOR],
         )
 
 
