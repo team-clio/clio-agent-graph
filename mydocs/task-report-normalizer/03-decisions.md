@@ -76,3 +76,47 @@ NM은 리포트를 읽기 쉽게 구조화하지만 원인을 분석하거나 �
 - 최종 조립 서비스가 구조화 입력 우선 병합과 누락 목록 계산을 담당한다.
 - 프롬프트에 기대 동작·환경·원인 등을 상식으로 보충하지 말라는 지침을 둔다.
 - 테스트에서 원문에 없는 기대 동작이 생성되지 않는지 검증한다.
+
+## N4. 모델 호출 경계
+
+**결정: NM 전용 `NormalizationModel` Protocol을 두고 LangChain과 Fake adapter를 분리한다.**
+
+`Protocol`은 Java의 interface와 같은 역할을 한다. `ReportNormalizer`는 LangChain 타입을 모르며
+`NormalizationDraft`를 반환하는 계약에만 의존한다. 실제 adapter는 LangChain을 사용하고 테스트는 외부 API를
+호출하지 않는 Fake를 주입한다.
+
+## N5. structured output 검증 실패
+
+**결정: 검증 오류를 모델에 전달해 한 번만 교정하고, 두 번째 실패는 NM 실행 실패로 처리한다.**
+
+입력 자체가 비어 있거나 크기 제한을 넘은 경우에는 모델을 호출하지 않는다. 유효한 필드만 골라 부분 결과로
+반환하지 않는다. 네트워크·인증·provider 오류는 교정 대상이 아니며 그대로 전파한다.
+
+## N6. 현재 데모 그래프 처리
+
+**결정: 기존 `clio_agent`를 NM 도메인 그래프로 교체한다.**
+
+현재 `messages → plan → result` 흐름은 외부 제품 계약이 아닌 scaffold다. 이를
+`START → normalize_report → END`로 바꾸고 이후 RM·IA를 같은 그래프에 연결한다.
+
+## N7. 실제 모델 adapter
+
+**결정: `.env`의 `CLIO_MODEL`을 사용하는 LangChain adapter까지 이번 작업에 포함한다.**
+
+모델은 최초 NM 호출 시 지연 생성하여 import와 테스트에 API key가 필요하지 않게 한다. 실제 provider 패키지는
+기존 optional dependency를 사용하며 테스트는 모델 생성과 structured output 배선을 mock으로 검증한다.
+
+## N8. 출력 언어와 원문 보존
+
+**결정: 자연어 결과는 입력 언어를 유지하고 기술 식별자는 원문 그대로 보존한다.**
+
+증상·기대 동작·재현 절차는 번역하지 않고 의미를 보존해 간결하게 정리한다. 예외 타입·오류 메시지·오류 코드·
+stack frame은 임의로 번역하거나 고쳐 쓰지 않는다.
+
+## N9. raw payload 전달·보호 정책
+
+**결정: raw payload를 모델에 포함하되 민감 key를 마스킹하고 기본 32 KiB 상한을 둔다.**
+
+`password`, `token`, `secret`, `authorization`, `cookie`, `api_key` 계열 key는 대소문자와 구분 문자를
+정규화해 값 전체를 `[REDACTED]`로 바꾼다. 마스킹한 JSON을 UTF-8로 직렬화했을 때 32 KiB를 넘으면 내용을
+자르지 않고 입력 오류로 실패시킨다. 마스킹은 모델에 전달할 복사본에만 적용하며 원본 payload를 수정하지 않는다.

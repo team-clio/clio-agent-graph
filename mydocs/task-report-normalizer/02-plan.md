@@ -144,7 +144,7 @@ LLM 자기평가 confidence를 핵심 계약에 넣지 않는다. 누락 목록�
 - fake 테스트가 단순하고 모델 SDK를 교체할 수 있다.
 - 얇은 adapter 코드가 추가된다.
 
-**추천: (b).** 포트는 `normalize(source_document) -> NormalizationDraft`만 노출하고, 출력 검증과 최종
+**결정: (b).** 포트는 `normalize(source_document) -> NormalizationDraft`만 노출하고, 출력 검증과 최종
 `NormalizedReport` 조립은 NM 서비스가 담당한다.
 
 ### N5. structured output 검증 실패 정책
@@ -164,7 +164,7 @@ LLM 자기평가 confidence를 핵심 계약에 넣지 않는다. 누락 목록�
 - 일부 결과를 보존한다.
 - 무엇이 누락됐는지와 모델 실패가 섞이며 후속 단계가 불완전 결과를 정상으로 오해할 수 있다.
 
-**추천: (b).** 최대 1회만 교정하고 다시 실패하면 명시적으로 노드를 실패시킨다. 비어 있는 입력 같은 입력 오류는
+**결정: (b).** 최대 1회만 교정하고 다시 실패하면 명시적으로 노드를 실패시킨다. 비어 있는 입력 같은 입력 오류는
 모델을 호출하지 않고 즉시 실패한다.
 
 ### N6. 현재 데모 그래프 처리
@@ -179,7 +179,7 @@ LLM 자기평가 confidence를 핵심 계약에 넣지 않는다. 누락 목록�
 - 데모 호환성을 유지한다.
 - 제품에서 사용하지 않을 그래프와 상태 계약을 계속 관리한다.
 
-**추천: (a).** 현재 그래프는 외부 계약이 아니라 scaffold이며, RM·IA도 같은 `clio_agent`에 이어 붙일 예정이다.
+**결정: (a).** 현재 그래프는 외부 계약이 아니라 scaffold이며, RM·IA도 같은 `clio_agent`에 이어 붙일 예정이다.
 README에서 breaking change를 명시한다.
 
 ### N7. 실제 모델 adapter 범위
@@ -194,7 +194,7 @@ README에서 breaking change를 명시한다.
 - `.env`의 `CLIO_MODEL`을 사용해 실제 실행 가능하다.
 - provider integration 패키지와 API key가 런타임에 필요하다.
 
-**추천: (b).** 실제 모델 생성은 지연시켜 테스트 import 시 API key를 요구하지 않게 한다. 테스트는 계속 fake만
+**결정: (b).** 실제 모델 생성은 지연시켜 테스트 import 시 API key를 요구하지 않게 한다. 테스트는 계속 fake만
 사용하고 외부 API를 호출하지 않는다.
 
 ### N8. 출력 언어와 원문 보존
@@ -210,8 +210,14 @@ README에서 breaking change를 명시한다.
 - 예외 타입, 오류 코드, 파일·심볼, stack frame은 원문을 그대로 둔다.
 - 원문에 없는 내용을 새 사실로 추가하지 않는다.
 
-**추천: (b).** 별도 번역은 하지 않고 입력 언어를 유지한다. 후속 검색에서 번역/확장이 필요하면 RM 검색 계획의
+**결정: (b).** 별도 번역은 하지 않고 입력 언어를 유지한다. 후속 검색에서 번역/확장이 필요하면 RM 검색 계획의
 책임으로 둔다.
+
+### N9. raw payload 전달·보호 정책
+
+**결정:** 구조화 필드와 `raw_payload`를 함께 모델에 전달한다. `password`, `token`, `secret`, `authorization`,
+`cookie`, `api_key` 계열 key의 값은 재귀적으로 `[REDACTED]` 처리한다. 마스킹 후 UTF-8 JSON 크기가 기본
+32 KiB를 넘으면 자르지 않고 입력 오류로 실패시킨다.
 
 ## 4. 추천 결정 요약
 
@@ -225,6 +231,7 @@ README에서 breaking change를 명시한다.
 | N6 | 그래프 | 기존 `clio_agent`를 NM 그래프로 교체 |
 | N7 | 실제 모델 | configurable model adapter 포함 |
 | N8 | 언어 | 입력 언어 유지, 기술 식별자는 원문 보존 |
+| N9 | raw payload | 민감 key 마스킹 + 32 KiB 상한 |
 
 ## 5. 예상 커밋 단위
 
