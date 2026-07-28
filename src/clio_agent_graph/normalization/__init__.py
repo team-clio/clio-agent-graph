@@ -1,5 +1,6 @@
 """BugReport 정규화 도메인."""
 
+from clio_agent_graph.normalization.langchain_adapter import LangChainNormalizationModel
 from clio_agent_graph.normalization.models import (
     AffectedSurface,
     Environment,
@@ -21,6 +22,7 @@ __all__ = [
     "Environment",
     "ErrorSignals",
     "MissingField",
+    "LangChainNormalizationModel",
     "NormalizationDraft",
     "NormalizedReport",
     "NormalizeReportInput",
