@@ -13,5 +13,9 @@ class IssueRetrievalError(ReportMatchingError):
     """RAG 하위 에이전트가 한 번의 재시도 뒤에도 실패했을 때의 오류."""
 
 
-class IssueMatchOutputError(ReportMatchingError):
+class IssueMatchError(ReportMatchingError):
+    """후보 비교 모델이 한 번의 재시도 뒤에도 실패했을 때의 오류."""
+
+
+class IssueMatchOutputError(IssueMatchError):
     """후보 비교 모델의 출력을 신뢰할 수 없을 때의 오류."""
