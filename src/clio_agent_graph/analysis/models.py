@@ -48,6 +48,20 @@ class HypothesisDisposition(StrEnum):
     DROPPED = "DROPPED"
 
 
+class AnalysisMode(StrEnum):
+    """공통 IA가 어떤 판단 subagent를 사용하는지 나타낸다."""
+
+    INITIAL = "INITIAL"
+    REVISION = "REVISION"
+
+
+class JudgmentPhase(StrEnum):
+    """판단 subagent가 탐색 질문과 최종 초안 중 무엇을 만들지 구분한다."""
+
+    PLAN = "PLAN"
+    ANALYZE = "ANALYZE"
+
+
 class AnalysisIssue(ContractModel):
     """IA가 조사할 실제 Issue의 최소 문맥."""
 
@@ -268,6 +282,29 @@ class ReanalysisInput(ContractModel):
             raise ValueError("Reanalysis project_id must match the previous analysis.")
         if self.issue.issue_id != self.previous_analysis.issue_id:
             raise ValueError("Reanalysis issue_id must match the previous analysis.")
+        return self
+
+
+class JudgmentContext(ContractModel):
+    """Initial·Revision Judgment Subagent가 공유하는 분석 문맥."""
+
+    mode: AnalysisMode
+    analysis_job_id: int = Field(gt=0)
+    project_id: int = Field(gt=0)
+    issue: AnalysisIssue
+    bugs: list[AnalysisBug] = Field(min_length=1, max_length=5)
+    trigger_bug_id: int = Field(gt=0)
+    previous_analysis: IssueAnalysis | None = None
+
+    @model_validator(mode="after")
+    def validate_mode_context(self) -> "JudgmentContext":
+        """최초 분석에는 과거 결과를 금지하고 재분석에는 필수로 요구한다."""
+
+        _validate_bug_ids(self.bugs, self.trigger_bug_id)
+        if self.mode is AnalysisMode.INITIAL and self.previous_analysis is not None:
+            raise ValueError("Initial analysis must not contain previous_analysis.")
+        if self.mode is AnalysisMode.REVISION and self.previous_analysis is None:
+            raise ValueError("Revision analysis requires previous_analysis.")
         return self
 
 
