@@ -8,9 +8,13 @@ from pydantic import ValidationError
 from clio_agent_graph.analysis.errors import JudgmentError, JudgmentOutputError
 from clio_agent_graph.analysis.models import (
     AnalysisDraft,
+    AnalysisMode,
+    AnalysisStatus,
     CodeRelation,
     Evidence,
     ExplorationDirective,
+    HypothesisDisposition,
+    IssueAnalysis,
     JudgmentContext,
     JudgmentPhase,
 )
@@ -67,13 +71,26 @@ def build_judgment_subgraph(model: JudgmentModel):
     def analyze_evidence(state: JudgmentState) -> dict[str, Any]:
         """Evidence를 분석 초안으로 바꾸고 잘못된 출력은 한 번 교정한다."""
 
+        context = JudgmentContext.model_validate(state["judgment_context"])
+        evidence = [Evidence.model_validate(item) for item in state["evidence"]]
+        relations = [CodeRelation.model_validate(item) for item in state["relations"]]
+
+        def call_and_validate(feedback: str | None) -> AnalysisDraft:
+            """모델 초안을 실제 Evidence와 이전 분석 문맥까지 대조한다."""
+
+            draft = AnalysisDraft.model_validate(
+                model.analyze(
+                    context,
+                    evidence,
+                    relations,
+                    correction_feedback=feedback,
+                )
+            )
+            _validate_analysis_draft(context, evidence, relations, draft)
+            return draft
+
         draft = _call_with_one_retry(
-            lambda feedback: model.analyze(
-                JudgmentContext.model_validate(state["judgment_context"]),
-                [Evidence.model_validate(item) for item in state["evidence"]],
-                [CodeRelation.model_validate(item) for item in state["relations"]],
-                correction_feedback=feedback,
-            ),
+            call_and_validate,
             AnalysisDraft,
         )
         return {"analysis_draft": draft}
@@ -115,3 +132,63 @@ def _call_with_one_retry(call, output_type):
             "Judgment output remained invalid after one correction."
         ) from last_error
     raise JudgmentError("Judgment subagent failed after one retry.") from last_error
+
+
+def _validate_analysis_draft(
+    context: JudgmentContext,
+    evidence: list[Evidence],
+    relations: list[CodeRelation],
+    draft: AnalysisDraft,
+) -> None:
+    """초안 참조와 재분석 변화 요약을 실제 입력에 맞춰 검증한다."""
+
+    analysis = IssueAnalysis(
+        analysis_job_id=context.analysis_job_id,
+        project_id=context.project_id,
+        issue_id=context.issue.issue_id,
+        status=AnalysisStatus.COMPLETED,
+        evidence=evidence,
+        relations=relations,
+        findings=draft.findings,
+        hypotheses=draft.hypotheses,
+        revision_summary=draft.revision_summary,
+    )
+    if context.mode is AnalysisMode.INITIAL:
+        if analysis.revision_summary is not None:
+            raise JudgmentOutputError("Initial analysis must not contain revision_summary.")
+        return
+
+    previous = context.previous_analysis
+    revision = analysis.revision_summary
+    if previous is None or revision is None:
+        raise JudgmentOutputError("Revision analysis requires revision_summary.")
+    if revision.previous_analysis_job_id != previous.analysis_job_id:
+        raise JudgmentOutputError("Revision summary references the wrong previous job.")
+
+    previous_ids = {item.hypothesis_id for item in previous.hypotheses}
+    revision_previous_ids = [item.previous_hypothesis_id for item in revision.hypothesis_revisions]
+    if len(revision_previous_ids) != len(set(revision_previous_ids)):
+        raise JudgmentOutputError("Previous hypotheses must be revised exactly once.")
+    if set(revision_previous_ids) != previous_ids:
+        raise JudgmentOutputError("Revision summary must cover every previous hypothesis.")
+
+    current_ids = {item.hypothesis_id for item in analysis.hypotheses}
+    mapped_current_ids: set[str] = set()
+    for item in revision.hypothesis_revisions:
+        if item.disposition is HypothesisDisposition.DROPPED:
+            if item.current_hypothesis_id is not None:
+                raise JudgmentOutputError(
+                    "DROPPED hypothesis must not reference a current hypothesis."
+                )
+            continue
+        if item.current_hypothesis_id not in current_ids:
+            raise JudgmentOutputError("Retained hypothesis must reference a current hypothesis.")
+        mapped_current_ids.add(item.current_hypothesis_id)
+
+    new_ids = set(revision.new_hypothesis_ids)
+    if not new_ids.issubset(current_ids):
+        raise JudgmentOutputError("New hypothesis IDs must exist in the current analysis.")
+    if new_ids != current_ids - mapped_current_ids:
+        raise JudgmentOutputError(
+            "Revision summary must identify every unmapped current hypothesis as new."
+        )
