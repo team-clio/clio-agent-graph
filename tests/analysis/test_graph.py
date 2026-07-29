@@ -117,6 +117,49 @@ class BrokenRevisionJudgmentModel(FakeRevisionJudgmentModel):
         )
 
 
+class TestAndChangeJudgmentModel(FakeInitialJudgmentModel):
+    """테스트와 최근 변경을 지지·반박 Finding으로 사용하는 Fake."""
+
+    def analyze(
+        self,
+        context,
+        evidence,
+        relations,
+        *,
+        correction_feedback=None,
+    ) -> AnalysisDraft:
+        self.analyze_calls += 1
+        return AnalysisDraft(
+            findings=[
+                Finding(
+                    finding_id="F1",
+                    statement="서비스는 주문 상태를 변경한다.",
+                    evidence_ids=["E1"],
+                ),
+                Finding(
+                    finding_id="F2",
+                    statement="관련 테스트는 정상 갱신을 기대한다.",
+                    evidence_ids=["E2"],
+                ),
+                Finding(
+                    finding_id="F3",
+                    statement="최근 변경에서 캐시 무효화 호출이 제거됐다.",
+                    evidence_ids=["E3"],
+                ),
+            ],
+            hypotheses=[
+                RootCauseHypothesis(
+                    hypothesis_id="H1",
+                    priority=1,
+                    statement="최근 변경으로 조회 캐시 갱신이 누락됐을 가능성이 있다.",
+                    confidence=HypothesisConfidence.HIGH,
+                    supporting_finding_ids=["F1", "F3"],
+                    contradicting_finding_ids=["F2"],
+                )
+            ],
+        )
+
+
 def _initial_input() -> dict[str, object]:
     return {
         "analysis_job_id": 501,
@@ -327,6 +370,42 @@ def test_relation_candidate_is_resolved_to_final_evidence_ids() -> None:
 
     assert analysis.relations[0].source_evidence_id == "E1"
     assert analysis.relations[0].target_evidence_id == "E2"
+
+
+def test_test_and_change_evidence_can_support_or_contradict_hypothesis() -> None:
+    explorer = build_code_exploration_subgraph(
+        lambda _request: ExplorationResponse(
+            candidates=[
+                _candidate(),
+                EvidenceCandidate(
+                    candidate_key="payment-test",
+                    kind=EvidenceKind.TEST,
+                    code_snapshot="assertThat(order.status()).isEqualTo(PAID);",
+                    observation="테스트는 PAID 상태를 기대한다.",
+                ),
+                EvidenceCandidate(
+                    candidate_key="recent-change",
+                    kind=EvidenceKind.CHANGE,
+                    code_snapshot="- cache.evict(order.id());",
+                    observation="최근 변경에서 캐시 무효화 호출이 제거됐다.",
+                    change_id="change-17",
+                ),
+            ]
+        )
+    )
+    graph = build_issue_analyzer_graph(
+        code_exploration_subgraph=explorer,
+        judgment_model=TestAndChangeJudgmentModel(),
+    )
+
+    analysis = graph.invoke(_initial_input())["issue_analysis"]
+
+    assert [item.kind for item in analysis.evidence] == [
+        EvidenceKind.CODE,
+        EvidenceKind.TEST,
+        EvidenceKind.CHANGE,
+    ]
+    assert analysis.hypotheses[0].contradicting_finding_ids == ["F2"]
 
 
 def test_evidence_is_capped_at_twenty_across_three_rounds() -> None:
