@@ -114,6 +114,34 @@ def test_unknown_evidence_reference_is_rejected() -> None:
         )
 
 
+def test_finding_cannot_reference_symbol_missing_from_its_evidence() -> None:
+    with pytest.raises(ValidationError, match="Unknown finding symbol"):
+        IssueAnalysis(
+            analysis_job_id=501,
+            project_id=3,
+            issue_id=19,
+            status=AnalysisStatus.COMPLETED,
+            evidence=[_evidence()],
+            findings=[
+                Finding(
+                    finding_id="F1",
+                    statement="존재하지 않는 심볼을 언급한다.",
+                    evidence_ids=["E1"],
+                    referenced_symbols=["UnknownService.run"],
+                )
+            ],
+            hypotheses=[
+                RootCauseHypothesis(
+                    hypothesis_id="H1",
+                    priority=1,
+                    statement="가설",
+                    confidence=HypothesisConfidence.LOW,
+                    supporting_finding_ids=["F1"],
+                )
+            ],
+        )
+
+
 def test_insufficient_result_contains_no_analysis_facts() -> None:
     result = IssueAnalysis(
         analysis_job_id=501,

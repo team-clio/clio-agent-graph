@@ -150,6 +150,18 @@ class EvidenceCandidate(ContractModel):
 
         return Evidence.limit_snapshot_lines(value)
 
+    @model_validator(mode="after")
+    def validate_line_range(self) -> "EvidenceCandidate":
+        """Code Explorer 단계에서도 뒤집힌 라인 범위를 거부한다."""
+
+        if (
+            self.start_line is not None
+            and self.end_line is not None
+            and self.start_line > self.end_line
+        ):
+            raise ValueError("start_line must not exceed end_line.")
+        return self
+
 
 class CodeRelation(ContractModel):
     """두 Evidence가 코드 구조에서 어떤 관계인지 나타낸다."""
@@ -173,6 +185,8 @@ class Finding(ContractModel):
     finding_id: FindingId
     statement: NonEmptyText
     evidence_ids: list[EvidenceId] = Field(min_length=1, max_length=20)
+    referenced_files: list[NonEmptyText] = Field(default_factory=list)
+    referenced_symbols: list[NonEmptyText] = Field(default_factory=list)
 
 
 class RootCauseHypothesis(ContractModel):
@@ -247,6 +261,25 @@ class IssueAnalysis(ContractModel):
             )
         for finding in self.findings:
             _require_known_refs(finding.evidence_ids, evidence_id_set, "finding evidence")
+            referenced_evidence = [
+                item for item in self.evidence if item.evidence_id in finding.evidence_ids
+            ]
+            allowed_files = {
+                item.file_path for item in referenced_evidence if item.file_path is not None
+            }
+            allowed_symbols = {
+                item.symbol for item in referenced_evidence if item.symbol is not None
+            }
+            _require_known_refs(
+                finding.referenced_files,
+                allowed_files,
+                "finding file",
+            )
+            _require_known_refs(
+                finding.referenced_symbols,
+                allowed_symbols,
+                "finding symbol",
+            )
         for hypothesis in self.hypotheses:
             _require_known_refs(
                 hypothesis.supporting_finding_ids,
