@@ -117,7 +117,7 @@ class BrokenRevisionJudgmentModel(FakeRevisionJudgmentModel):
         )
 
 
-class TestAndChangeJudgmentModel(FakeInitialJudgmentModel):
+class EvidenceAwareJudgmentModel(FakeInitialJudgmentModel):
     """테스트와 최근 변경을 지지·반박 Finding으로 사용하는 Fake."""
 
     def analyze(
@@ -395,7 +395,7 @@ def test_test_and_change_evidence_can_support_or_contradict_hypothesis() -> None
     )
     graph = build_issue_analyzer_graph(
         code_exploration_subgraph=explorer,
-        judgment_model=TestAndChangeJudgmentModel(),
+        judgment_model=EvidenceAwareJudgmentModel(),
     )
 
     analysis = graph.invoke(_initial_input())["issue_analysis"]
