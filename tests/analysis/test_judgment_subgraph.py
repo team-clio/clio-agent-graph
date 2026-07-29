@@ -27,6 +27,7 @@ class FakeJudgmentModel:
             ExplorationDirective(questions=["PaymentService를 찾아라."])
         ]
         self.analysis_results: list[object] = [_draft()]
+        self.analysis_feedback: list[str | None] = []
 
     def plan(
         self,
@@ -49,6 +50,7 @@ class FakeJudgmentModel:
         *,
         correction_feedback: str | None = None,
     ) -> AnalysisDraft:
+        self.analysis_feedback.append(correction_feedback)
         result = self.analysis_results.pop(0)
         if isinstance(result, Exception):
             raise result
@@ -144,3 +146,32 @@ def test_provider_failure_twice_fails() -> None:
 
     with pytest.raises(JudgmentError):
         build_judgment_subgraph(model).invoke(_state(JudgmentPhase.PLAN))
+
+
+def test_unknown_evidence_reference_is_corrected_once() -> None:
+    model = FakeJudgmentModel()
+    invalid = AnalysisDraft(
+        findings=[
+            Finding(
+                finding_id="F1",
+                statement="잘못된 근거 참조",
+                evidence_ids=["E2"],
+            )
+        ],
+        hypotheses=[
+            RootCauseHypothesis(
+                hypothesis_id="H1",
+                priority=1,
+                statement="가설",
+                confidence=HypothesisConfidence.LOW,
+                supporting_finding_ids=["F1"],
+            )
+        ],
+    )
+    model.analysis_results = [invalid, _draft()]
+
+    result = build_judgment_subgraph(model).invoke(_state(JudgmentPhase.ANALYZE))
+
+    assert result["analysis_draft"].findings[0].evidence_ids == ["E1"]
+    assert model.analysis_feedback[0] is None
+    assert "Unknown finding evidence" in (model.analysis_feedback[1] or "")

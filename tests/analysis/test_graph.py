@@ -21,6 +21,7 @@ from clio_agent_graph.analysis.models import (
     HypothesisDisposition,
     HypothesisRevision,
     IssueAnalysis,
+    RelationCandidate,
     RevisionSummary,
     RootCauseHypothesis,
 )
@@ -227,6 +228,88 @@ def test_duplicate_evidence_across_rounds_is_merged_once() -> None:
 
     assert len(analysis.evidence) == 1
     assert model.plan_calls == 3
+
+
+def test_repeated_question_stops_exploration_early() -> None:
+    model = FakeInitialJudgmentModel(questions=[["같은 질문"], ["같은 질문"]])
+    calls = 0
+
+    def explore(_request: ExplorationRequest) -> ExplorationResponse:
+        nonlocal calls
+        calls += 1
+        return ExplorationResponse()
+
+    graph = build_issue_analyzer_graph(
+        code_exploration_subgraph=build_code_exploration_subgraph(explore),
+        judgment_model=model,
+    )
+
+    analysis = graph.invoke(_initial_input())["issue_analysis"]
+
+    assert calls == 1
+    assert analysis.status is AnalysisStatus.INSUFFICIENT_EVIDENCE
+
+
+def test_relation_candidate_is_resolved_to_final_evidence_ids() -> None:
+    def explore(_request: ExplorationRequest) -> ExplorationResponse:
+        return ExplorationResponse(
+            candidates=[
+                _candidate(),
+                EvidenceCandidate(
+                    candidate_key="order-repository",
+                    kind=EvidenceKind.CODE,
+                    code_snapshot="repository.save(order);",
+                    observation="주문을 저장한다.",
+                ),
+            ],
+            relations=[
+                RelationCandidate(
+                    source_ref="payment-service",
+                    target_ref="order-repository",
+                    relation_type="CALLS",
+                )
+            ],
+        )
+
+    graph = build_issue_analyzer_graph(
+        code_exploration_subgraph=build_code_exploration_subgraph(explore),
+        judgment_model=FakeInitialJudgmentModel(),
+    )
+
+    analysis = graph.invoke(_initial_input())["issue_analysis"]
+
+    assert analysis.relations[0].source_evidence_id == "E1"
+    assert analysis.relations[0].target_evidence_id == "E2"
+
+
+def test_evidence_is_capped_at_twenty_across_three_rounds() -> None:
+    model = FakeInitialJudgmentModel(questions=[["질문 1"], ["질문 2"], ["질문 3"]])
+    round_number = 0
+
+    def explore(_request: ExplorationRequest) -> ExplorationResponse:
+        nonlocal round_number
+        round_number += 1
+        return ExplorationResponse(
+            candidates=[
+                EvidenceCandidate(
+                    candidate_key=f"round-{round_number}-{index}",
+                    kind=EvidenceKind.CODE,
+                    code_snapshot=f"code{round_number}_{index}();",
+                    observation="코드 후보다.",
+                )
+                for index in range(10)
+            ]
+        )
+
+    graph = build_issue_analyzer_graph(
+        code_exploration_subgraph=build_code_exploration_subgraph(explore),
+        judgment_model=model,
+    )
+
+    analysis = graph.invoke(_initial_input())["issue_analysis"]
+
+    assert len(analysis.evidence) == 20
+    assert "Evidence 최대 20개 제한을 적용했습니다." in analysis.warnings
 
 
 def test_three_empty_rounds_return_insufficient_evidence_without_analysis_call() -> None:
