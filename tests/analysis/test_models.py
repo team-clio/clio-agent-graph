@@ -11,6 +11,7 @@ from clio_agent_graph.analysis.models import (
     HypothesisConfidence,
     InitialAnalysisInput,
     IssueAnalysis,
+    ReanalysisInput,
     RootCauseHypothesis,
 )
 from clio_agent_graph.normalization.models import NormalizedReport
@@ -151,3 +152,22 @@ def test_insufficient_result_contains_no_analysis_facts() -> None:
     )
 
     assert result.evidence == []
+
+
+def test_reanalysis_requires_a_new_job_id() -> None:
+    previous = IssueAnalysis(
+        analysis_job_id=501,
+        project_id=3,
+        issue_id=19,
+        status=AnalysisStatus.INSUFFICIENT_EVIDENCE,
+    )
+
+    with pytest.raises(ValidationError, match="new analysis_job_id"):
+        ReanalysisInput(
+            analysis_job_id=501,
+            project_id=3,
+            issue=AnalysisIssue(issue_id=19, title="결제 오류"),
+            bugs=[_bug()],
+            trigger_bug_id=72,
+            previous_analysis=previous,
+        )

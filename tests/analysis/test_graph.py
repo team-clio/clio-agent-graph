@@ -1,6 +1,9 @@
 import pytest
 
-from clio_agent_graph.analysis.errors import CodeExplorerNotConfiguredError
+from clio_agent_graph.analysis.errors import (
+    CodeExplorerNotConfiguredError,
+    JudgmentOutputError,
+)
 from clio_agent_graph.analysis.exploration_subgraph import (
     build_code_exploration_subgraph,
 )
@@ -85,6 +88,32 @@ class FakeRevisionJudgmentModel(FakeInitialJudgmentModel):
                     )
                 ],
             ),
+        )
+
+
+class BrokenRevisionJudgmentModel(FakeRevisionJudgmentModel):
+    """존재하지 않는 이전 분석 작업을 참조하는 잘못된 재분석 Fake."""
+
+    def analyze(
+        self,
+        context,
+        evidence,
+        relations,
+        *,
+        correction_feedback=None,
+    ) -> AnalysisDraft:
+        draft = super().analyze(
+            context,
+            evidence,
+            relations,
+            correction_feedback=correction_feedback,
+        )
+        return draft.model_copy(
+            update={
+                "revision_summary": draft.revision_summary.model_copy(
+                    update={"previous_analysis_job_id": 999}
+                )
+            }
         )
 
 
@@ -212,6 +241,24 @@ def test_reanalysis_does_not_copy_unconfirmed_previous_evidence() -> None:
     analysis = result["issue_analysis"]
     assert [item.code_snapshot for item in analysis.evidence] == ["currentCode();"]
     assert analysis.revision_summary.previous_analysis_job_id == 500
+
+
+def test_reanalysis_rejects_wrong_previous_job_reference() -> None:
+    explorer = build_code_exploration_subgraph(
+        lambda _request: ExplorationResponse(candidates=[_candidate("currentCode();")])
+    )
+    graph = build_issue_reanalyzer_graph(
+        code_exploration_subgraph=explorer,
+        judgment_model=BrokenRevisionJudgmentModel(),
+    )
+    graph_input = {
+        **_initial_input(),
+        "analysis_job_id": 502,
+        "previous_analysis": _completed_previous_analysis(),
+    }
+
+    with pytest.raises(JudgmentOutputError):
+        graph.invoke(graph_input)
 
 
 def test_duplicate_evidence_across_rounds_is_merged_once() -> None:
