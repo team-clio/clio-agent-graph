@@ -5,17 +5,22 @@
 
 ## 1. 목표 구조
 
-IA는 실제 저장소를 직접 검색하지 않고 Codebase Exploration Agent를 LangGraph subgraph로 호출한다.
+IA는 실제 저장소를 직접 검색하지 않고 Codebase Exploration Agent를 LangGraph subgraph로 호출한다. 외부에는
+최초 분석과 재분석을 서로 다른 graph ID로 노출하지만, 내부 탐색·병합·검증은 하나의 공통 IA 오케스트레이터가
+담당한다.
 
 ```text
-IssueAnalysisInput
-  → prepare_exploration
+Supervisor
+  ├─ issue_analyzer   → Initial Judgment Subagent
+  └─ issue_reanalyzer → Revision Judgment Subagent
+
+공통 IA Orchestrator
+  → 판단 subagent가 탐색 질문 생성
   → codebase_exploration_subgraph
-  → 탐색 결과 충분?
-      ├─ 부족하고 추가 탐색 가능 → refine_exploration → subgraph
-      ├─ 정상적으로 근거 없음   → INSUFFICIENT_EVIDENCE
-      └─ 근거 있음               → analyze_issue
-  → validate_analysis
+  → Evidence 병합·중복 제거
+  → 필요하면 최대 3회 반복
+  → 판단 subagent가 Finding·Hypothesis 초안 생성
+  → 공통 참조 검증
   → IssueAnalysis
 ```
 
@@ -75,9 +80,9 @@ placeholder처럼 명시적인 설정 오류를 발생시킨다.
 
 ### S6. LangGraph와 공개 진입점
 
-- IA 전용 state와 조건부 반복 edge
-- NM/RM 그래프와의 실행 경계
-- Agent Server에 노출할 graph ID 또는 통합 출력 변경
+- 공통 IA state와 조건부 반복 edge
+- `issue_analyzer`와 `issue_reanalyzer` 공개 graph ID
+- Initial·Revision Judgment subgraph
 - Fake NM·RAG·Code Explorer·IA 모델의 end-to-end 테스트
 
 관련 결정: **I1, I8, I10**
