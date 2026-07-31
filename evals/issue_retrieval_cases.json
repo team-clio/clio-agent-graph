@@ -1,0 +1,44 @@
+[
+  {
+    "case_id": "payment-error-same-code-and-frame",
+    "request": {
+      "project_id": 3,
+      "bug_id": 72,
+      "normalized_report": {
+        "bug_report_id": 351,
+        "observed_behavior": "결제 승인 시 500 오류가 발생한다.",
+        "affected_surface": {
+          "feature": "결제",
+          "operation": "승인"
+        },
+        "error_signals": {
+          "error_type": "PaymentException",
+          "message": "Internal Server Error",
+          "error_codes": ["PAY-500"],
+          "stack_frames": ["PaymentService.approve"]
+        }
+      }
+    },
+    "expected_issue_id": 19
+  },
+  {
+    "case_id": "payment-error-paraphrased-behavior",
+    "request": {
+      "project_id": 3,
+      "bug_id": 73,
+      "normalized_report": {
+        "bug_report_id": 352,
+        "observed_behavior": "카드 승인이 완료되지 않고 서버 오류 화면이 표시된다.",
+        "affected_surface": {
+          "feature": "결제"
+        },
+        "error_signals": {
+          "error_type": "PaymentException",
+          "error_codes": [],
+          "stack_frames": ["PaymentService.approve"]
+        }
+      }
+    },
+    "expected_issue_id": 19
+  }
+]
