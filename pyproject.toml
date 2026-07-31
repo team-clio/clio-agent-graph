@@ -37,6 +37,9 @@ packages = ["src/clio_agent_graph"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+markers = [
+  "postgres: 실제 PostgreSQL+pgvector가 필요한 선택 실행 통합 테스트",
+]
 
 [tool.ruff]
 line-length = 100

@@ -137,7 +137,8 @@ class PostgresRetrievalRepository:
                   AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
             ), scored AS (
                 SELECT *,
-                    (:error_type IS NOT NULL AND error_type = CAST(:error_type AS text))
+                    (CAST(:error_type AS text) IS NOT NULL
+                     AND error_type = CAST(:error_type AS text))
                         AS type_match,
                     (error_codes && CAST(:error_codes AS text[])) AS code_match,
                     (stack_frames && CAST(:stack_frames AS text[])) AS frame_match
