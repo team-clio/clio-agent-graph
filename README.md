@@ -1,17 +1,20 @@
 # Clio Agent Graph
 
-Clio의 요청을 `request.type`으로 결정적으로 라우팅하는 Python LangGraph
-Agent Server입니다. 현재 구현은 그래프 플로우와 상태 계약에 집중하며, LLM,
-API Server, Vector DB 및 Git 연동은 placeholder로 남겨 두었습니다.
+Clio의 요청을 `request.request_type`으로 결정적으로 라우팅하는 Python LangGraph
+Agent Server입니다. 상위 그래프 흐름은 구현되어 있으며, LLM, API Server, Vector DB
+및 Git 연동은 명시적인 Mock Service와 TODO로 분리되어 있습니다.
 
 ## 현재 그래프
 
 ```text
 START
   → validate_request
-  → request.type
+  → request.request_type
       ├─ process_report → Report Processing Graph
       └─ analyze_issue  → Issue Analysis Graph
+      ├─ document_added / document_deleted → Document Sync Graph
+      ├─ repository_added / repository_removed → Repository Sync Graph
+      └─ repository_changed → Code Change Sync Graph
   → finalize_request
   → END
 ```
@@ -48,7 +51,7 @@ prepare_analysis
 ```json
 {
   "request_id": "REQ-001",
-  "type": "process_report",
+  "request_type": "process_report",
   "project_id": "PROJECT-1",
   "payload": {
     "report_id": "REPORT-1"
@@ -60,14 +63,38 @@ prepare_analysis
 
 - `process_report`
 - `analyze_issue`
+- `document_added`, `document_deleted`
+- `repository_added`, `repository_removed`
+- `repository_changed`
 
-Pydantic 판별 공용체가 `type`별 payload를 그래프 실행 전에 검증합니다.
+Pydantic 판별 공용체가 `request_type`별 payload를 그래프 실행 전에 검증합니다.
 
 ## 프로젝트 컨텍스트
 
-`ProjectContextService`는 인터페이스만 존재합니다. 현재 검색 노드는 입력 상태에
-이미 제공된 evidence를 전달하거나 빈 목록을 반환합니다. 추후 구현체에서 다음
-기능을 연결합니다.
+`ProjectContextService`는 인터페이스를 유지하고, 현재는 `MockClioService`가
+결정적인 mock evidence와 sync 결과를 제공합니다. Mock의 모든 외부 연동 지점에는
+실제 구현으로 교체할 TODO가 있습니다.
+
+## Agent · Tool · Service
+
+리포트 처리와 이슈 분석 노드는 `agents/`의 Tool-calling Agent를 통해 읽기 Tool을
+호출합니다. `tools/`는 Agent에 노출되는 입력·출력·권한 경계이고, `services/`는
+Tool 뒤의 인프라 구현입니다. 현재 Tool은 `MockClioService`를 사용합니다.
+
+이슈 생성·연결, 분석 저장, 문서·레포지토리 인덱싱 같은 쓰기 작업은 Agent에
+노출하지 않고 Graph Node가 Service를 직접 호출합니다. `DEEPSEEK_API_KEY`가 설정되면
+리포트 매칭·이슈 분석·해결 계획 Agent는 `create_agent` 기반의 실제 Tool-calling loop를
+사용하고, 키가 없으면 결정적 Mock fallback을 사용합니다.
+
+기본값은 DeepSeek의 OpenAI 호환 API입니다. 다른 OpenAI 호환 공급자로 바꾸려면 아래
+환경 변수만 변경합니다.
+
+```dotenv
+CLIO_LLM_PROVIDER=openai_compatible
+CLIO_LLM_MODEL=<provider-model>
+CLIO_LLM_BASE_URL=<provider-base-url>
+CLIO_LLM_API_KEY_ENV=<environment-variable-containing-key>
+```
 
 - 프로젝트 snapshot 고정
 - 문서 검색
@@ -79,7 +106,7 @@ Pydantic 판별 공용체가 `type`별 payload를 그래프 실행 전에 검증
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,openai]"
+pip install -e ".[dev,llm]"
 cp .env.example .env
 langgraph dev
 ```

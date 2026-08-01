@@ -25,6 +25,9 @@ dev = [
 openai = [
   "langchain-openai>=1.0,<2.0",
 ]
+llm = [
+  "langchain-openai>=1.0,<2.0",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/clio_agent_graph"]

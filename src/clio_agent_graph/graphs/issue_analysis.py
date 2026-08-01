@@ -47,6 +47,7 @@ def build_issue_analysis_graph():
         route_quality_result,
         {
             "save_analysis": "save_analysis",
+            "retry_analysis": "analyze_issue",
             "needs_review": "mark_analysis_for_review",
         },
     )

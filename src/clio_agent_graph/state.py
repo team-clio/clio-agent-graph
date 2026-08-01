@@ -3,7 +3,15 @@
 from operator import or_
 from typing import Annotated, Any, Literal, TypedDict
 
-RequestType = Literal["process_report", "analyze_issue"]
+RequestType = Literal[
+    "process_report",
+    "analyze_issue",
+    "document_added",
+    "document_deleted",
+    "repository_added",
+    "repository_removed",
+    "repository_changed",
+]
 MatchAction = Literal["link_existing", "create_new", "needs_review"]
 QualityStatus = Literal["passed", "retry", "needs_review"]
 
@@ -18,6 +26,12 @@ class ClioState(TypedDict, total=False):
     project_id: str
     report_id: str
     issue_id: str
+    document_id: str
+    repository_id: str
+    branch: str
+    revision: str
+    before_commit: str
+    after_commit: str
 
     # 병렬·중첩 그래프에서도 중복 없이 완료 노드를 합친다.
     completed_nodes: Annotated[dict[str, bool], or_]
@@ -36,6 +50,12 @@ class ClioState(TypedDict, total=False):
     issue_analysis: dict[str, Any]
     resolution_plan: dict[str, Any]
     quality_result: dict[str, Any]
+    quality_attempt: int
+
+    # Memory synchronization graph outputs.
+    document_sync: dict[str, Any]
+    repository_sync: dict[str, Any]
+    code_change: dict[str, Any]
 
     # 공통 완료 상태.
     status: Literal["completed", "needs_review", "failed"]

@@ -9,7 +9,7 @@ def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:
         {
             "request": {
                 "request_id": "REQ-1",
-                "type": "analyze_issue",
+                "request_type": "analyze_issue",
                 "project_id": "PROJECT-1",
                 "payload": {"issue_id": "ISSUE-1"},
             },
@@ -36,7 +36,7 @@ def test_new_report_reuses_issue_analysis_graph() -> None:
         {
             "request": {
                 "request_id": "REQ-2",
-                "type": "process_report",
+                "request_type": "process_report",
                 "project_id": "PROJECT-1",
                 "payload": {"report_id": "REPORT-1"},
             }
@@ -56,7 +56,7 @@ def test_existing_issue_match_skips_issue_analysis_graph() -> None:
         {
             "request": {
                 "request_id": "REQ-3",
-                "type": "process_report",
+                "request_type": "process_report",
                 "project_id": "PROJECT-1",
                 "payload": {"report_id": "REPORT-2"},
             },
@@ -83,7 +83,7 @@ def test_uncertain_match_finishes_as_needs_review() -> None:
         {
             "request": {
                 "request_id": "REQ-4",
-                "type": "process_report",
+                "request_type": "process_report",
                 "project_id": "PROJECT-1",
                 "payload": {"report_id": "REPORT-3"},
             },
@@ -108,9 +108,48 @@ def test_rejects_unknown_request_type_before_routing() -> None:
             {
                 "request": {
                     "request_id": "REQ-5",
-                    "type": "unknown",
+                    "request_type": "unknown",
                     "project_id": "PROJECT-1",
                     "payload": {},
                 }
             }
         )
+
+
+def test_routes_document_event_to_mock_sync_graph() -> None:
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-6",
+                "request_type": "document_added",
+                "project_id": "PROJECT-1",
+                "payload": {"document_id": "DOC-1", "revision": "REV-1"},
+            }
+        }
+    )
+
+    assert result["status"] == "completed"
+    assert result["result"]["action"] == "document_synced"
+    assert result["completed_nodes"]["update_document_index"] is True
+
+
+def test_routes_repository_change_to_incremental_mock_sync_graph() -> None:
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-7",
+                "request_type": "repository_changed",
+                "project_id": "PROJECT-1",
+                "payload": {
+                    "repository_id": "REPO-1",
+                    "branch": "main",
+                    "before_commit": "abc123",
+                    "after_commit": "def456",
+                },
+            }
+        }
+    )
+
+    assert result["status"] == "completed"
+    assert result["result"]["action"] == "code_change_synced"
+    assert result["completed_nodes"]["validate_code_change"] is True
