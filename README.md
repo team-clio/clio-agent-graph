@@ -1,31 +1,80 @@
 # Clio Agent Graph
 
-Clio의 분석·실행 워크플로를 제공하는 Python LangGraph Agent Server입니다.
-현재 그래프는 API 키 없이 실행되는 최소 워크플로이며, 각 노드를 LLM·도구 기반
-구현으로 교체할 수 있도록 상태 계약과 실행 단계를 분리했습니다.
+Clio의 요청을 `request.type`으로 결정적으로 라우팅하는 Python LangGraph
+Agent Server입니다. 현재 구현은 그래프 플로우와 상태 계약에 집중하며, LLM,
+API Server, Vector DB 및 Git 연동은 placeholder로 남겨 두었습니다.
 
-## 구조
-
-```text
-src/clio_agent_graph/
-├── configuration.py  # assistant/run 단위 설정
-├── graph.py           # Agent Server에 노출되는 compiled graph
-├── nodes.py           # 독립적으로 테스트 가능한 노드
-└── state.py           # 영속 상태 계약
-tests/
-langgraph.json         # Agent Server 진입점
-pyproject.toml
-```
-
-기본 흐름:
+## 현재 그래프
 
 ```text
-START → normalize_request → plan_request → execute_plan → finalize → END
+START
+  → validate_request
+  → request.type
+      ├─ process_report → Report Processing Graph
+      └─ analyze_issue  → Issue Analysis Graph
+  → finalize_request
+  → END
 ```
+
+`process_report`가 신규 이슈를 생성하면 직접 `analyze_issue` 요청이 사용하는 것과
+동일한 Issue Analysis Graph를 재사용합니다.
+
+### Report Processing Graph
+
+```text
+load_and_normalize_report
+  → search_issue_candidates
+  → match_report
+  → apply_match_decision
+      ├─ link_existing → END
+      ├─ needs_review  → END
+      └─ create_new    → Issue Analysis Graph
+```
+
+### Issue Analysis Graph
+
+```text
+prepare_analysis
+  ├─ search_documents ─┐
+  ├─ search_code ──────┼→ analyze_issue
+  └─ search_history ───┘
+      → plan_resolution
+      → quality_gate
+      → save_analysis 또는 needs_review
+```
+
+## 요청 형식
+
+```json
+{
+  "request_id": "REQ-001",
+  "type": "process_report",
+  "project_id": "PROJECT-1",
+  "payload": {
+    "report_id": "REPORT-1"
+  }
+}
+```
+
+지원하는 타입:
+
+- `process_report`
+- `analyze_issue`
+
+Pydantic 판별 공용체가 `type`별 payload를 그래프 실행 전에 검증합니다.
+
+## 프로젝트 컨텍스트
+
+`ProjectContextService`는 인터페이스만 존재합니다. 현재 검색 노드는 입력 상태에
+이미 제공된 evidence를 전달하거나 빈 목록을 반환합니다. 추후 구현체에서 다음
+기능을 연결합니다.
+
+- 프로젝트 snapshot 고정
+- 문서 검색
+- 코드 검색
+- 과거 해결 이슈 검색
 
 ## 로컬 실행
-
-Python 3.11 이상이 필요합니다.
 
 ```bash
 python -m venv .venv
@@ -48,14 +97,3 @@ pytest
 ruff check .
 ruff format --check .
 ```
-
-## 다음 구현 지점
-
-1. `plan_request`: 모델의 structured output으로 실행 계획 생성
-2. `execute_plan`: 코드 검색, GitHub, 이슈·문서 조회 등의 도구 실행
-3. 조건부 edge: 재시도, evidence check, human-in-the-loop 분기
-4. Clio Server와의 이벤트·결과 저장 API 계약
-5. 운영 환경용 영속 체크포인터와 인증 정책
-
-`langgraph dev`는 로컬 개발용 Agent Server입니다. 배포 이미지는 LangGraph CLI의
-`langgraph build`로 생성하고, 운영 환경에서는 영속 저장소와 작업 큐를 구성해야 합니다.

@@ -1,23 +1,116 @@
-from langchain_core.messages import AIMessage, HumanMessage
+import pytest
+from pydantic import ValidationError
 
 from clio_agent_graph.graph import graph
 
 
-def test_graph_accepts_a_chat_message() -> None:
-    # 대화 메시지 하나만 들어와도 normalize_request가 요청 문자열을 추출해야 한다.
-    result = graph.invoke({"messages": [HumanMessage(content="Analyze an issue")]})
-
-    assert result["request"] == "Analyze an issue"
-    assert len(result["plan"]) == 4
-    assert isinstance(result["messages"][-1], AIMessage)
-
-
-def test_graph_honors_max_steps_configuration() -> None:
-    # configurable.max_steps가 계획 길이와 완료 단계 수를 함께 제한하는지 확인한다.
+def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:
     result = graph.invoke(
-        {"request": "Prepare a report"},
-        {"configurable": {"max_steps": 2}},
+        {
+            "request": {
+                "request_id": "REQ-1",
+                "type": "analyze_issue",
+                "project_id": "PROJECT-1",
+                "payload": {"issue_id": "ISSUE-1"},
+            },
+            "document_evidence": [{"id": "DOC-1"}],
+            "code_evidence": [{"id": "CODE-1"}],
+            "history_evidence": [{"id": "HISTORY-1"}],
+        }
     )
 
-    assert len(result["plan"]) == 2
-    assert len(result["completed_steps"]) == 2
+    assert result["status"] == "completed"
+    assert result["result"]["action"] == "analysis_completed"
+    assert result["result"]["issue_id"] == "ISSUE-1"
+    assert result["result"]["analysis"]["evidence_counts"] == {
+        "documents": 1,
+        "code": 1,
+        "history": 1,
+    }
+    assert "load_and_normalize_report" not in result["completed_nodes"]
+    assert result["completed_nodes"]["prepare_analysis"] is True
+
+
+def test_new_report_reuses_issue_analysis_graph() -> None:
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-2",
+                "type": "process_report",
+                "project_id": "PROJECT-1",
+                "payload": {"report_id": "REPORT-1"},
+            }
+        }
+    )
+
+    assert result["status"] == "completed"
+    assert result["result"]["action"] == "analysis_completed"
+    assert result["result"]["issue_id"] == "ISSUE-FROM-REPORT-1"
+    assert result["completed_nodes"]["match_report"] is True
+    assert result["completed_nodes"]["prepare_analysis"] is True
+    assert result["completed_nodes"]["save_analysis"] is True
+
+
+def test_existing_issue_match_skips_issue_analysis_graph() -> None:
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-3",
+                "type": "process_report",
+                "project_id": "PROJECT-1",
+                "payload": {"report_id": "REPORT-2"},
+            },
+            "issue_candidates": [
+                {
+                    "issue_id": "ISSUE-EXISTING",
+                    "confidence": 0.97,
+                }
+            ],
+        }
+    )
+
+    assert result["status"] == "completed"
+    assert result["result"] == {
+        "action": "link_existing",
+        "report_id": "REPORT-2",
+        "issue_id": "ISSUE-EXISTING",
+    }
+    assert "prepare_analysis" not in result["completed_nodes"]
+
+
+def test_uncertain_match_finishes_as_needs_review() -> None:
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-4",
+                "type": "process_report",
+                "project_id": "PROJECT-1",
+                "payload": {"report_id": "REPORT-3"},
+            },
+            "issue_candidates": [
+                {
+                    "issue_id": "ISSUE-CANDIDATE",
+                    "confidence": 0.55,
+                    "requires_review": True,
+                }
+            ],
+        }
+    )
+
+    assert result["status"] == "needs_review"
+    assert result["result"]["action"] == "needs_review"
+    assert "prepare_analysis" not in result["completed_nodes"]
+
+
+def test_rejects_unknown_request_type_before_routing() -> None:
+    with pytest.raises(ValidationError, match="union_tag_invalid"):
+        graph.invoke(
+            {
+                "request": {
+                    "request_id": "REQ-5",
+                    "type": "unknown",
+                    "project_id": "PROJECT-1",
+                    "payload": {},
+                }
+            }
+        )
