@@ -56,7 +56,16 @@ def build_chat_model(settings: LLMSettings):
         from langchain_openai import ChatOpenAI
     except ImportError as exc:
         raise RuntimeError('Install LLM support with: pip install -e ".[llm]"') from exc
-    return ChatOpenAI(model=settings.model, api_key=settings.api_key, base_url=settings.base_url)
+    model_kwargs: dict[str, Any] = {
+        "model": settings.model,
+        "api_key": settings.api_key,
+        "base_url": settings.base_url,
+    }
+    if settings.provider == "deepseek":
+        # LangChain's structured-output strategy sets tool_choice. DeepSeek rejects that
+        # parameter in thinking mode, so Agent runs use its compatible non-thinking mode.
+        model_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
+    return ChatOpenAI(**model_kwargs)
 
 
 class ToolCallingAgent:
@@ -82,8 +91,9 @@ class ToolCallingAgent:
             model=build_chat_model(settings),
             tools=self.tools,
             system_prompt=(
-                f"{self.system_prompt}\n\nWhen you are finished, respond with only a valid JSON "
-                f"object matching this schema: {json_schema(self.response_model)}"
+                f"{self.system_prompt}\n\nWhen you are finished, return only one JSON object. "
+                "Return field values, never a JSON Schema or an explanation. Required fields: "
+                f"{', '.join(self.response_model.model_fields)}."
             ),
             name=self.name,
         )
@@ -94,16 +104,20 @@ class ToolCallingAgent:
         return self.response_model.model_validate_json(_json_object(message.content)).model_dump()
 
 
-def json_schema(model: type[StructuredOutput]) -> str:
-    """프롬프트에 필요한 최소 JSON schema를 직렬화한다."""
-
-    return json.dumps(model.model_json_schema(), ensure_ascii=False)
-
-
 def _json_object(content: str) -> str:
-    """모델이 실수로 Markdown fence를 붙인 경우에도 JSON만 검증한다."""
+    """모델 응답에서 구조화 출력에 해당하는 JSON 객체만 추출한다."""
 
     stripped = content.strip()
     if stripped.startswith("```"):
         stripped = stripped.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    decoder = json.JSONDecoder()
+    for index, character in enumerate(stripped):
+        if character != "{":
+            continue
+        try:
+            value, _ = decoder.raw_decode(stripped[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            return json.dumps(value)
     return stripped

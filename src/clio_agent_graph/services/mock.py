@@ -25,10 +25,23 @@ class MockClioService:
         return {
             "report_id": report_id,
             "project_id": project_id,
-            "symptom": "Mock report: external report service is not connected.",
-            "environment": {},
-            "reproduction_steps": [],
-            "evidence": [],
+            "symptom": "Submitting a saved-search form returns HTTP 500 instead of results.",
+            "environment": {
+                "application_version": "2026.08.03",
+                "browser": "Chrome 138",
+                "endpoint": "POST /api/saved-searches/{search_id}/run",
+            },
+            "reproduction_steps": [
+                "Create a saved search with at least one filter.",
+                "Open the saved search and select Run.",
+                "Observe that the request returns HTTP 500.",
+            ],
+            "evidence": [
+                {
+                    "source": "application-log",
+                    "content": "KeyError: owner_id while resolving the saved search request.",
+                }
+            ],
         }
 
     def search_issue_candidates(

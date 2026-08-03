@@ -3,6 +3,7 @@ from langchain_core.messages import AIMessage
 from pydantic import BaseModel
 
 from clio_agent_graph import llm
+from clio_agent_graph.agents.models import IssueAnalysisOutput, MatchDecision, ResolutionPlan
 from clio_agent_graph.llm import LLMSettings, ToolCallingAgent
 from clio_agent_graph.tools.reports import load_report
 
@@ -81,3 +82,69 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
 
     assert result == {"answer": "done"}
     assert captured["kwargs"] is not None
+
+
+def test_json_object_extracts_json_after_model_preamble() -> None:
+    assert llm._json_object('Based on the evidence: {"answer":"done"}') == '{"answer": "done"}'
+
+
+def test_issue_analysis_accepts_a_scored_root_cause_hypothesis() -> None:
+    result = IssueAnalysisOutput.model_validate(
+        {
+            "issue_id": "ISSUE-1",
+            "evidence_counts": {"code": 1},
+            "root_cause_hypotheses": [
+                {"hypothesis": "A required field is missing.", "confidence": 0.8}
+            ],
+            "confidence": 0.8,
+        }
+    )
+
+    assert result.root_cause_hypotheses[0].confidence == 0.8
+
+
+def test_issue_analysis_accepts_a_verified_fact() -> None:
+    result = IssueAnalysisOutput.model_validate(
+        {
+            "issue_id": "ISSUE-1",
+            "evidence_counts": {"code": 1},
+            "root_cause_hypotheses": [],
+            "facts": [{"fact": "The field is missing.", "verified": True}],
+            "confidence": 0.8,
+        }
+    )
+
+    assert result.facts[0].verified is True
+
+
+def test_resolution_plan_accepts_a_structured_step() -> None:
+    result = ResolutionPlan.model_validate(
+        {
+            "issue_id": "ISSUE-1",
+            "steps": [{"id": 1, "action": "Validate input.", "details": "Require owner_id."}],
+            "acceptance_criteria": ["Invalid requests return 400."],
+        }
+    )
+
+    assert result.steps[0].action == "Validate input."
+
+
+def test_resolution_plan_accepts_a_structured_risk() -> None:
+    result = ResolutionPlan.model_validate(
+        {
+            "issue_id": "ISSUE-1",
+            "steps": [],
+            "acceptance_criteria": [],
+            "risks": [{"risk": "The change can reject valid traffic.", "mitigation": "Add tests."}],
+        }
+    )
+
+    assert result.risks[0].risk == "The change can reject valid traffic."
+
+
+def test_match_decision_normalizes_qualitative_confidence() -> None:
+    result = MatchDecision.model_validate(
+        {"action": "create_new", "confidence": "high", "reason": "No candidates exist."}
+    )
+
+    assert result.confidence == 0.8
