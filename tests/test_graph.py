@@ -1,7 +1,56 @@
+import json
+
 import pytest
 from pydantic import ValidationError
 
 from clio_agent_graph.graph import graph
+from clio_agent_graph.llm import ToolCallingAgent
+
+
+@pytest.fixture(autouse=True)
+def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep graph-routing tests independent of a live LLM provider."""
+
+    def invoke(self: ToolCallingAgent, prompt: str) -> dict[str, object]:
+        payload = json.loads(prompt.split("\n", 1)[1])
+        if self.name == "report_matcher":
+            candidates = payload["candidates"]
+            if not candidates:
+                return {
+                    "action": "create_new",
+                    "issue_id": None,
+                    "confidence": 1.0,
+                    "reason": "No matching issue was found.",
+                }
+            candidate = candidates[0]
+            if candidate.get("requires_review"):
+                return {
+                    "action": "needs_review",
+                    "issue_id": candidate["issue_id"],
+                    "confidence": candidate["confidence"],
+                    "reason": "The candidate requires human review.",
+                }
+            return {
+                "action": "link_existing",
+                "issue_id": candidate["issue_id"],
+                "confidence": candidate["confidence"],
+                "reason": "The candidate is a strong match.",
+            }
+        if self.name == "issue_analyst":
+            evidence = payload["evidence"]
+            return {
+                "issue_id": payload["issue_id"],
+                "evidence_counts": {source: len(items) for source, items in evidence.items()},
+                "root_cause_hypotheses": [],
+                "confidence": 0.0,
+            }
+        return {
+            "issue_id": payload["issue_id"],
+            "steps": [],
+            "acceptance_criteria": [],
+        }
+
+    monkeypatch.setattr(ToolCallingAgent, "invoke", invoke)
 
 
 def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:

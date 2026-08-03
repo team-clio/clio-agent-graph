@@ -82,9 +82,9 @@ Pydantic 판별 공용체가 `request_type`별 payload를 그래프 실행 전�
 Tool 뒤의 인프라 구현입니다. 현재 Tool은 `MockClioService`를 사용합니다.
 
 이슈 생성·연결, 분석 저장, 문서·레포지토리 인덱싱 같은 쓰기 작업은 Agent에
-노출하지 않고 Graph Node가 Service를 직접 호출합니다. `DEEPSEEK_API_KEY`가 설정되면
-리포트 매칭·이슈 분석·해결 계획 Agent는 `create_agent` 기반의 실제 Tool-calling loop를
-사용하고, 키가 없으면 결정적 Mock fallback을 사용합니다.
+노출하지 않고 Graph Node가 Service를 직접 호출합니다. 리포트 매칭·이슈 분석·해결 계획
+Agent는 `create_agent` 기반의 실제 Tool-calling loop만 사용하며, `DEEPSEEK_API_KEY`가
+없으면 실행을 시작하지 않고 설정 오류로 실패합니다.
 
 기본값은 DeepSeek의 OpenAI 호환 API입니다. 다른 OpenAI 호환 공급자로 바꾸려면 아래
 환경 변수만 변경합니다.

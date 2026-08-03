@@ -16,7 +16,6 @@ def test_deepseek_is_the_default_provider_without_credentials(
         "CLIO_LLM_BASE_URL",
         "CLIO_LLM_API_KEY_ENV",
         "DEEPSEEK_API_KEY",
-        "CLIO_AGENT_MODE",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -25,7 +24,8 @@ def test_deepseek_is_the_default_provider_without_credentials(
     assert settings.provider == "deepseek"
     assert settings.model == "deepseek-chat"
     assert settings.base_url == "https://api.deepseek.com"
-    assert settings.use_llm is False
+    with pytest.raises(RuntimeError, match="API key"):
+        _ = settings.use_llm
 
 
 def test_openai_compatible_provider_uses_environment_configuration(
@@ -43,8 +43,7 @@ def test_openai_compatible_provider_uses_environment_configuration(
     assert settings.model == "local-model"
 
 
-def test_explicit_llm_mode_requires_a_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CLIO_AGENT_MODE", "llm")
+def test_llm_requires_a_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
 
     with pytest.raises(RuntimeError, match="API key"):

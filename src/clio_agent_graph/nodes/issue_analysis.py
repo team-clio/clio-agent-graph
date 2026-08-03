@@ -85,17 +85,17 @@ def plan_resolution(state: ClioState) -> dict[str, object]:
 
 
 def quality_gate(state: ClioState) -> dict[str, object]:
-    """근거 계약을 검사하고, 요청된 mock retry는 한 번만 재분석한다."""
+    """근거 계약을 검사하고, 요청된 retry는 한 번만 재분석한다."""
 
     has_contract = "issue_analysis" in state and "resolution_plan" in state
     requested_status = state.get("quality_result", {}).get("requested_status")
     attempt = state.get("quality_attempt", 0)
     if requested_status == "retry" and attempt == 0:
         status = "retry"
-        reasons = ["Mock quality gate requested one analysis retry."]
+        reasons = ["Quality gate requested one analysis retry."]
     elif requested_status == "retry":
         status = "needs_review"
-        reasons = ["Mock retry limit reached; human review is required."]
+        reasons = ["Retry limit reached; human review is required."]
     else:
         status = "passed" if has_contract else "needs_review"
         reasons = [] if has_contract else ["Analysis contract is incomplete."]

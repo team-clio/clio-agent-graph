@@ -21,7 +21,6 @@ class LLMSettings:
     model: str
     base_url: str
     api_key: str | None
-    agent_mode: str
 
     @classmethod
     def from_env(cls) -> "LLMSettings":
@@ -39,18 +38,13 @@ class LLMSettings:
             model=os.getenv("CLIO_LLM_MODEL", default_model),
             base_url=os.getenv("CLIO_LLM_BASE_URL", default_base_url),
             api_key=os.getenv(key_env) if key_env else None,
-            agent_mode=os.getenv("CLIO_AGENT_MODE", "auto"),
         )
 
     @property
     def use_llm(self) -> bool:
-        if self.agent_mode == "mock":
-            return False
-        if self.agent_mode not in {"auto", "llm"}:
-            raise ValueError("CLIO_AGENT_MODE must be one of: auto, llm, mock")
-        if self.agent_mode == "llm" and not self.api_key:
-            raise RuntimeError("LLM mode requires the configured API key.")
-        return bool(self.api_key)
+        if not self.api_key:
+            raise RuntimeError("LLM execution requires the configured API key.")
+        return True
 
 
 def build_chat_model(settings: LLMSettings):
@@ -66,7 +60,7 @@ def build_chat_model(settings: LLMSettings):
 
 
 class ToolCallingAgent:
-    """필요 시 실제 LLM Agent를 실행하고, 그렇지 않으면 호출자에게 fallback을 맡긴다."""
+    """실제 LLM Tool-calling Agent를 실행한다."""
 
     def __init__(
         self,
@@ -81,10 +75,9 @@ class ToolCallingAgent:
         self.tools = tools
         self.response_model = response_model
 
-    def invoke(self, prompt: str) -> dict[str, Any] | None:
+    def invoke(self, prompt: str) -> dict[str, Any]:
         settings = LLMSettings.from_env()
-        if not settings.use_llm:
-            return None
+        _ = settings.use_llm
         agent = create_agent(
             model=build_chat_model(settings),
             tools=self.tools,

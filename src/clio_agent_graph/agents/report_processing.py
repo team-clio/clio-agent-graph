@@ -1,4 +1,4 @@
-"""리포트 조사용 LLM Agent와 키가 없을 때의 Mock fallback."""
+"""리포트 조사용 LLM Agent."""
 
 import json
 from typing import Any
@@ -24,7 +24,7 @@ class ReportProcessingAgent:
     def decide_match(
         self, project_id: str, report_id: str, candidates: list[dict[str, Any]]
     ) -> dict[str, Any]:
-        """LLM이 구성되면 Tool-calling 판단, 아니면 결정적 Mock 판단을 사용한다."""
+        """LLM Tool-calling Agent로 리포트와 후보 이슈의 매칭을 판단한다."""
 
         llm_result = self.match_agent.invoke(
             "Decide the match for this report. You may call tools for more evidence.\n"
@@ -32,30 +32,7 @@ class ReportProcessingAgent:
                 {"project_id": project_id, "report_id": report_id, "candidates": candidates}
             )
         )
-        if llm_result is not None:
-            return llm_result
-
-        if not candidates:
-            return {
-                "action": "create_new",
-                "issue_id": None,
-                "confidence": 1.0,
-                "reason": "No candidate issue was returned by the mock tools.",
-            }
-        candidate = candidates[0]
-        if candidate.get("requires_review"):
-            return {
-                "action": "needs_review",
-                "issue_id": candidate.get("issue_id"),
-                "confidence": candidate.get("confidence", 0.0),
-                "reason": "The best candidate requires human review.",
-            }
-        return {
-            "action": "link_existing",
-            "issue_id": candidate["issue_id"],
-            "confidence": candidate.get("confidence", 1.0),
-            "reason": "The mock agent selected the first candidate.",
-        }
+        return llm_result
 
     def __init__(self) -> None:
         self.match_agent = ToolCallingAgent(

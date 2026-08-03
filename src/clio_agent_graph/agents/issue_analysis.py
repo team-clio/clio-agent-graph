@@ -1,4 +1,4 @@
-"""이슈 조사를 위한 LLM Tool-calling Agent와 Mock fallback."""
+"""이슈 조사를 위한 LLM Tool-calling Agent."""
 
 import json
 from typing import Any, Literal
@@ -38,23 +38,14 @@ class IssueAnalysisAgent:
             "Investigate this issue. Existing evidence is supplied, but use tools when it "
             "is insufficient.\n" + json.dumps({"issue_id": issue_id, "evidence": evidence})
         )
-        if llm_result is not None:
-            return {"status": "llm", **llm_result}
-        return {
-            "issue_id": issue_id,
-            "status": "mock",
-            "evidence_counts": {source: len(items) for source, items in evidence.items()},
-            "root_cause_hypotheses": [],
-        }
+        return {"status": "llm", **llm_result}
 
     def plan(self, issue_id: str, analysis: dict[str, Any]) -> dict[str, Any]:
         llm_result = self.planning_agent.invoke(
             "Create a resolution plan from this issue analysis.\n"
             + json.dumps({"issue_id": issue_id, "analysis": analysis})
         )
-        if llm_result is not None:
-            return {"status": "llm", **llm_result}
-        return {"issue_id": issue_id, "status": "mock", "steps": [], "acceptance_criteria": []}
+        return {"status": "llm", **llm_result}
 
     def __init__(self) -> None:
         research_tools = [
