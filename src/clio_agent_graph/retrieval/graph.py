@@ -5,14 +5,14 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from clio_agent_graph.normalization.langchain_adapter import LangChainNormalizationModel
+from clio_agent_graph.normalization.defaults import load_default_normalization_model
 from clio_agent_graph.normalization.ports import NormalizationModel
 from clio_agent_graph.normalization.service import (
     DEFAULT_MAX_RAW_PAYLOAD_BYTES,
     ReportNormalizer,
 )
+from clio_agent_graph.retrieval.embedding_factory import load_default_embedding_model
 from clio_agent_graph.retrieval.indexing import BugBackfiller, BugIndexer
-from clio_agent_graph.retrieval.langchain_embedding import LangChainEmbeddingModel
 from clio_agent_graph.retrieval.models import (
     BackfillInput,
     BackfillResult,
@@ -72,7 +72,7 @@ def build_bug_retrieval_indexer_graph(
 
     actual_repository = repository if repository is not None else PostgresRetrievalRepository()
     actual_embedding_model = (
-        embedding_model if embedding_model is not None else LangChainEmbeddingModel()
+        embedding_model if embedding_model is not None else load_default_embedding_model()
     )
     indexer = BugIndexer(actual_repository, actual_embedding_model)
 
@@ -104,10 +104,12 @@ def build_bug_retrieval_backfill_graph(
 
     actual_repository = repository if repository is not None else PostgresRetrievalRepository()
     actual_embedding_model = (
-        embedding_model if embedding_model is not None else LangChainEmbeddingModel()
+        embedding_model if embedding_model is not None else load_default_embedding_model()
     )
     actual_normalization_model = (
-        normalization_model if normalization_model is not None else LangChainNormalizationModel()
+        normalization_model
+        if normalization_model is not None
+        else load_default_normalization_model()
     )
     payload_limit = (
         max_raw_payload_bytes

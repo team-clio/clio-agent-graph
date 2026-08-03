@@ -59,6 +59,24 @@ def test_prepare_retries_embedding_once() -> None:
     assert model.calls == 2
 
 
+def test_prepare_prefers_query_specific_embedding() -> None:
+    class QueryAwareModel(FakeEmbeddingModel):
+        def embed(self, _text: str) -> list[float]:
+            raise AssertionError("document embedding must not be used for a query")
+
+        def embed_query(self, text: str) -> list[float]:
+            assert "observed_behavior" in text
+            return [0.4, 0.5]
+
+    repository = ScopeRepository(RetrievalScope(eligible_bug_count=0, indexed_bug_count=0))
+
+    _query, embedding, _model_name, _scope = IssueRetrieverService(
+        repository, QueryAwareModel()
+    ).prepare(_request())
+
+    assert embedding == [0.4, 0.5]
+
+
 def test_prepare_fails_after_second_provider_error() -> None:
     model = FakeEmbeddingModel(failures=2)
     repository = ScopeRepository(RetrievalScope(eligible_bug_count=0, indexed_bug_count=0))

@@ -223,7 +223,7 @@ def _load_default_dependencies(
 
         repository = PostgresRetrievalRepository()
     if embedding_model is None:
-        from clio_agent_graph.retrieval.langchain_embedding import LangChainEmbeddingModel
+        from clio_agent_graph.retrieval.embedding_factory import load_default_embedding_model
 
-        embedding_model = LangChainEmbeddingModel()
+        embedding_model = load_default_embedding_model()
     return repository, embedding_model

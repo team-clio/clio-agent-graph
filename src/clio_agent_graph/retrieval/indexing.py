@@ -40,7 +40,12 @@ class BugIndexer:
         search_text = build_search_text(request.normalized_report)
         document_hash = calculate_document_hash(request.normalized_report, search_text)
         model_name = self._embedding_model.model_name
-        embedding = _retry_index_operation(lambda: self._embedding_model.embed(search_text))
+        embed_document = getattr(
+            self._embedding_model,
+            "embed_document",
+            self._embedding_model.embed,
+        )
+        embedding = _retry_index_operation(lambda: embed_document(search_text))
         _validate_embedding(embedding)
         return _retry_index_operation(
             lambda: self._repository.save_index(

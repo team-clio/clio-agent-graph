@@ -24,10 +24,21 @@ class LangChainEmbeddingModel:
         return value.strip()
 
     def embed(self, text: str) -> list[float]:
+        """기존 EmbeddingModel 호출과 호환되는 document embedding이다."""
+
+        return self.embed_document(text)
+
+    def embed_document(self, text: str) -> list[float]:
         """문서 하나를 provider의 document embedding으로 변환한다."""
 
         model = self._get_model()
         return [float(value) for value in model.embed_documents([text])[0]]
+
+    def embed_query(self, text: str) -> list[float]:
+        """검색 질의를 provider가 지원하는 query 전용 방식으로 변환한다."""
+
+        model = self._get_model()
+        return [float(value) for value in model.embed_query(text)]
 
     def _get_model(self) -> Any:
         """LangChain provider 객체는 API key가 필요할 수 있어 지연 생성한다."""

@@ -119,6 +119,29 @@ def test_public_index_graph_is_idempotent_with_same_snapshot() -> None:
     assert model.calls == 2
 
 
+def test_indexer_prefers_document_specific_embedding() -> None:
+    class DocumentAwareModel(FakeEmbeddingModel):
+        def embed(self, _text: str) -> list[float]:
+            raise AssertionError("generic embedding must not be used for a document")
+
+        def embed_document(self, text: str) -> list[float]:
+            assert "observed_behavior" in text
+            return [0.1, 0.2, 0.3]
+
+    result = build_bug_retrieval_indexer_graph(
+        repository=FakeIndexRepository(),
+        embedding_model=DocumentAwareModel(),
+    ).invoke(
+        {
+            "project_id": 3,
+            "bug_id": 72,
+            "normalized_report": _normalized_report().model_dump(mode="json"),
+        }
+    )["index_result"]
+
+    assert result.status is IndexStatus.CREATED
+
+
 def test_backfill_graph_normalizes_batch_and_returns_cursor() -> None:
     repository = FakeIndexRepository()
     graph = build_bug_retrieval_backfill_graph(

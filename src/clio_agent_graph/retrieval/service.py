@@ -47,7 +47,12 @@ class IssueRetrieverService:
 
         query = build_search_query(request)
         model_name = self._embedding_model.model_name
-        embedding = _retry_once(lambda: self._embedding_model.embed(query.search_text))
+        embed_query = getattr(
+            self._embedding_model,
+            "embed_query",
+            self._embedding_model.embed,
+        )
+        embedding = _retry_once(lambda: embed_query(query.search_text))
         _validate_embedding(embedding)
         scope = _retry_once(
             lambda: self._repository.load_scope(

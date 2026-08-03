@@ -19,8 +19,13 @@ def test_embedding_adapter_uses_configured_lazy_model() -> None:
             assert texts == ["결제 오류"]
             return [[0.1, 0.2]]
 
+        def embed_query(self, text: str) -> list[float]:
+            assert text == "결제 검색"
+            return [0.3, 0.4]
+
     adapter = LangChainEmbeddingModel("fake:model")
     adapter._model = FakeModel()
 
     assert adapter.model_name == "fake:model"
     assert adapter.embed("결제 오류") == [0.1, 0.2]
+    assert adapter.embed_query("결제 검색") == [0.3, 0.4]

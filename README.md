@@ -64,11 +64,11 @@ Issue는 제외합니다. 대상 Bug의 compatible active index coverage가 100%
 새 snapshot은 `bug_retrieval_indexer`, 기존 데이터는 cursor 방식 `bug_retrieval_backfill` graph로 색인합니다.
 테스트에서는 repository와 embedding model 또는 기존 callback Fake를 주입할 수 있습니다.
 
-## 아직 구현되지 않은 탐색 Agent
+## Codebase Exploration Agent
 
-IA의 Codebase Exploration Agent도 현재는 계약과 placeholder만 있습니다. 실제 탐색이 연결되지 않은 IA
-그래프는 `CodeExplorerNotConfiguredError`로 실패합니다. 정상 탐색 결과가 0건인 경우와 설정·기술 실패를
-구분하기 위한 동작입니다.
+IA의 Code Explorer는 ChatGPT로 로그인된 Codex CLI를 읽기 전용으로 실행해 실제 repository에서 1~10줄짜리
+Evidence 후보를 수집할 수 있습니다. 탐색기를 설정하지 않은 IA 그래프는
+`CodeExplorerNotConfiguredError`로 실패해 정상적인 검색 결과 0건과 설정 실패를 구분합니다.
 
 ## 로컬 실행
 
@@ -90,18 +90,50 @@ langgraph dev
 - 그래프 ID: `clio_agent`, `bug_retrieval_indexer`, `bug_retrieval_backfill`, `issue_analyzer`,
   `issue_reanalyzer`
 
-`CLIO_MODEL`은 NM·RM·IA가 공유하는 LangChain 모델 식별자입니다. 실제 provider 객체는 각 adapter의 최초
-호출 때 지연 생성됩니다.
+기본 `langchain` backend에서 `CLIO_MODEL`은 NM·RM·IA가 공유하는 모델 식별자입니다. ChatGPT Plus·Pro
+구독 로그인을 로컬 테스트에 사용하려면 먼저 Codex CLI 로그인을 확인한 뒤 backend를 바꿉니다.
 
-Issue Retrieval Agent에는 별도 설정이 필요합니다.
+```bash
+codex login status
+# 로그인이 안 돼 있으면: codex login
+```
+
+```text
+CLIO_CHAT_BACKEND=codex
+CLIO_CODEX_TIMEOUT_SECONDS=300
+CLIO_CODE_EXPLORER=codex
+CLIO_CODEBASE_PATH=/absolute/path/to/clio-server
+```
+
+이 경로는 `codex exec`를 일회성·읽기 전용으로 실행하며 저장된 ChatGPT OAuth 자격 증명을 사용합니다.
+`OPENAI_API_KEY`는 Codex 자식 프로세스에 전달하지 않습니다. 일반 OpenAI API를 쓸 때는
+`CLIO_CHAT_BACKEND=langchain`과 provider API key를 사용하면 됩니다.
+
+Issue Retrieval Agent에는 PostgreSQL과 embedding 설정이 필요합니다. 로컬 기본 구성은
+`clio-server/compose.yaml`의 Ollama에서 Qwen3 Embedding 0.6B를 실행합니다.
 
 ```text
 CLIO_DATABASE_URL=postgresql+psycopg://clio:clio@localhost:5432/clio
-CLIO_EMBEDDING_MODEL=openai:text-embedding-3-small
+CLIO_EMBEDDING_MODEL=ollama:qwen3-embedding:0.6b
+CLIO_OLLAMA_BASE_URL=http://127.0.0.1:11434
+CLIO_OLLAMA_TIMEOUT_SECONDS=120
 ```
 
-DB engine과 embedding provider도 최초 실제 호출 때만 생성됩니다. 운영에서 의미 모델 설정이 없으면 로컬 hash
-모델로 대체하지 않고 `IssueRetrievalNotConfiguredError`로 실패합니다.
+`docker compose up -d ollama`을 처음 실행하면 image와 약 639MB 모델을 내려받으므로 시간이 걸릴 수 있습니다.
+모델은 `clio-ollama` volume에 보존됩니다. Qwen3 query에는 동일 원인의 과거 Bug를 찾으라는 영문 instruction을
+추가하고, 색인 document에는 instruction을 넣지 않습니다.
+
+DB engine과 embedding provider는 최초 실제 호출 때만 생성됩니다. 설정이 없거나 Ollama가 준비되지 않으면
+hash 모델로 조용히 대체하지 않고 retrieval run이 실패합니다. embedding 모델을 변경하면 기존 active 문서도
+새 모델로 다시 색인해야 합니다.
+
+외부 embedding API 없이 로컬 흐름만 smoke test할 때는 아래 값을 명시할 수 있습니다.
+
+```text
+CLIO_EMBEDDING_MODEL=local:hash-v1
+```
+
+이 deterministic hash embedding은 연결 확인용이며 의미 검색 품질을 평가하거나 운영에 사용할 모델은 아닙니다.
 
 NM의 `raw_payload`는 민감 key를 가린 뒤 모델에 전달하며 기본 상한은 32 KiB입니다.
 `CLIO_MAX_RAW_PAYLOAD_BYTES`로 상한을 변경할 수 있습니다.

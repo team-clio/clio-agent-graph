@@ -4,14 +4,15 @@ from typing import Any, Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from clio_agent_graph.analysis.defaults import (
+    load_default_code_explorer,
+    load_default_initial_judgment_model,
+    load_default_revision_judgment_model,
+)
 from clio_agent_graph.analysis.exploration_subgraph import (
     build_code_exploration_subgraph,
 )
 from clio_agent_graph.analysis.judgment_subgraph import build_judgment_subgraph
-from clio_agent_graph.analysis.langchain_adapter import (
-    LangChainInitialJudgmentModel,
-    LangChainRevisionJudgmentModel,
-)
 from clio_agent_graph.analysis.models import (
     AnalysisBug,
     AnalysisDraft,
@@ -90,7 +91,7 @@ def build_issue_analyzer_graph(
 ):
     """최초 분석 전용 Judgment subagent를 사용하는 공개 그래프를 만든다."""
 
-    model = judgment_model if judgment_model is not None else LangChainInitialJudgmentModel()
+    model = judgment_model if judgment_model is not None else load_default_initial_judgment_model()
     return _build_analysis_graph(
         mode=AnalysisMode.INITIAL,
         input_schema=InitialGraphInput,
@@ -106,7 +107,7 @@ def build_issue_reanalyzer_graph(
 ):
     """이전 가설 재판단 subagent를 사용하는 공개 그래프를 만든다."""
 
-    model = judgment_model if judgment_model is not None else LangChainRevisionJudgmentModel()
+    model = judgment_model if judgment_model is not None else load_default_revision_judgment_model()
     return _build_analysis_graph(
         mode=AnalysisMode.REVISION,
         input_schema=ReanalysisGraphInput,
@@ -124,11 +125,10 @@ def _build_analysis_graph(
 ):
     """상황별 입력과 판단 subagent를 공통 탐색 오케스트레이터에 연결한다."""
 
-    explorer = (
-        code_exploration_subgraph
-        if code_exploration_subgraph is not None
-        else build_code_exploration_subgraph()
-    )
+    if code_exploration_subgraph is not None:
+        explorer = code_exploration_subgraph
+    else:
+        explorer = build_code_exploration_subgraph(load_default_code_explorer())
 
     def prepare_analysis(state: AnalysisGraphState) -> dict[str, Any]:
         """공개 입력을 검증하고 비어 있는 공통 IA state를 만든다."""
