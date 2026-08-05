@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 
 def _normalize_confidence(value: float | str) -> float | str:
@@ -33,8 +33,24 @@ class RootCauseHypothesis(BaseModel):
 
 
 class VerifiedFact(BaseModel):
-    fact: str = Field(min_length=1)
+    fact: str = Field(
+        min_length=1,
+        validation_alias=AliasChoices("fact", "claim", "statement"),
+    )
     verified: bool = False
+
+
+class EvidenceCitation(BaseModel):
+    """분석 결과가 참조한 고정 PCM snapshot의 근거."""
+
+    source_type: str = "knowledge"
+    source_id: str | None = None
+    source_revision: str | None = None
+    knowledge_id: str | None = None
+    knowledge_revision: int | None = Field(default=None, ge=1)
+    repository_id: str | None = None
+    commit: str | None = None
+    location: str | None = None
 
 
 class IssueAnalysisOutput(BaseModel):
@@ -42,6 +58,7 @@ class IssueAnalysisOutput(BaseModel):
     evidence_counts: dict[str, int]
     root_cause_hypotheses: list[str | RootCauseHypothesis]
     facts: list[str | VerifiedFact] = []
+    citations: list[EvidenceCitation] = []
     confidence: float = Field(ge=0, le=1)
 
     _normalize_confidence_value = field_validator("confidence", mode="before")(

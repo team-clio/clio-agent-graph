@@ -10,6 +10,7 @@ from clio_agent_graph.nodes.memory_sync import (
     commit_repository_revision,
     prepare_document_sync,
     prepare_repository_sync,
+    sync_document_knowledge,
     update_changed_code_index,
     update_document_index,
     validate_code_change,
@@ -29,14 +30,24 @@ def _linear_graph(name: str, nodes: list[tuple[str, object]]):
 
 
 def build_document_sync_graph():
-    return _linear_graph(
-        "document_sync",
-        [
-            ("prepare_document_sync", prepare_document_sync),
-            ("update_document_index", update_document_index),
-            ("commit_document_revision", commit_document_revision),
-        ],
+    builder = StateGraph(ClioState)
+    builder.add_node("sync_document_knowledge", sync_document_knowledge)
+    builder.add_node("prepare_document_sync", prepare_document_sync)
+    builder.add_node("update_document_index", update_document_index)
+    builder.add_node("commit_document_revision", commit_document_revision)
+    builder.add_conditional_edges(
+        START,
+        lambda state: state["request_type"],
+        {
+            "document_added": "sync_document_knowledge",
+            "document_deleted": "prepare_document_sync",
+        },
     )
+    builder.add_edge("sync_document_knowledge", END)
+    builder.add_edge("prepare_document_sync", "update_document_index")
+    builder.add_edge("update_document_index", "commit_document_revision")
+    builder.add_edge("commit_document_revision", END)
+    return builder.compile()
 
 
 def build_repository_sync_graph():

@@ -2,7 +2,7 @@
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 
 
 class ProcessReportPayload(BaseModel):
@@ -21,8 +21,20 @@ class AnalyzeIssuePayload(BaseModel):
     issue_id: str = Field(min_length=1)
 
 
-class DocumentSyncPayload(BaseModel):
-    """문서 등록·삭제 이벤트의 입력."""
+class DocumentUpsertPayload(BaseModel):
+    """정규화 Markdown 문서를 PCM에 등록하는 입력."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    document_id: str = Field(min_length=1)
+    revision: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    markdown: str = Field(min_length=1)
+    source_metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class DocumentDeletePayload(BaseModel):
+    """PCM에서 원본 문서 revision을 제거하는 입력."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -37,7 +49,8 @@ class RepositorySyncPayload(BaseModel):
 
     repository_id: str = Field(min_length=1)
     branch: str = Field(min_length=1)
-    commit: str | None = None
+    source_uri: str | None = Field(default=None, min_length=1)
+    commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
 
 
 class CodeChangePayload(BaseModel):
@@ -47,8 +60,8 @@ class CodeChangePayload(BaseModel):
 
     repository_id: str = Field(min_length=1)
     branch: str = Field(min_length=1)
-    before_commit: str = Field(min_length=1)
-    after_commit: str = Field(min_length=1)
+    before_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    after_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
 
 
 class ProcessReportRequest(BaseModel):
@@ -73,13 +86,22 @@ class AnalyzeIssueRequest(BaseModel):
     payload: AnalyzeIssuePayload
 
 
-class DocumentSyncRequest(BaseModel):
+class DocumentAddedRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     request_id: str = Field(min_length=1)
-    request_type: Literal["document_added", "document_deleted"]
+    request_type: Literal["document_added"]
     project_id: str = Field(min_length=1)
-    payload: DocumentSyncPayload
+    payload: DocumentUpsertPayload
+
+
+class DocumentDeletedRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str = Field(min_length=1)
+    request_type: Literal["document_deleted"]
+    project_id: str = Field(min_length=1)
+    payload: DocumentDeletePayload
 
 
 class RepositorySyncRequest(BaseModel):
@@ -89,6 +111,12 @@ class RepositorySyncRequest(BaseModel):
     request_type: Literal["repository_added", "repository_removed"]
     project_id: str = Field(min_length=1)
     payload: RepositorySyncPayload
+
+    @model_validator(mode="after")
+    def require_source_for_registration(self) -> "RepositorySyncRequest":
+        if self.request_type == "repository_added" and not self.payload.source_uri:
+            raise ValueError("repository_added requires payload.source_uri")
+        return self
 
 
 class CodeChangeRequest(BaseModel):
@@ -103,7 +131,8 @@ class CodeChangeRequest(BaseModel):
 GraphRequest = Annotated[
     ProcessReportRequest
     | AnalyzeIssueRequest
-    | DocumentSyncRequest
+    | DocumentAddedRequest
+    | DocumentDeletedRequest
     | RepositorySyncRequest
     | CodeChangeRequest,
     Field(discriminator="request_type"),

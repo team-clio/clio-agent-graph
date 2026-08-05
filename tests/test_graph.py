@@ -1,10 +1,23 @@
 import json
+from collections.abc import Mapping, Sequence
 
 import pytest
 from pydantic import ValidationError
 
 from clio_agent_graph.graph import graph
 from clio_agent_graph.llm import ToolCallingAgent
+from clio_agent_graph.nodes import issue_analysis, memory_sync
+from clio_agent_graph.services.application import ApplicationServices
+from clio_agent_graph.services.pcm import DocumentKnowledgePipeline, InMemoryPCM
+from clio_agent_graph.services.pcm.models import (
+    DocumentSourceUnit,
+    ExtractedTopic,
+    KnowledgeCandidate,
+    KnowledgeChangeDraft,
+    KnowledgeChangeDraftSet,
+    ProjectContextSnapshot,
+    TopicExtractionResult,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -52,9 +65,85 @@ def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(ToolCallingAgent, "invoke", invoke)
 
+    async def ainvoke(self: ToolCallingAgent, prompt: str) -> dict[str, object]:
+        return invoke(self, prompt)
 
-def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:
-    result = graph.invoke(
+    monkeypatch.setattr(ToolCallingAgent, "ainvoke", ainvoke)
+
+    class FakeKnowledgeModel:
+        async def extract_topics(
+            self,
+            *,
+            document_title: str,
+            source_units: Sequence[DocumentSourceUnit],
+            validation_errors: Sequence[str] = (),
+        ) -> TopicExtractionResult:
+            return TopicExtractionResult(
+                topics=(
+                    ExtractedTopic(
+                        topic_key="saved-search-permissions",
+                        title="Saved Search permissions",
+                        knowledge_type="domain_rule",
+                        summary=document_title,
+                        source_unit_ids=(source_units[0].source_unit_id,),
+                        suggested_search_queries=("saved search permissions",),
+                    ),
+                )
+            )
+
+        async def generate_change_set(
+            self,
+            *,
+            source_event_id: str,
+            snapshot: ProjectContextSnapshot,
+            topics: Sequence[ExtractedTopic],
+            source_units: Sequence[DocumentSourceUnit],
+            candidates: Mapping[str, Sequence[KnowledgeCandidate]],
+            validation_errors: Sequence[str] = (),
+        ) -> KnowledgeChangeDraftSet:
+            candidate = next(iter(candidates[topics[0].topic_key]), None)
+            if candidate:
+                change = KnowledgeChangeDraft(
+                    operation="update",
+                    target_knowledge_id=candidate.knowledge_id,
+                    knowledge_type="domain_rule",
+                    title="Saved Search permissions",
+                    body_markdown=source_units[0].content,
+                    source_unit_ids=(source_units[0].source_unit_id,),
+                    reason="The document updates an existing rule.",
+                )
+            else:
+                change = KnowledgeChangeDraft(
+                    operation="create",
+                    logical_key="saved-search-permissions",
+                    knowledge_type="domain_rule",
+                    title="Saved Search permissions",
+                    body_markdown=source_units[0].content,
+                    source_unit_ids=(source_units[0].source_unit_id,),
+                    reason="The document defines a durable rule.",
+                )
+            return KnowledgeChangeDraftSet(
+                source_event_id=source_event_id,
+                base_pcm_revision=snapshot.pcm_revision,
+                changes=(change,),
+            )
+
+    pcm = InMemoryPCM()
+    services = ApplicationServices(
+        pcm=pcm,
+        document_pipeline=DocumentKnowledgePipeline(
+            reader=pcm,
+            writer=pcm,
+            knowledge_model=FakeKnowledgeModel(),
+        ),
+    )
+    monkeypatch.setattr(memory_sync, "get_application_services", lambda: services)
+    monkeypatch.setattr(issue_analysis, "get_application_services", lambda: services)
+
+
+@pytest.mark.asyncio
+async def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:
+    result = await graph.ainvoke(
         {
             "request": {
                 "request_id": "REQ-1",
@@ -80,8 +169,9 @@ def test_routes_analyze_issue_directly_to_reusable_analysis_graph() -> None:
     assert result["completed_nodes"]["prepare_analysis"] is True
 
 
-def test_new_report_reuses_issue_analysis_graph() -> None:
-    result = graph.invoke(
+@pytest.mark.asyncio
+async def test_new_report_reuses_issue_analysis_graph() -> None:
+    result = await graph.ainvoke(
         {
             "request": {
                 "request_id": "REQ-2",
@@ -165,25 +255,93 @@ def test_rejects_unknown_request_type_before_routing() -> None:
         )
 
 
-def test_routes_document_event_to_mock_sync_graph() -> None:
-    result = graph.invoke(
+@pytest.mark.asyncio
+async def test_routes_document_event_to_pcm_knowledge_pipeline() -> None:
+    result = await graph.ainvoke(
         {
             "request": {
                 "request_id": "REQ-6",
                 "request_type": "document_added",
                 "project_id": "PROJECT-1",
-                "payload": {"document_id": "DOC-1", "revision": "REV-1"},
+                "payload": {
+                    "document_id": "DOC-1",
+                    "revision": "REV-1",
+                    "title": "Saved Search requirements",
+                    "markdown": "# Permissions\n\nOnly owners can edit a saved search.",
+                },
             }
         }
     )
 
     assert result["status"] == "completed"
     assert result["result"]["action"] == "document_synced"
-    assert result["completed_nodes"]["update_document_index"] is True
+    assert result["result"]["pcm_revision"] == 1
+    assert len(result["result"]["created_knowledge_ids"]) == 1
+    assert result["completed_nodes"]["sync_document_knowledge"] is True
 
 
-def test_routes_repository_change_to_incremental_mock_sync_graph() -> None:
-    result = graph.invoke(
+@pytest.mark.asyncio
+async def test_replaying_document_event_returns_same_pcm_commit() -> None:
+    request = {
+        "request": {
+            "request_id": "REQ-DOCUMENT-REPLAY",
+            "request_type": "document_added",
+            "project_id": "PROJECT-REPLAY",
+            "payload": {
+                "document_id": "DOC-1",
+                "revision": "REV-1",
+                "title": "Saved Search requirements",
+                "markdown": "# Permissions\n\nOnly owners can edit a saved search.",
+            },
+        }
+    }
+
+    first = await graph.ainvoke(request)
+    replay = await graph.ainvoke(request)
+
+    assert first["result"]["pcm_revision"] == 1
+    assert replay["result"]["pcm_revision"] == 1
+    assert replay["result"]["idempotent_replay"] is True
+
+
+def test_document_added_requires_normalized_markdown() -> None:
+    with pytest.raises(ValidationError, match="markdown"):
+        graph.invoke(
+            {
+                "request": {
+                    "request_id": "REQ-DOCUMENT-MISSING-CONTENT",
+                    "request_type": "document_added",
+                    "project_id": "PROJECT-1",
+                    "payload": {
+                        "document_id": "DOC-1",
+                        "revision": "REV-1",
+                        "title": "Saved Search requirements",
+                    },
+                }
+            }
+        )
+
+
+def test_repository_added_requires_source_uri() -> None:
+    with pytest.raises(ValidationError, match="source_uri"):
+        graph.invoke(
+            {
+                "request": {
+                    "request_id": "REQ-REPOSITORY-MISSING-SOURCE",
+                    "request_type": "repository_added",
+                    "project_id": "PROJECT-1",
+                    "payload": {
+                        "repository_id": "REPO-1",
+                        "branch": "main",
+                    },
+                }
+            }
+        )
+
+
+@pytest.mark.asyncio
+async def test_routes_repository_change_to_incremental_mock_sync_graph() -> None:
+    result = await graph.ainvoke(
         {
             "request": {
                 "request_id": "REQ-7",
@@ -192,8 +350,8 @@ def test_routes_repository_change_to_incremental_mock_sync_graph() -> None:
                 "payload": {
                     "repository_id": "REPO-1",
                     "branch": "main",
-                    "before_commit": "abc123",
-                    "after_commit": "def456",
+                    "before_commit": "a" * 40,
+                    "after_commit": "b" * 40,
                 },
             }
         }

@@ -5,7 +5,8 @@ from typing import Literal
 from clio_agent_graph.requests import (
     AnalyzeIssueRequest,
     CodeChangeRequest,
-    DocumentSyncRequest,
+    DocumentAddedRequest,
+    DocumentDeletedRequest,
     ProcessReportRequest,
     RepositorySyncRequest,
     graph_request_adapter,
@@ -29,7 +30,17 @@ def validate_request(state: ClioState) -> dict[str, object]:
         update["report_id"] = request.payload.report_id
     elif isinstance(request, AnalyzeIssueRequest):
         update["issue_id"] = request.payload.issue_id
-    elif isinstance(request, DocumentSyncRequest):
+    elif isinstance(request, DocumentAddedRequest):
+        update.update(
+            {
+                "document_id": request.payload.document_id,
+                "revision": request.payload.revision,
+                "document_title": request.payload.title,
+                "document_markdown": request.payload.markdown,
+                "source_metadata": request.payload.source_metadata,
+            }
+        )
+    elif isinstance(request, DocumentDeletedRequest):
         update.update(
             {"document_id": request.payload.document_id, "revision": request.payload.revision}
         )
@@ -38,6 +49,7 @@ def validate_request(state: ClioState) -> dict[str, object]:
             {
                 "repository_id": request.payload.repository_id,
                 "branch": request.payload.branch,
+                "repository_source_uri": request.payload.source_uri,
                 "revision": request.payload.commit,
             }
         )

@@ -84,24 +84,38 @@ class ToolCallingAgent:
         self.tools = tools
         self.response_model = response_model
 
-    def invoke(self, prompt: str) -> dict[str, Any]:
+    def _create_agent(self):
         settings = LLMSettings.from_env()
         _ = settings.use_llm
-        agent = create_agent(
+        return create_agent(
             model=build_chat_model(settings),
             tools=self.tools,
             system_prompt=(
                 f"{self.system_prompt}\n\nWhen you are finished, return only one JSON object. "
                 "Return field values, never a JSON Schema or an explanation. Required fields: "
-                f"{', '.join(self.response_model.model_fields)}."
+                f"{', '.join(self.response_model.model_fields)}. Follow this output schema: "
+                f"{json.dumps(self.response_model.model_json_schema())}"
             ),
             name=self.name,
         )
-        result = agent.invoke({"messages": [{"role": "user", "content": prompt}]})
+
+    def _parse_result(self, result: dict[str, Any]) -> dict[str, Any]:
         message = result["messages"][-1]
         if not isinstance(message, AIMessage) or not isinstance(message.content, str):
             raise RuntimeError("LLM Agent did not return a text final response.")
         return self.response_model.model_validate_json(_json_object(message.content)).model_dump()
+
+    def invoke(self, prompt: str) -> dict[str, Any]:
+        result = self._create_agent().invoke({"messages": [{"role": "user", "content": prompt}]})
+        return self._parse_result(result)
+
+    async def ainvoke(self, prompt: str) -> dict[str, Any]:
+        """비동기 Graph Node에서 tool-calling loop를 실행한다."""
+
+        result = await self._create_agent().ainvoke(
+            {"messages": [{"role": "user", "content": prompt}]}
+        )
+        return self._parse_result(result)
 
 
 def _json_object(content: str) -> str:

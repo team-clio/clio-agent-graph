@@ -4,9 +4,10 @@
 .pytest_cache/
 .ruff_cache/
 .venv/
+.clio/
+.DS_Store
 __pycache__/
 *.egg-info/
 *.py[cod]
 build/
 dist/
-

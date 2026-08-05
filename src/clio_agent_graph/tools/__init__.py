@@ -6,9 +6,14 @@ from clio_agent_graph.tools.context import (
     search_document_evidence,
     search_resolution_history,
 )
+from clio_agent_graph.tools.pcm import PCMToolContext, PCMToolFactory
 from clio_agent_graph.tools.reports import load_report, search_issue_candidates
+from clio_agent_graph.tools.repository import RepositoryToolFactory
 
 __all__ = [
+    "PCMToolContext",
+    "PCMToolFactory",
+    "RepositoryToolFactory",
     "load_report",
     "resolve_project_snapshot",
     "search_code_evidence",

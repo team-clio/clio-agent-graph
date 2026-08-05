@@ -27,7 +27,11 @@ class ClioState(TypedDict, total=False):
     report_id: str
     issue_id: str
     document_id: str
+    document_title: str
+    document_markdown: str
+    source_metadata: dict[str, Any]
     repository_id: str
+    repository_source_uri: str
     branch: str
     revision: str
     before_commit: str
