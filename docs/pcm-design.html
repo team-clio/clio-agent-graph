@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Clio Project Context Memory 아키텍처와 첫 vertical slice 설계">
+  <title>Clio PCM — Architecture &amp; Vertical Slice</title>
+  <style>
+    :root {
+      --ink: #17221d;
+      --muted: #607067;
+      --paper: #f5f3ec;
+      --surface: #fffdf8;
+      --line: #d9ddd5;
+      --green: #1d6c52;
+      --green-soft: #e0eee7;
+      --orange: #c86431;
+      --orange-soft: #f7e7dc;
+      --blue: #35697f;
+      --blue-soft: #e1edf1;
+      --shadow: 0 18px 50px rgba(35, 50, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 2%, rgba(200, 100, 49, 0.11), transparent 28rem),
+        linear-gradient(180deg, #f8f6f0 0, var(--paper) 35rem);
+      font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      line-height: 1.72;
+    }
+
+    a { color: inherit; }
+    code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    code {
+      padding: .12em .38em;
+      border-radius: 5px;
+      background: #eef0eb;
+      font-size: .92em;
+    }
+    pre {
+      margin: 1rem 0 0;
+      padding: 1.15rem 1.25rem;
+      overflow-x: auto;
+      border: 1px solid #2d3b34;
+      border-radius: 12px;
+      color: #eef7f1;
+      background: #1d2823;
+      font-size: .85rem;
+      line-height: 1.62;
+    }
+    pre code { padding: 0; color: inherit; background: none; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 2rem 1.4rem;
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: rgba(245, 243, 236, .86);
+      backdrop-filter: blur(16px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: 2rem;
+      text-decoration: none;
+    }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 12px;
+      color: white;
+      background: var(--green);
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+    .brand strong { display: block; letter-spacing: -.02em; }
+    .brand span { display: block; color: var(--muted); font-size: .74rem; }
+    .nav-title {
+      margin: 1.2rem .7rem .45rem;
+      color: #829087;
+      font-size: .69rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    nav a {
+      display: block;
+      padding: .43rem .7rem;
+      border-radius: 8px;
+      color: #46564d;
+      font-size: .85rem;
+      text-decoration: none;
+    }
+    nav a:hover { color: var(--green); background: var(--green-soft); }
+
+    main { min-width: 0; padding: 3.5rem clamp(1.5rem, 5vw, 5.5rem) 7rem; }
+    .hero {
+      position: relative;
+      max-width: 1060px;
+      padding: clamp(2.2rem, 6vw, 5rem);
+      overflow: hidden;
+      border: 1px solid rgba(29, 108, 82, .18);
+      border-radius: 28px;
+      background: rgba(255, 253, 248, .86);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      position: absolute;
+      right: -6rem;
+      bottom: -8rem;
+      width: 22rem;
+      height: 22rem;
+      border: 1px solid rgba(29, 108, 82, .18);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3rem rgba(29, 108, 82, .04), 0 0 0 7rem rgba(29, 108, 82, .025);
+      content: "";
+    }
+    .eyebrow {
+      margin: 0 0 1rem;
+      color: var(--green);
+      font-size: .76rem;
+      font-weight: 850;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(2.55rem, 6vw, 5.4rem);
+      font-weight: 790;
+      letter-spacing: -.065em;
+      line-height: .98;
+    }
+    .hero-copy {
+      max-width: 720px;
+      margin: 1.7rem 0 0;
+      color: #47574e;
+      font-size: clamp(1rem, 2vw, 1.22rem);
+    }
+    .meta-row { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 2rem; }
+    .pill {
+      padding: .45rem .72rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #4e5f55;
+      background: white;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    section { max-width: 1060px; padding-top: 5.5rem; scroll-margin-top: 1.5rem; }
+    .section-kicker {
+      margin: 0 0 .45rem;
+      color: var(--orange);
+      font-size: .72rem;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.85rem, 3.4vw, 3rem);
+      letter-spacing: -.045em;
+      line-height: 1.15;
+    }
+    h3 { margin: 2.2rem 0 .7rem; font-size: 1.22rem; letter-spacing: -.02em; }
+    h4 { margin: 1.5rem 0 .45rem; font-size: 1rem; }
+    p { margin: .65rem 0; }
+    .lead { max-width: 810px; color: var(--muted); font-size: 1.06rem; }
+    .callout {
+      margin-top: 1.4rem;
+      padding: 1.1rem 1.25rem;
+      border-left: 4px solid var(--green);
+      border-radius: 0 12px 12px 0;
+      background: var(--green-soft);
+    }
+    .callout.orange { border-color: var(--orange); background: var(--orange-soft); }
+
+    .grid { display: grid; gap: 1rem; margin-top: 1.4rem; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      padding: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: 0 7px 22px rgba(35, 50, 42, .035);
+    }
+    .card h3, .card h4 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+    .num {
+      display: inline-grid;
+      width: 2rem;
+      height: 2rem;
+      margin-bottom: .8rem;
+      place-items: center;
+      border-radius: 9px;
+      color: white;
+      background: var(--green);
+      font-size: .77rem;
+      font-weight: 800;
+    }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: .55rem;
+      margin-top: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: .4rem;
+    }
+    .flow-step {
+      min-width: 155px;
+      padding: .85rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      font-size: .82rem;
+      font-weight: 750;
+    }
+    .flow-step small { display: block; margin-top: .3rem; color: var(--muted); font-weight: 500; }
+    .arrow { align-self: center; color: var(--orange); font-weight: 900; }
+
+    .table-wrap { margin-top: 1.2rem; overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: .88rem; }
+    th, td { padding: .8rem .9rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: #415048; background: #edf0ea; font-size: .76rem; letter-spacing: .03em; }
+    tr:last-child td { border-bottom: 0; }
+    ul, ol { padding-left: 1.25rem; }
+    li { margin: .35rem 0; }
+
+    .diagram {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.4rem;
+      padding: 1.3rem;
+      border-radius: var(--radius);
+      color: white;
+      background: #1c2822;
+    }
+    .diagram-col { padding: .7rem; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; }
+    .diagram-col strong { display: block; margin-bottom: .6rem; color: #a9dec5; font-size: .8rem; }
+    .diagram-item { margin-top: .45rem; padding: .55rem .65rem; border-radius: 8px; background: rgba(255,255,255,.07); font-size: .78rem; }
+
+    .status {
+      display: inline-block;
+      padding: .16rem .48rem;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: .72rem;
+      font-weight: 800;
+    }
+    .status.defer { color: #9b4a24; background: var(--orange-soft); }
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { position: relative; padding-left: 1.7rem; }
+    .checklist li::before {
+      position: absolute;
+      left: 0;
+      top: .15rem;
+      display: grid;
+      width: 1.12rem;
+      height: 1.12rem;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--green);
+      content: "✓";
+      font-size: .68rem;
+      font-weight: 900;
+    }
+    footer { max-width: 1060px; margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      .sidebar { position: relative; width: 100%; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .sidebar nav { display: none; }
+      .brand { margin: 0; }
+      main { padding-top: 1.5rem; }
+    }
+    @media (max-width: 720px) {
+      .grid.two, .grid.three, .diagram { grid-template-columns: 1fr; }
+      .hero { padding: 2rem 1.3rem; }
+      section { padding-top: 4.2rem; }
+      h1 { font-size: 2.7rem; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; }
+      .sidebar { display: none; }
+      main { padding: 0; }
+      .hero, .card { box-shadow: none; }
+      section { break-inside: avoid; padding-top: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="#top">
+        <span class="brand-mark">C</span>
+        <span><strong>Clio PCM</strong><span>Architecture Notebook · v1</span></span>
+      </a>
+      <nav aria-label="문서 목차">
+        <div class="nav-title">Foundation</div>
+        <a href="#summary">설계 요약</a>
+        <a href="#principles">핵심 원칙</a>
+        <a href="#architecture">전체 아키텍처</a>
+        <a href="#knowledge">지식 모델</a>
+        <div class="nav-title">Runtime</div>
+        <a href="#write-path">지식 생성 경로</a>
+        <a href="#read-path">검색과 Tool</a>
+        <a href="#storage">저장·revision</a>
+        <a href="#runtime">코드와 의존성</a>
+        <div class="nav-title">First delivery</div>
+        <a href="#slice">첫 Vertical Slice</a>
+        <a href="#contracts">Slice 계약</a>
+        <a href="#failure">실패·재시도</a>
+        <a href="#tests">테스트와 완료 기준</a>
+        <a href="#roadmap">후속 로드맵</a>
+      </nav>
+    </aside>
+
+    <main id="top">
+      <header class="hero">
+        <p class="eyebrow">Project Context Memory · Design Document</p>
+        <h1>프로젝트를 기억하는<br>자동 지식 시스템</h1>
+        <p class="hero-copy">
+          Clio의 PCM은 Markdown 지식을 정본으로 관리하고, hybrid search와 고정 snapshot을 통해
+          Agent에게 장기기억을 제공한다. 이 문서는 합의된 전체 설계와 첫 구현 단위를 하나의
+          실행 가능한 청사진으로 정리한다.
+        </p>
+        <div class="meta-row">
+          <span class="pill">On-premise</span>
+          <span class="pill">Single agent-server node</span>
+          <span class="pill">PostgreSQL + pgvector</span>
+          <span class="pill">External LLM &amp; Embedding APIs</span>
+          <span class="pill">Automatic active commits</span>
+        </div>
+      </header>
+
+      <section id="summary">
+        <p class="section-kicker">Executive summary</p>
+        <h2>PCM은 Vector DB가 아니라<br>프로젝트 장기기억 서비스다</h2>
+        <p class="lead">
+          PCM은 Graph 계층 아래의 service layer이며, Agent에는 읽기 전용 Tool을 제공한다.
+          사용자가 전달한 문서, 등록된 Repository, 해결된 이슈에서 지식을 자동으로 생성하고
+          계속 갱신한다. 사람은 저장소를 직접 편집하지 않고 Agent를 통해서만 접근한다.
+        </p>
+        <div class="grid three">
+          <article class="card">
+            <span class="num">01</span>
+            <h3>Knowledge Markdown</h3>
+            <p>주제 단위 프로젝트 지식. 내용의 canonical representation이며 revision과 provenance를 가진다.</p>
+          </article>
+          <article class="card">
+            <span class="num">02</span>
+            <h3>Hybrid Index</h3>
+            <p>pgvector 의미 검색과 PostgreSQL keyword·trigram 검색을 결합한 재생성 가능한 파생 인덱스다.</p>
+          </article>
+          <article class="card">
+            <span class="num">03</span>
+            <h3>Repository Memory</h3>
+            <p>commit으로 고정된 Git mirror. 지식 검색 후 실제 구현을 Agent가 탐색하고 검증하는 원본 코드다.</p>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>운영 모델:</strong> 모든 유효한 변경은 사람 승인 없이 즉시 active가 된다. 다만 스키마,
+          source reference, base revision 검증을 통과한 완결된 commit만 활성화된다.
+        </div>
+      </section>
+
+      <section id="principles">
+        <p class="section-kicker">Decisions</p>
+        <h2>변하지 않는 설계 원칙</h2>
+        <div class="grid two">
+          <article class="card">
+            <h3>정본과 파생 데이터</h3>
+            <ul>
+              <li>Markdown은 PCM 지식 내용의 정본이다.</li>
+              <li>PostgreSQL은 identity, revision, transaction 상태의 정본이다.</li>
+              <li>Vector·keyword index는 언제든 다시 만들 수 있는 파생 데이터다.</li>
+              <li>Git mirror는 외부 Repository 특정 commit의 로컬 표현이다.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>자동화와 안전성</h3>
+            <ul>
+              <li>승인 대기나 수동 편집 흐름을 만들지 않는다.</li>
+              <li>Agent는 구조화된 변경안을 만들고 Service가 revision을 commit한다.</li>
+              <li>과거 revision은 보존하며 삭제는 tombstone revision으로 표현한다.</li>
+              <li>불일치는 격리하지 않고 출처와 의미를 포함한 active 지식으로 기록한다.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>접근과 권한</h3>
+            <ul>
+              <li>Agent에는 읽기 Tool만 제공한다.</li>
+              <li>지식·인덱스·Repository 쓰기는 Graph Node만 수행한다.</li>
+              <li>Tool의 project와 snapshot은 Graph가 바인딩한다.</li>
+              <li>Agent가 filesystem path, project ID, commit을 임의 선택하지 못한다.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>일관성과 재현성</h3>
+            <ul>
+              <li>분석 시작 시 PCM revision과 Repository commit을 고정한다.</li>
+              <li>모든 주장과 지식은 provenance를 가진다.</li>
+              <li>동일 source event는 한 번만 commit된다.</li>
+              <li>revision 충돌은 최신 지식에서 change set을 다시 생성한다.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <p class="section-kicker">System architecture</p>
+        <h2>세 계층, 하나의 기억</h2>
+        <p class="lead">Graph는 업무 흐름을, PCM Service는 기억을, 인프라 adapter는 저장과 외부 연결을 책임진다.</p>
+        <div class="diagram" role="img" aria-label="PCM 전체 계층 구조">
+          <div class="diagram-col">
+            <strong>GRAPH &amp; AGENT</strong>
+            <div class="diagram-item">Issue Analysis Graph</div>
+            <div class="diagram-item">Knowledge Sync Graph</div>
+            <div class="diagram-item">Read-only Agent Tools</div>
+          </div>
+          <div class="diagram-col">
+            <strong>PCM APPLICATION</strong>
+            <div class="diagram-item">PCMReader</div>
+            <div class="diagram-item">PCMWriter</div>
+            <div class="diagram-item">Commit Coordinator</div>
+            <div class="diagram-item">Knowledge Indexer</div>
+          </div>
+          <div class="diagram-col">
+            <strong>INFRASTRUCTURE</strong>
+            <div class="diagram-item">PostgreSQL + pgvector</div>
+            <div class="diagram-item">Immutable Markdown Volume</div>
+            <div class="diagram-item">Local Git Mirrors</div>
+            <div class="diagram-item">External Model APIs</div>
+          </div>
+        </div>
+        <h3>온프레미스 배포 단위</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>컴포넌트</th><th>책임</th><th>v1 선택</th></tr></thead>
+            <tbody>
+              <tr><td>Agent Server</td><td>Graph 실행, Tool binding, 지식 생성 orchestration</td><td>단일 노드</td></tr>
+              <tr><td>PostgreSQL</td><td>metadata, revision, event, commit, FTS, embedding</td><td>pgvector + pg_trgm</td></tr>
+              <tr><td>PCM Data Volume</td><td>Source Markdown, Knowledge Markdown, Git mirror</td><td>로컬 영속 볼륨</td></tr>
+              <tr><td>LLM API</td><td>topic 추출, change set 생성, Issue 분석</td><td>외부 OpenAI-compatible API</td></tr>
+              <tr><td>Embedding API</td><td>Knowledge chunk와 query embedding</td><td>외부 API, provider 교체 가능</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="knowledge">
+        <p class="section-kicker">Knowledge model</p>
+        <h2>주제 단위 지식과 안정적인 ID</h2>
+        <p class="lead">
+          물리 파일 경로나 제목은 바뀔 수 있지만 <code>knowledge_id</code>는 유지된다. 새 정보가 같은 주제라면
+          새 파일이 아니라 해당 지식의 다음 revision을 만든다.
+        </p>
+        <div class="grid three">
+          <article class="card"><h3>domain_rule</h3><p>비즈니스 용어, 규칙, 권한, 불변 조건.</p></article>
+          <article class="card"><h3>requirement</h3><p>의도된 동작, 정책, 제품 제약.</p></article>
+          <article class="card"><h3>architecture</h3><p>시스템 구조와 주요 실행·데이터 흐름.</p></article>
+          <article class="card"><h3>component</h3><p>모듈과 서비스의 책임, 경계, 의존 관계.</p></article>
+          <article class="card"><h3>operation</h3><p>설정, 배포, 관측, 장애 대응 지식.</p></article>
+          <article class="card"><h3>resolution</h3><p>해결 이슈의 증상, 원인, 수정, 검증, 교훈.</p></article>
+        </div>
+        <h3>Markdown 표현</h3>
+        <pre><code>---
+schema_version: 1
+knowledge_id: kn_domain_saved_search_ownership
+knowledge_type: domain_rule
+title: Saved Search 소유권 규칙
+revision: 7
+pcm_revision: 42
+sources:
+  - source_type: repository
+    source_id: repo_backend
+    revision: a13c92f
+    location: src/saved_search/service.py#SavedSearchService.run
+---
+
+# Saved Search 소유권 규칙
+
+## 핵심 지식
+Saved Search 실행 시 요청 사용자는 소유자이거나 공유 권한을 가져야 한다.</code></pre>
+        <h3>Source와 Knowledge의 구분</h3>
+        <div class="flow">
+          <div class="flow-step">Source Markdown<small>전달받은 정규화 원문</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Source Units<small>heading 기반 안정적 section</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Knowledge Markdown<small>여러 원천을 통합한 주제 지식</small></div>
+        </div>
+      </section>
+
+      <section id="write-path">
+        <p class="section-kicker">Knowledge write path</p>
+        <h2>Agent가 제안하고 Service가 commit한다</h2>
+        <div class="flow">
+          <div class="flow-step">Prepare Source<small>문서·코드·이슈 정규화</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Extract Topics<small>structured LLM</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Retrieve Related<small>hybrid + provenance</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Generate Changes<small>create · update · tombstone</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Validate &amp; Commit<small>atomic PCM revision</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Index<small>chunk · embed · upsert</small></div>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <h3>LLM이 담당하는 것</h3>
+            <ul>
+              <li>Source에서 지식 주제 추출</li>
+              <li>기존 지식과 새 사실 비교</li>
+              <li>create, update, tombstone, no-change 판단</li>
+              <li>Knowledge Markdown 본문과 변경 이유 생성</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>결정적 코드가 담당하는 것</h3>
+            <ul>
+              <li>Markdown 파싱과 content hash</li>
+              <li>관련 Knowledge retrieval</li>
+              <li>source·revision·reference 검증</li>
+              <li>ID, revision, 경로, timestamp 할당</li>
+              <li>commit, chunking, index lifecycle</li>
+            </ul>
+          </article>
+        </div>
+        <div class="callout orange">
+          Knowledge 생성 모델에는 쓰기 Tool을 제공하지 않는다. 모델은 구조화된
+          <code>KnowledgeChangeSet</code>만 반환하며 실제 저장은 PCMWriter가 수행한다.
+        </div>
+      </section>
+
+      <section id="read-path">
+        <p class="section-kicker">Retrieval &amp; tools</p>
+        <h2>검색하고, 읽고, 원본으로 검증한다</h2>
+        <div class="flow">
+          <div class="flow-step">Hybrid Search<small>vector + FTS + trigram</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Read Knowledge<small>전체 문맥 확인</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Trace Sources<small>provenance 확인</small></div>
+          <span class="arrow">→</span>
+          <div class="flow-step">Explore Repository<small>실제 구현 검증</small></div>
+        </div>
+        <h3>Agent에 제공하는 읽기 Tool</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tool</th><th>역할</th><th>주요 제한</th></tr></thead>
+            <tbody>
+              <tr><td><code>search_project_knowledge</code></td><td>통합 Knowledge hybrid 검색</td><td>기본 8, 최대 20건</td></tr>
+              <tr><td><code>read_project_knowledge</code></td><td>지식 전체 또는 section 읽기</td><td>heading 기반 pagination</td></tr>
+              <tr><td><code>trace_knowledge_sources</code></td><td>문서·코드·이슈 근거 확인</td><td>현재 snapshot provenance만</td></tr>
+              <tr><td><code>read_document_source</code></td><td>정규화 Source Markdown 확인</td><td>참조된 revision으로 제한</td></tr>
+              <tr><td><code>list_project_repositories</code></td><td>등록 Repository와 고정 commit 확인</td><td>credential·remote URL 비노출</td></tr>
+              <tr><td><code>search_repository_code</code></td><td>text·symbol 기반 구현 검색</td><td>snapshot commit 강제</td></tr>
+              <tr><td><code>read_repository_file</code></td><td>파일의 제한된 line range 읽기</td><td>root containment, secret masking</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Hybrid ranking</h3>
+        <p>pgvector와 keyword 검색 결과는 점수 척도를 직접 섞지 않고 Reciprocal Rank Fusion으로 결합한다.</p>
+        <pre><code>final_score = 1 / (60 + vector_rank)
+            + 1 / (60 + keyword_rank)</code></pre>
+      </section>
+
+      <section id="storage">
+        <p class="section-kicker">Persistence</p>
+        <h2>Immutable 파일과 revision-aware metadata</h2>
+        <div class="grid two">
+          <article class="card">
+            <h3>파일 볼륨</h3>
+            <pre><code>projects/{project_id}/
+├─ sources/documents/{document_id}/{revision}.md
+├─ knowledge/{knowledge_id}/{knowledge_revision}.md
+├─ repositories/{repository_id}.git/
+└─ staging/{commit_id}/</code></pre>
+          </article>
+          <article class="card">
+            <h3>핵심 테이블</h3>
+            <ul>
+              <li><code>pcm_projects</code> — active revision</li>
+              <li><code>pcm_source_events</code> — 멱등성·재시도</li>
+              <li><code>pcm_knowledge(_revisions)</code> — identity·history</li>
+              <li><code>pcm_knowledge_sources</code> — provenance</li>
+              <li><code>pcm_commits</code> — 원자적 변경 단위</li>
+              <li><code>pcm_knowledge_chunks</code> — FTS·chunk</li>
+              <li><code>pcm_chunk_embeddings</code> — generation별 vector</li>
+            </ul>
+          </article>
+        </div>
+        <h3>Snapshot validity</h3>
+        <pre><code>valid_from_pcm_revision &lt;= snapshot_revision
+AND (
+  valid_until_pcm_revision IS NULL
+  OR valid_until_pcm_revision &gt; snapshot_revision
+)</code></pre>
+        <p>
+          파일을 staging에서 hash 검증한 후 immutable 최종 경로로 이동하고, 그 다음 DB transaction이 해당
+          파일을 참조하도록 한다. DB 실패 시 파일은 안전한 orphan이며 활성 지식이 되지 않는다.
+        </p>
+      </section>
+
+      <section id="runtime">
+        <p class="section-kicker">Code architecture</p>
+        <h2>요청 단위 접근, 프로세스 단위 인프라</h2>
+        <pre><code>services/pcm/
+├─ models.py
+├─ reader.py
+├─ writer.py
+├─ repositories.py
+├─ commit.py
+├─ chunking.py
+├─ errors.py
+└─ adapters/
+   ├─ postgres.py
+   ├─ filesystem.py
+   ├─ git.py
+   ├─ embedding.py
+   └─ knowledge_llm.py</code></pre>
+        <div class="grid two">
+          <article class="card">
+            <h3>ApplicationServices</h3>
+            <p>DB pool, HTTP client, PCMReader, PCMWriter, model client는 서버 시작 시 구성하고 Graph runtime에 제공한다.</p>
+          </article>
+          <article class="card">
+            <h3>PCMToolContext</h3>
+            <p><code>project_id</code>, <code>request_id</code>, snapshot을 Tool factory에 바인딩한다. Tool 객체는 checkpoint state에 넣지 않는다.</p>
+          </article>
+        </div>
+        <div class="callout">
+          현재의 module-level <code>mock_service</code>와 정적 Tool은 제거 대상이다. Issue Analysis Agent도 import 시
+          생성되는 singleton 대신 snapshot-aware factory가 실행 직전에 만든다.
+        </div>
+      </section>
+
+      <section id="slice">
+        <p class="section-kicker">Vertical slice 01</p>
+        <h2>Markdown 한 건이 검색 가능한 지식이 되기까지</h2>
+        <p class="lead">
+          첫 구현은 문서 입력만 대상으로 한다. Repository 분석을 미루고도 PCM의 핵심 위험인 자동 지식 갱신,
+          revision, provenance, embedding, hybrid search, request-scoped Tool을 한 번에 검증한다.
+        </p>
+        <div class="callout">
+          <strong>구현 상태:</strong> Domain model, Reader·Writer Protocol, 결정적 in-memory PCM,
+          Markdown Source parser, 기존 CLIO_LLM 설정을 재사용하는 Knowledge model, topic 추출·후보 검색·
+          change-set 검증·commit 파이프라인, <code>document_added</code> Root Graph 연결, PostgreSQL·pgvector
+          Docker 구성, immutable Markdown 영속 저장, heading-aware chunking, local embedding 기반 pgvector,
+          FTS·trigram·RRF hybrid retrieval과 index backfill, request-scoped Agent Read Tools,
+          Issue Analysis Graph 비동기 연결, Knowledge citation revision 검증, bare Git mirror,
+          commit-bound Repository 탐색 Tool과 Repository citation 검증, bounded code source 수집,
+          architecture·component·operation Knowledge 자동 생성과 commit provenance까지 구현되었다.
+          다음 구현 단위는 해결된 이슈를 PCM 지식으로 되먹임하는 pipeline이다.
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>포함</h3>
+            <ul class="checklist">
+              <li>정규화 Markdown upsert</li>
+              <li>heading 기반 Source Unit 생성</li>
+              <li>LLM topic 추출과 Knowledge change 생성</li>
+              <li>create·update·no-change</li>
+              <li>immutable Markdown과 PCM revision</li>
+              <li>pgvector + keyword hybrid 검색</li>
+              <li>Knowledge 검색·읽기 Tool</li>
+              <li>snapshot isolation과 event 멱등성</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>이번 Slice에서 제외</h3>
+            <ul>
+              <li>Repository clone 및 code exploration</li>
+              <li>문서 삭제와 tombstone 자동 재평가</li>
+              <li>해결 이슈 feedback loop</li>
+              <li>Graph DB와 neural reranker</li>
+              <li>다중 Agent Server 노드</li>
+              <li>자동 orphan cleanup과 장기 retention</li>
+            </ul>
+          </article>
+        </div>
+
+        <h3>End-to-end 시나리오</h3>
+        <ol>
+          <li>API가 <code>document_added</code> 요청과 정규화 Markdown을 전달한다.</li>
+          <li>Graph가 event를 멱등하게 등록하고 base PCM snapshot을 고정한다.</li>
+          <li>Source Markdown을 immutable revision 파일로 저장한다.</li>
+          <li>heading section을 Source Unit으로 파싱하고 topic을 구조화 추출한다.</li>
+          <li>각 topic에 대해 기존 Knowledge를 hybrid 검색한다.</li>
+          <li>LLM이 create, update 또는 no-change 결정을 반환한다.</li>
+          <li>Service가 reference와 revision을 검증하고 PCM commit을 수행한다.</li>
+          <li>변경된 Markdown을 chunking하고 keyword·vector index를 갱신한다.</li>
+          <li>새 snapshot에서 Agent Tool이 지식을 검색하고 전체 내용을 읽는다.</li>
+        </ol>
+
+        <h3>Slice Graph</h3>
+        <pre><code>START
+  → register_source_event
+  → resolve_base_snapshot
+  → persist_document_source
+  → split_document_sections
+  → extract_document_topics
+  → retrieve_related_knowledge
+  → generate_knowledge_change_set
+  → validate_change_set
+      ├─ valid ───────────────→ commit_knowledge
+      ├─ retryable, attempt 0 → generate_knowledge_change_set
+      └─ exhausted ───────────→ fail_document_sync
+  → index_changed_knowledge
+  → complete_document_sync
+  → END</code></pre>
+      </section>
+
+      <section id="contracts">
+        <p class="section-kicker">Slice contracts</p>
+        <h2>첫 구현에서 필요한 최소 계약</h2>
+        <h3>입력</h3>
+        <pre><code>class IngestDocumentCommand(BaseModel):
+    event_id: str
+    project_id: str
+    document_id: str
+    revision: str
+    title: str
+    markdown: str
+    source_metadata: dict[str, object] = {}</code></pre>
+
+        <h3>Source Unit과 topic</h3>
+        <pre><code>class DocumentSourceUnit(BaseModel):
+    source_unit_id: str
+    document_id: str
+    source_revision: str
+    heading_path: list[str]
+    content: str
+    content_hash: str
+
+class ExtractedTopic(BaseModel):
+    topic_key: str
+    title: str
+    knowledge_type: KnowledgeType
+    summary: str
+    source_unit_ids: list[str]
+    suggested_search_queries: list[str]</code></pre>
+
+        <h3>Change set</h3>
+        <pre><code>class KnowledgeChange(BaseModel):
+    operation: Literal["create", "update", "no_change"]
+    target_knowledge_id: str | None
+    knowledge_type: KnowledgeType
+    title: str
+    body_markdown: str | None
+    source_unit_ids: list[str]
+    related_knowledge_ids: list[str]
+    reason: str
+
+class KnowledgeChangeSet(BaseModel):
+    source_event_id: str
+    base_pcm_revision: int
+    changes: list[KnowledgeChange]</code></pre>
+
+        <h3>완료 결과</h3>
+        <pre><code>{
+  "action": "document_synced",
+  "document_id": "requirements",
+  "source_revision": "3",
+  "pcm_revision": 43,
+  "index_revision": 43,
+  "created_knowledge_ids": ["kn_domain_saved_search_permissions"],
+  "updated_knowledge_ids": [],
+  "unchanged_knowledge_ids": []
+}</code></pre>
+
+        <h3>Slice 최소 DB 범위</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>테이블</th><th>Slice에서 검증할 역할</th></tr></thead>
+            <tbody>
+              <tr><td><code>pcm_projects</code></td><td>project lock과 active revision</td></tr>
+              <tr><td><code>pcm_source_events</code></td><td>중복 요청 방지와 상태</td></tr>
+              <tr><td><code>pcm_document_revisions</code></td><td>immutable Source Markdown 위치</td></tr>
+              <tr><td><code>pcm_knowledge</code></td><td>안정적인 knowledge identity</td></tr>
+              <tr><td><code>pcm_knowledge_revisions</code></td><td>snapshot validity와 Markdown 위치</td></tr>
+              <tr><td><code>pcm_knowledge_sources</code></td><td>heading 수준 provenance</td></tr>
+              <tr><td><code>pcm_commits</code></td><td>원자적 Knowledge 변경</td></tr>
+              <tr><td><code>pcm_knowledge_chunks</code></td><td>chunk와 keyword search</td></tr>
+              <tr><td><code>pcm_chunk_embeddings</code></td><td>semantic search</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="failure">
+        <p class="section-kicker">Failure semantics</p>
+        <h2>자동화는 실패를 숨기지 않는다</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>실패</th><th>동작</th><th>사용 가능한 상태</th></tr></thead>
+            <tbody>
+              <tr><td>동일 event 재수신</td><td>기존 완료 결과 반환</td><td>기존 PCM 유지</td></tr>
+              <tr><td>LLM timeout</td><td>event를 retryable로 기록</td><td>기존 PCM 유지</td></tr>
+              <tr><td>잘못된 change set</td><td>검증 오류를 포함해 1회 재생성</td><td>commit 전이므로 기존 PCM 유지</td></tr>
+              <tr><td>base revision 충돌</td><td>최신 snapshot에서 retrieval과 생성을 재실행</td><td>stale change 저장 안 함</td></tr>
+              <tr><td>Markdown 저장 실패</td><td>DB transaction 시작하지 않음</td><td>기존 PCM 유지</td></tr>
+              <tr><td>Embedding API 실패</td><td>index 재시도 큐, keyword 검색 사용</td><td>새 Knowledge는 읽기 가능</td></tr>
+              <tr><td>Query embedding 실패</td><td>keyword-only degrade</td><td>검색 지속</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout orange">
+          모든 변경이 즉시 active라는 원칙은 “부분 결과도 활성화”를 뜻하지 않는다. 완전한 Knowledge commit만
+          active가 되고, vector index는 별도 revision으로 지연 상태를 명시한다.
+        </div>
+      </section>
+
+      <section id="tests">
+        <p class="section-kicker">Quality bar</p>
+        <h2>테스트 가능한 완료 기준</h2>
+        <div class="grid two">
+          <article class="card">
+            <h3>핵심 통합 테스트</h3>
+            <ul class="checklist">
+              <li>새 문서가 하나 이상의 Knowledge로 생성된다.</li>
+              <li>같은 주제의 다음 문서 revision이 기존 Knowledge를 갱신한다.</li>
+              <li>같은 event를 두 번 실행해도 PCM revision은 한 번만 증가한다.</li>
+              <li>snapshot 42에서 revision 43 지식은 검색되지 않는다.</li>
+              <li>모든 Knowledge fact가 Source Unit을 참조한다.</li>
+              <li>exact keyword와 semantic query 모두 같은 지식을 찾는다.</li>
+              <li>검색 결과를 knowledge ID로 전체 읽을 수 있다.</li>
+              <li>다른 프로젝트 Knowledge가 결과에 섞이지 않는다.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>완료 Definition of Done</h3>
+            <ul class="checklist">
+              <li>Mock Service 없이 slice가 실제 storage adapter를 사용한다.</li>
+              <li>외부 모델 호출은 fake로 대체해 결정적 테스트가 가능하다.</li>
+              <li>실제 API smoke test는 opt-in marker로 분리한다.</li>
+              <li>DB·파일·index 결과를 모두 독립적으로 검증한다.</li>
+              <li>Tool 입력에서 project와 revision을 지정할 수 없다.</li>
+              <li>모델 key와 Source 내용이 로그에 남지 않는다.</li>
+              <li><code>pytest</code>, <code>ruff check</code>, format 검사를 통과한다.</li>
+            </ul>
+          </article>
+        </div>
+
+        <h3>구현 단계</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>단계</th><th>산출물</th><th>검증 포인트</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Domain models, Protocol, in-memory adapters</td><td>snapshot·revision 규칙</td></tr>
+              <tr><td>2</td><td>PostgreSQL schema와 repository</td><td>project isolation·event idempotency</td></tr>
+              <tr><td>3</td><td>Immutable Markdown store와 commit coordinator</td><td>실패 시 partial activation 없음</td></tr>
+              <tr><td>4</td><td>Document parser와 structured Knowledge model</td><td>source reference 완전성</td></tr>
+              <tr><td>5</td><td>Chunker, embedding adapter, hybrid search</td><td>keyword·semantic retrieval</td></tr>
+              <tr><td>6 · 완료</td><td>Request-scoped Agent Tools</td><td>snapshot enforcement·응답 제한·citation 검증</td></tr>
+              <tr><td>7</td><td>Document Sync Graph end-to-end</td><td>실제 요청→검색 가능 지식</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="roadmap">
+        <p class="section-kicker">After the slice</p>
+        <h2>검증된 기반 위에 기억을 확장한다</h2>
+        <div class="grid three">
+          <article class="card">
+            <span class="status">DONE · M7–M8</span>
+            <h3>Repository Memory</h3>
+            <p>Git mirror, commit snapshot, 코드 탐색과 architecture·component·operation 지식 자동 생성을 제공한다.</p>
+          </article>
+          <article class="card">
+            <span class="status">NEXT</span>
+            <h3>Incremental Sync</h3>
+            <p>Git diff와 source-reference 역조회를 통해 영향받은 Knowledge만 갱신한다.</p>
+          </article>
+          <article class="card">
+            <span class="status">NEXT</span>
+            <h3>Resolution Feedback</h3>
+            <p>해결된 이슈에서 resolution 지식과 재사용 가능한 domain·operation 지식을 자동 반영한다.</p>
+          </article>
+          <article class="card">
+            <span class="status defer">LATER</span>
+            <h3>Deletion Semantics</h3>
+            <p>Source 삭제 시 남은 근거를 재평가하고 update 또는 tombstone revision을 만든다.</p>
+          </article>
+          <article class="card">
+            <span class="status defer">LATER</span>
+            <h3>Operational Hardening</h3>
+            <p>orphan 정리, retention, backup·restore, 비용·latency·index lag 관측을 강화한다.</p>
+          </article>
+          <article class="card">
+            <span class="status defer">LATER</span>
+            <h3>Retrieval Evaluation</h3>
+            <p>golden query set으로 Recall@K, citation validity, answer groundedness를 지속 평가한다.</p>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>첫 구현의 성공 기준:</strong> 정규화 Markdown 한 건을 전달하면, 사람의 개입 없이 revision이 있는
+          Knowledge Markdown이 생성되고, 동일 snapshot의 Agent가 hybrid search로 찾아 읽을 수 있어야 한다.
+        </div>
+      </section>
+
+      <footer>
+        Clio Project Context Memory · Architecture &amp; Vertical Slice v1 · 2026-08-05
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

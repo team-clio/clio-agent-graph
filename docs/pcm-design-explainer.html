@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="코드베이스를 몰라도 이해할 수 있는 Clio PCM 소개">
+  <title>Clio PCM 쉽게 이해하기</title>
+  <style>
+    :root { --ink:#17302a; --muted:#60736d; --paper:#f7f8f3; --card:#fff; --green:#12745c; --mint:#e3f4eb; --orange:#db7142; --peach:#fff0e8; --line:#dce5df; --navy:#173c4a; --shadow:0 16px 45px rgba(22,58,47,.09); }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:Pretendard,"Noto Sans KR",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.7; }
+    a { color:inherit; } .wrap { max-width:1120px; margin:auto; padding:0 24px; }
+    header { overflow:hidden; color:#fff; background:linear-gradient(122deg,#103d38,#176e58 60%,#239374); }
+    .hero { min-height:510px; display:grid; align-content:center; position:relative; padding:68px 24px 86px; }
+    .hero::after { content:""; position:absolute; right:-90px; bottom:-140px; width:430px; height:430px; border:52px solid rgba(255,255,255,.09); border-radius:50%; }
+    .eyebrow { margin:0 0 15px; color:#a7e5ce; font-size:.78rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { max-width:760px; margin:0; font-size:clamp(2.7rem,7vw,5.5rem); letter-spacing:-.065em; line-height:1.02; }
+    .hero p:not(.eyebrow) { max-width:650px; margin:25px 0 0; color:#d9ede6; font-size:1.15rem; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; } .chip { padding:6px 11px; border:1px solid rgba(255,255,255,.25); border-radius:999px; font-size:.78rem; background:rgba(255,255,255,.1); }
+    nav { position:sticky; top:0; z-index:4; border-bottom:1px solid var(--line); background:rgba(255,255,255,.93); backdrop-filter:blur(12px); }
+    nav .wrap { display:flex; gap:20px; overflow:auto; } nav a { padding:13px 0; white-space:nowrap; color:#50635d; font-size:.84rem; font-weight:700; text-decoration:none; } nav a:hover { color:var(--green); }
+    section { padding:72px 0; } section:nth-of-type(even) { background:#fff; } .kicker { margin:0 0 7px; color:var(--orange); font-size:.76rem; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
+    h2 { margin:0; font-size:clamp(2rem,4vw,3.25rem); letter-spacing:-.055em; line-height:1.17; } h3 { margin:0 0 8px; font-size:1.2rem; letter-spacing:-.025em; }
+    .lead { max-width:760px; margin:16px 0 0; color:var(--muted); font-size:1.08rem; }
+    .grid { display:grid; gap:16px; margin-top:30px; } .three { grid-template-columns:repeat(3,1fr); } .two { grid-template-columns:repeat(2,1fr); }
+    .card { padding:24px; border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:0 5px 16px rgba(22,58,47,.035); } .card p { margin:0; color:var(--muted); font-size:.94rem; }
+    .icon { display:grid; width:42px; height:42px; margin-bottom:16px; place-items:center; border-radius:12px; color:var(--green); background:var(--mint); font-size:1.3rem; }
+    .answer { margin-top:28px; padding:22px 25px; border-left:5px solid var(--green); border-radius:0 14px 14px 0; background:var(--mint); } .answer strong { color:var(--green); }
+    .story { display:grid; grid-template-columns:1fr 34px 1fr 34px 1fr; align-items:stretch; margin-top:31px; } .story-card { padding:22px; border-radius:16px; background:#fff; box-shadow:var(--shadow); } .story-card small { display:block; margin-bottom:8px; color:var(--orange); font-weight:800; } .story-card p { margin:7px 0 0; color:var(--muted); font-size:.9rem; } .arrow { display:grid; place-items:center; color:var(--orange); font-size:1.5rem; font-weight:900; }
+    .mermaid-wrap { margin-top:28px; padding:22px; overflow-x:auto; border:1px solid var(--line); border-radius:20px; background:#fff; box-shadow:var(--shadow); }
+    pre.mermaid { min-width:700px; margin:0; color:transparent; background:transparent; font-family:inherit; line-height:normal; text-align:center; }
+    .mermaid svg { display:block; max-width:100%; height:auto; margin:auto; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:30px; } .step { position:relative; padding:21px 18px; border-radius:15px; background:var(--peach); } .step b { display:block; margin-bottom:7px; color:var(--orange); font-size:.78rem; } .step p { margin:0; font-size:.9rem; }
+    .compare { width:100%; margin-top:27px; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:#fff; } th,td { padding:15px 18px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; } th { color:#50635d; background:#eef4f0; font-size:.78rem; } tr:last-child td { border-bottom:0; } td:first-child { font-weight:750; }
+    .status { display:inline-block; margin-bottom:9px; padding:3px 8px; border-radius:999px; color:var(--green); background:var(--mint); font-size:.7rem; font-weight:850; } .later { color:#a4522c; background:var(--peach); }
+    footer { padding:34px 24px; color:#698078; background:#e8eee9; font-size:.83rem; text-align:center; }
+    @media (max-width:760px) { .three,.two,.steps { grid-template-columns:1fr; } .story { grid-template-columns:1fr; gap:9px; } .arrow { transform:rotate(90deg); height:28px; } .mermaid-wrap { padding:14px; } section { padding:54px 0; } .hero { min-height:470px; } th,td { padding:12px; } }
+  </style>
+</head>
+<body>
+  <header id="top"><div class="wrap hero">
+    <p class="eyebrow">Clio · Project Context Memory</p>
+    <h1>프로젝트의 맥락을<br>잊지 않는 팀</h1>
+    <p>PCM은 문서, 코드, 해결한 문제에서 중요한 내용을 정리해 두고, 필요할 때 AI Agent가 근거와 함께 찾아보게 하는 프로젝트 장기기억입니다.</p>
+    <div class="chips"><span class="chip">사람이 매번 설명하지 않아도 됨</span><span class="chip">근거를 다시 확인할 수 있음</span><span class="chip">프로젝트별로 분리됨</span></div>
+  </div></header>
+  <nav><div class="wrap"><a href="#why">왜 필요한가</a><a href="#example">어떻게 작동하나</a><a href="#architecture">PCM 아키텍처</a><a href="#safe">안전한 이유</a><a href="#now">현재 만들고 있는 것</a><a href="#words">용어 한눈에</a></div></nav>
+
+  <main>
+    <section id="why"><div class="wrap">
+      <p class="kicker">The problem</p><h2>AI가 똑똑해도,<br>우리 프로젝트를 자동으로 알지는 못합니다</h2>
+      <p class="lead">새 팀원이나 AI에게 같은 배경을 반복해서 설명하면 시간이 쌓입니다. 문서와 코드가 늘수록 “어디에 있는 정보가 최신인가?”도 불분명해집니다.</p>
+      <div class="grid three">
+        <article class="card"><div class="icon">↻</div><h3>반복 설명</h3><p>업무 규칙, 과거 결정, 해결 방법을 매번 다시 찾아서 설명해야 합니다.</p></article>
+        <article class="card"><div class="icon">?</div><h3>흩어진 정보</h3><p>문서·코드·이슈에 정보가 나뉘어 있어 답을 믿기 전에 확인이 필요합니다.</p></article>
+        <article class="card"><div class="icon">⌛</div><h3>바뀌는 내용</h3><p>프로젝트는 계속 변합니다. 예전 설명이 아직 맞는지 알기 어렵습니다.</p></article>
+      </div>
+      <div class="answer"><strong>PCM의 답:</strong> 프로젝트에서 확인된 내용을 주제별 “지식 노트”로 만들고, 언제 어떤 원문을 바탕으로 했는지 함께 보관합니다. Agent는 이 노트를 먼저 읽고, 필요하면 원문 코드나 문서까지 되짚습니다.</div>
+    </div></section>
+
+    <section id="example"><div class="wrap">
+      <p class="kicker">A simple example</p><h2>문서 한 건이<br>팀의 재사용 가능한 기억이 되는 과정</h2>
+      <p class="lead">예를 들어 요구사항 문서에 “저장된 검색은 소유자 또는 공유 권한이 있는 사람만 실행할 수 있다”는 규칙이 추가됐다고 가정해 보세요.</p>
+      <div class="story">
+        <article class="story-card"><small>1 · 들어온 자료</small><h3>요구사항 문서</h3><p>문서의 각 단락을 읽고, 어떤 주제와 규칙이 담겼는지 파악합니다.</p></article><div class="arrow">→</div>
+        <article class="story-card"><small>2 · 정리된 기억</small><h3>‘검색 권한’ 지식 노트</h3><p>관련 내용을 한 곳에 합치고, 문서의 정확한 단락을 출처로 연결합니다.</p></article><div class="arrow">→</div>
+        <article class="story-card"><small>3 · 업무에서 활용</small><h3>Agent의 답변과 조사</h3><p>Agent가 노트를 찾아 답하고, 필요하면 실제 코드에서 구현 여부를 확인합니다.</p></article>
+      </div>
+      <div class="grid two">
+        <article class="card"><h3>결과적으로 달라지는 점</h3><p>“이 기능의 권한 규칙이 뭐였지?”라는 질문에, Agent가 프로젝트 맥락에 맞춰 답하고 근거도 제시할 수 있습니다.</p></article>
+        <article class="card"><h3>중요한 구분</h3><p>지식 노트는 원문을 대체하지 않습니다. 여러 원문을 이해하기 쉽게 요약·연결한 안내서이며, 원문은 언제나 다시 확인할 수 있습니다.</p></article>
+      </div>
+    </div></section>
+
+    <section id="architecture"><div class="wrap">
+      <p class="kicker">PCM architecture</p><h2>PCM은 Agent와 저장소 사이에서<br>프로젝트 기억을 책임지는 서비스 계층입니다</h2>
+      <p class="lead">전체 코드베이스에서 PCM의 핵심은 <code>services/pcm/</code>입니다. Graph는 언제 지식을 읽거나 갱신할지만 결정하고, PCM은 지식의 형식·출처·revision·snapshot 규칙을 일관되게 적용합니다.</p>
+
+      <div class="mermaid-wrap" role="img" aria-label="Clio에서 Project Context Memory가 위치하는 계층">
+        <pre class="mermaid">
+flowchart LR
+    subgraph Caller["PCM을 사용하는 쪽"]
+      GRAPH["Knowledge Sync Graph<br/>지식 생성 흐름"]
+      AGENT["Issue Analysis Agent<br/>프로젝트 맥락 조회"]
+    end
+
+    subgraph PCM["Project Context Memory · services/pcm/"]
+      WRITER["ProjectContextWriter<br/>검증된 변경 commit"]
+      READER["ProjectContextReader<br/>snapshot 기반 조회"]
+      DOMAIN["Domain Models & Rules<br/>지식 · 출처 · revision"]
+      WRITER --> DOMAIN
+      READER --> DOMAIN
+    end
+
+    subgraph Infra["저장 · 검색 기반"]
+      META["PostgreSQL<br/>identity · revision · metadata"]
+      FILES["Markdown Volume<br/>Source · Knowledge 원문"]
+      INDEX["Hybrid Index<br/>keyword · vector"]
+      REPO["Git Mirror<br/>고정 commit의 코드"]
+    end
+
+    GRAPH -->|"쓰기"| WRITER
+    AGENT -->|"읽기 Tool만"| READER
+    DOMAIN --> META
+    DOMAIN --> FILES
+    READER --> INDEX
+    READER --> REPO
+
+    classDef caller fill:#fff0e8,color:#17302a,stroke:#db7142;
+    classDef pcm fill:#e3f4eb,color:#17302a,stroke:#12745c,stroke-width:2px;
+    classDef infra fill:#edf3f6,color:#17302a,stroke:#4f7c8d;
+    class GRAPH,AGENT caller;
+    class WRITER,READER,DOMAIN pcm;
+    class META,FILES,INDEX,REPO infra;
+        </pre>
+      </div>
+
+      <div class="grid three">
+        <article class="card"><div class="icon">📖</div><h3>Reader</h3><p>snapshot을 만들고, 지식을 검색·읽기하고, 그 지식의 원문 출처를 추적합니다. Agent가 사용하는 경계입니다.</p></article>
+        <article class="card"><div class="icon">✍</div><h3>Writer</h3><p>AI가 제안한 <code>KnowledgeChangeSet</code>을 검증하고 하나의 PCM revision으로 commit합니다. Graph Node만 사용합니다.</p></article>
+        <article class="card"><div class="icon">🧱</div><h3>Domain Model</h3><p><code>KnowledgeDocument</code>, <code>SourceReference</code>, snapshot과 commit 결과 등 기억의 공통 언어를 정의합니다.</p></article>
+      </div>
+
+      <h3 style="margin-top:40px">PCM 코드 안에서는 계약, 규칙, 인프라 경계를 분리합니다</h3>
+      <div class="mermaid-wrap" role="img" aria-label="services pcm 디렉터리의 파일별 역할과 관계">
+        <pre class="mermaid">
+flowchart TD
+    INIT["services/pcm/"]
+    INIT --> MODELS["models.py<br/>불변 Pydantic 도메인 모델"]
+    INIT --> READER["reader.py<br/>ProjectContextReader Protocol"]
+    INIT --> WRITER["writer.py<br/>ProjectContextWriter Protocol"]
+    INIT --> MEMORY["memory.py<br/>InMemoryPCM"]
+    INIT --> PORTS["repositories.py<br/>KnowledgeRepository · KnowledgeIndex"]
+    INIT --> ERRORS["errors.py<br/>검증 · 충돌 · 조회 오류"]
+
+    READER -. "구현" .-> MEMORY
+    WRITER -. "구현" .-> MEMORY
+    MEMORY --> MODELS
+    MEMORY --> ERRORS
+    PORTS --> MODELS
+    READER --> MODELS
+    WRITER --> MODELS
+
+    FUTURE["PostgreSQL · Filesystem · Vector Adapter<br/>다음 실제 구현"] -. "동일 계약을 구현" .-> READER
+    FUTURE -. "동일 계약을 구현" .-> WRITER
+    FUTURE -. "저장소 계약 사용" .-> PORTS
+
+    classDef root fill:#12745c,color:#fff,stroke:#0d5e49,stroke-width:2px;
+    classDef contract fill:#e3f4eb,color:#17302a,stroke:#12745c;
+    classDef implementation fill:#fff0e8,color:#17302a,stroke:#db7142;
+    classDef support fill:#edf3f6,color:#17302a,stroke:#4f7c8d;
+    class INIT root;
+    class MODELS,READER,WRITER,PORTS contract;
+    class MEMORY implementation;
+    class ERRORS,FUTURE support;
+        </pre>
+      </div>
+      <div class="answer"><strong>왜 Protocol을 먼저 두나?</strong> Graph와 Agent는 “어떻게 저장하는지”를 몰라도 됩니다. 현재는 <code>InMemoryPCM</code>으로 규칙을 테스트하고, 이후 PostgreSQL·파일·Vector DB 구현으로 바꿔도 호출하는 쪽의 계약은 유지됩니다.</div>
+
+      <h3 style="margin-top:40px">쓰기 경로: AI의 제안을 검증된 기억으로 바꿉니다</h3>
+      <div class="mermaid-wrap" role="img" aria-label="문서 입력에서 PCM commit과 검색 색인까지의 쓰기 흐름">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant S as Source Event
+    participant G as Knowledge Sync Graph
+    participant L as Knowledge LLM
+    participant W as PCM Writer
+    participant M as Markdown / Metadata
+    participant I as Knowledge Index
+
+    S->>G: document_added + Markdown
+    G->>G: source 정규화 · topic 추출 준비
+    G->>L: 기존 지식 + 새 source 전달
+    L-->>G: KnowledgeChangeSet<br/>create · update · no_change
+    G->>W: project_id + base_pcm_revision + change set
+    W->>W: schema · source · target · revision 검증
+    alt 유효한 완결 변경
+      W->>M: immutable Knowledge revision 저장
+      W->>M: project PCM revision 원자적 증가
+      W-->>G: KnowledgeCommitResult
+      G->>I: 변경된 Knowledge chunk 색인
+    else revision 충돌 또는 잘못된 변경
+      W-->>G: 명시적 오류
+      G->>G: 최신 snapshot에서 재생성 또는 실패 처리
+    end
+        </pre>
+      </div>
+      <p class="lead" style="margin-top:14px">LLM은 저장소를 직접 수정하지 않습니다. 구조화된 변경안만 만들고, ID 할당·revision 검사·commit은 결정적 코드가 담당합니다.</p>
+
+      <h3 style="margin-top:40px">읽기 경로: snapshot 안에서 찾고, 원문까지 추적합니다</h3>
+      <div class="mermaid-wrap" role="img" aria-label="Agent가 PCM 지식을 검색하고 출처를 추적하는 읽기 흐름">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant G as Analysis Graph
+    participant A as Agent
+    participant R as PCM Reader
+    participant X as Hybrid Index
+    participant K as Knowledge Store
+    participant O as Original Source
+
+    G->>R: resolve_snapshot(project_id)
+    R-->>G: pcm_revision + index_revision + repository commits
+    G->>A: snapshot이 바인딩된 읽기 Tool 제공
+    A->>R: search_knowledge(query)
+    R->>X: keyword + vector 검색
+    X-->>R: snapshot에서 유효한 후보
+    R-->>A: KnowledgeSearchPage
+    A->>R: read_knowledge(knowledge_id)
+    R->>K: 해당 revision의 전체 Markdown 조회
+    K-->>A: KnowledgeDocument
+    A->>R: trace_knowledge_sources(knowledge_id)
+    R->>O: 문서 section · 코드 commit · 해결 이슈 확인
+    O-->>A: 검증 가능한 provenance
+        </pre>
+      </div>
+
+      <h3 style="margin-top:40px">revision과 snapshot이 시간축의 일관성을 만듭니다</h3>
+      <div class="mermaid-wrap" role="img" aria-label="PCM revision 42와 43에서 보이는 지식 버전의 차이">
+        <pre class="mermaid">
+flowchart LR
+    subgraph R42["PCM snapshot 42"]
+      K6["Knowledge A · revision 6<br/>valid_from 35<br/>valid_until 43"]
+      B2["Knowledge B · revision 2<br/>현재 유효"]
+    end
+    COMMIT["PCM commit 43<br/>Knowledge A 갱신"]
+    subgraph R43["PCM snapshot 43"]
+      K7["Knowledge A · revision 7<br/>valid_from 43"]
+      B2B["Knowledge B · revision 2<br/>변경 없음"]
+    end
+    R42 --> COMMIT --> R43
+    K6 -. "과거 snapshot에서는 계속 조회" .-> K7
+
+    classDef old fill:#edf3f6,color:#17302a,stroke:#4f7c8d;
+    classDef commit fill:#fff0e8,color:#17302a,stroke:#db7142,stroke-width:2px;
+    classDef current fill:#e3f4eb,color:#17302a,stroke:#12745c;
+    class K6,B2 old;
+    class COMMIT commit;
+    class K7,B2B current;
+        </pre>
+      </div>
+      <div class="grid two">
+        <article class="card"><h3>동일 실행은 같은 세계를 봅니다</h3><p>분석 도중 새 지식이 commit되어도, 이미 시작한 실행은 고정된 snapshot의 지식과 Repository commit을 사용합니다.</p></article>
+        <article class="card"><h3>과거를 덮어쓰지 않습니다</h3><p>새 revision은 이전 revision의 유효 종료 시점을 기록합니다. 삭제도 물리 제거 대신 tombstone revision으로 표현합니다.</p></article>
+      </div>
+      <div class="answer"><strong>현재와 목표를 구분하면:</strong> <code>InMemoryPCM</code>에서 snapshot, revision 충돌, 멱등성, provenance, 프로젝트 격리 규칙은 구현·테스트되어 있습니다. PostgreSQL, immutable Markdown 저장, embedding과 hybrid index는 이 계약을 따를 다음 인프라 구현입니다.</div>
+    </div></section>
+
+    <section id="safe"><div class="wrap">
+      <p class="kicker">Trust &amp; safety</p><h2>자동으로 정리하되,<br>근거와 변경 이력을 남깁니다</h2>
+      <p class="lead">PCM은 AI가 만든 문장을 그대로 믿는 저장소가 아닙니다. 자동화가 하되, 무엇을 바꿨고 왜 바꿨는지 검증 가능한 형태로 남깁니다.</p>
+      <div class="steps">
+        <article class="step"><b>01 · 제안</b><p>AI가 새 지식 또는 수정안을 구조화된 형식으로 제안합니다.</p></article>
+        <article class="step"><b>02 · 검증</b><p>시스템이 출처, 형식, 이전 버전과의 연결을 확인합니다.</p></article>
+        <article class="step"><b>03 · 기록</b><p>통과한 변경만 새 버전으로 저장하고, 과거 버전도 보존합니다.</p></article>
+        <article class="step"><b>04 · 검색</b><p>키워드와 의미를 함께 사용해 필요한 내용을 찾습니다.</p></article>
+      </div>
+      <div class="mermaid-wrap" role="img" aria-label="PCM 자동 변경의 안전장치">
+        <pre class="mermaid">
+flowchart LR
+    PROPOSE["AI 제안<br/>KnowledgeChangeSet"] --> VALIDATE{"결정적 검증"}
+    VALIDATE -->|"출처 · 형식 · base revision 정상"| COMMIT["원자적 PCM commit"]
+    VALIDATE -->|"검증 실패"| REJECT["기존 PCM 유지<br/>재생성 또는 오류"]
+    COMMIT --> ACTIVE["새 revision 활성화"]
+    COMMIT --> HISTORY["이전 revision 보존"]
+    ACTIVE --> INDEX["검색 index 갱신"]
+    INDEX -->|"embedding 실패"| FALLBACK["keyword 검색으로 계속 제공"]
+
+    classDef input fill:#fff0e8,color:#17302a,stroke:#db7142;
+    classDef safe fill:#e3f4eb,color:#17302a,stroke:#12745c;
+    classDef fallback fill:#edf3f6,color:#17302a,stroke:#4f7c8d;
+    class PROPOSE,VALIDATE input;
+    class COMMIT,ACTIVE,HISTORY safe;
+    class REJECT,INDEX,FALLBACK fallback;
+        </pre>
+      </div>
+      <div class="grid two">
+        <article class="card"><h3>“언제 기준인가?”를 고정합니다</h3><p>조사 시작 시점의 지식과 코드 버전을 함께 고정합니다. 조사 중 내용이 바뀌어도 답변의 기준이 흔들리지 않습니다.</p></article>
+        <article class="card"><h3>Agent는 마음대로 쓰지 못합니다</h3><p>Agent는 지식을 찾아 읽을 수만 있습니다. 실제 저장과 수정은 검증 절차를 가진 PCM 서비스가 담당합니다.</p></article>
+      </div>
+    </div></section>
+
+    <section id="now"><div class="wrap">
+      <p class="kicker">First milestone</p><h2>지금은 “문서 → 검색 가능한 지식”을<br>끝까지 검증하는 단계입니다</h2>
+      <p class="lead">처음부터 모든 정보를 처리하지 않습니다. 가장 중요한 흐름 하나를 실제로 작동하게 만든 뒤, 그 위에 코드와 이슈의 기억을 차례로 확장합니다.</p>
+      <div class="grid two">
+        <article class="card"><span class="status">NOW</span><h3>첫 번째 범위</h3><p>정규화된 Markdown 문서에서 주제를 추출하고, 지식 노트를 만들거나 갱신하고, 검색으로 다시 읽을 수 있게 합니다.</p></article>
+        <article class="card"><span class="status later">NEXT</span><h3>그 다음 범위</h3><p>저장소의 코드까지 탐색해 구조와 컴포넌트 지식을 만들고, 해결된 이슈에서 재사용 가능한 해결 방법을 축적합니다.</p></article>
+      </div>
+      <table class="compare"><thead><tr><th>확인할 성공 기준</th><th>의미</th></tr></thead><tbody>
+        <tr><td>새 문서가 지식이 된다</td><td>사람이 별도로 요약하지 않아도, 프로젝트 규칙이 검색 가능한 노트로 정리됩니다.</td></tr>
+        <tr><td>문서가 바뀌면 같은 주제가 갱신된다</td><td>새 파일을 끝없이 쌓는 대신, 같은 주제의 최신 버전과 변경 이력을 관리합니다.</td></tr>
+        <tr><td>같은 요청은 한 번만 반영된다</td><td>재시도나 중복 전달이 있어도 지식이 중복 생성되지 않습니다.</td></tr>
+        <tr><td>다른 프로젝트와 섞이지 않는다</td><td>프로젝트마다 기억과 검색 결과가 분리됩니다.</td></tr>
+      </tbody></table>
+    </div></section>
+
+    <section id="words"><div class="wrap">
+      <p class="kicker">Glossary</p><h2>회의에서 이 네 가지만 알면 됩니다</h2>
+      <div class="grid three">
+        <article class="card"><h3>지식 노트</h3><p>프로젝트의 한 주제를 설명하는 Markdown 문서입니다. 예: “저장된 검색 권한 규칙”.</p></article>
+        <article class="card"><h3>출처</h3><p>지식 노트의 근거가 된 문서 단락, 코드 위치, 이슈를 가리키는 연결 정보입니다.</p></article>
+        <article class="card"><h3>버전 (revision)</h3><p>지식이 수정될 때마다 남는 번호입니다. 과거 내용과 변경 시점을 되돌아볼 수 있습니다.</p></article>
+        <article class="card"><h3>스냅샷</h3><p>조사에 사용하는 “그 시점의 프로젝트 모습”입니다. 지식과 코드를 같은 기준으로 묶습니다.</p></article>
+        <article class="card"><h3>검색 색인</h3><p>원하는 지식을 빠르게 찾기 위한 보조 데이터입니다. 손상돼도 지식 노트에서 다시 만들 수 있습니다.</p></article>
+        <article class="card"><h3>Hybrid 검색</h3><p>정확한 단어 찾기와 문맥상 비슷한 의미 찾기를 함께 하는 검색 방식입니다.</p></article>
+      </div>
+      <div class="answer"><strong>한 문장으로:</strong> PCM은 프로젝트의 중요한 맥락을 근거와 이력까지 갖춘 지식으로 바꾸어, 팀과 AI가 같은 이해를 공유하도록 돕는 서비스입니다.</div>
+    </div></section>
+  </main>
+  <footer>Clio Project Context Memory · 팀 설명용 개요 · 2026-08-05</footer>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis",
+        nodeSpacing: 34,
+        rankSpacing: 46
+      },
+      themeVariables: {
+        fontFamily: "Pretendard, Noto Sans KR, Inter, sans-serif",
+        primaryColor: "#e3f4eb",
+        primaryTextColor: "#17302a",
+        primaryBorderColor: "#12745c",
+        lineColor: "#78958a",
+        secondaryColor: "#fff0e8",
+        tertiaryColor: "#edf3f6",
+        clusterBkg: "#f7f8f3",
+        clusterBorder: "#dce5df"
+      }
+    });
+  </script>
+</body>
+</html>

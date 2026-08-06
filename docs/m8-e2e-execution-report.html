@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clio PCM M8 · End-to-End 실행 보고서</title>
+<style>
+:root{--ink:#17212b;--muted:#607080;--paper:#f5f2eb;--card:#fffdf8;--line:#d9d3c6;--navy:#173b57;--teal:#087f73;--mint:#dff4ed;--orange:#e97836;--orange-soft:#fff0e6;--blue:#e8f1f7;--shadow:0 18px 50px rgba(23,33,43,.09)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65}
+.hero{padding:74px 7vw 72px;color:#fff;background:radial-gradient(circle at 86% 14%,rgba(31,163,145,.36),transparent 28%),linear-gradient(135deg,#10293c,#173b57 58%,#0a6d67)}
+.hero-inner,main{max-width:1180px;margin:auto}.eyebrow,.label{font-size:12px;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#79ddd0}
+h1{max-width:850px;margin:12px 0 14px;font-size:clamp(38px,6vw,70px);line-height:1.06;letter-spacing:-.045em}.hero p{max-width:850px;margin:0;color:#d6e6eb;font-size:18px}
+.stamp{display:flex;gap:9px;flex-wrap:wrap;margin-top:28px}.stamp span{padding:7px 11px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(255,255,255,.07);font-size:12px}
+main{padding:0 24px 90px}nav{position:sticky;top:12px;z-index:5;display:flex;gap:6px;overflow:auto;transform:translateY(-25px);padding:10px;border:1px solid #eee8dc;border-radius:15px;background:rgba(255,253,248,.93);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+nav a{flex:none;padding:8px 11px;border-radius:9px;color:var(--navy);font-size:13px;font-weight:800;text-decoration:none}nav a:hover{background:var(--blue)}
+section{margin:58px 0;scroll-margin-top:90px}.label{color:var(--teal)}h2{margin:5px 0 19px;color:var(--navy);font-size:clamp(27px,4vw,42px);line-height:1.18;letter-spacing:-.03em}h3{margin:0 0 7px;color:var(--navy);font-size:18px}.lead{max-width:900px;color:var(--muted);font-size:17px}
+.grid{display:grid;gap:16px}.metrics{grid-template-columns:repeat(5,1fr)}.two{grid-template-columns:repeat(2,1fr)}.card{padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:0 8px 26px rgba(23,33,43,.05)}
+.metric strong{display:block;color:var(--navy);font-size:31px;line-height:1.1}.metric span{color:var(--muted);font-size:12px}.success{color:var(--teal)!important}
+.callout{margin-top:18px;padding:18px 20px;border-left:5px solid var(--orange);border-radius:10px;background:var(--orange-soft)}.callout.good{border-color:var(--teal);background:var(--mint)}.callout strong{color:var(--navy)}
+.flow{display:grid;grid-template-columns:repeat(6,minmax(115px,1fr));gap:10px;margin-top:24px}.step{position:relative;min-height:128px;padding:18px 15px;border:1px solid #bfd8d4;border-radius:15px;background:linear-gradient(180deg,#f7fffc,var(--mint))}
+.step:not(:last-child):after{content:"→";position:absolute;right:-13px;top:46px;z-index:2;color:var(--orange);font-size:20px;font-weight:900}.step b{display:block;margin-bottom:7px;color:var(--teal);font-size:12px}.step span{display:block;font-weight:900;line-height:1.3}.step small{display:block;margin-top:6px;color:var(--muted);line-height:1.4}
+code{padding:2px 6px;border-radius:6px;background:#edf0ef;color:#184d55;font: .88em "SFMono-Regular",Consolas,monospace;overflow-wrap:anywhere}pre{overflow:auto;padding:17px;border-radius:13px;color:#dcecf0;background:#132a3a;font-size:12px;line-height:1.6}
+.timeline{margin-left:10px;padding-left:32px;border-left:2px solid #b8d9d3}.event{position:relative;margin:0 0 24px;padding-left:8px}.event:before{content:"";position:absolute;left:-41px;top:5px;width:16px;height:16px;border:4px solid var(--paper);border-radius:50%;background:var(--teal);box-shadow:0 0 0 1px #9bcac3}.time{color:var(--orange);font-size:12px;font-weight:900;letter-spacing:.08em}.event p,.turn p,.finding p{margin:3px 0;color:var(--muted)}
+.bar-row{display:grid;grid-template-columns:145px 1fr 78px;gap:12px;align-items:center;margin:13px 0;font-size:13px}.bar{height:13px;overflow:hidden;border-radius:99px;background:#e5e0d6}.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--teal),#4ab3a5)}.bar.orange i{background:linear-gradient(90deg,var(--orange),#f1a16f)}
+.agent{overflow:hidden;padding:0}.agent-head{display:flex;justify-content:space-between;gap:12px;padding:18px 22px;color:#fff;background:var(--navy)}.agent-head h3{color:#fff}.agent-body{padding:20px}.turn{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid #ece7dc}.turn:last-child{border:0}.badge{align-self:start;padding:5px 8px;border-radius:99px;color:#126358;background:var(--mint);font-size:11px;font-weight:900;text-align:center}.badge.read{color:#8b471e;background:var(--orange-soft)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px}table{width:100%;border-collapse:collapse;background:var(--card);font-size:13px}th,td{padding:13px 14px;border-bottom:1px solid #e7e1d6;text-align:left;vertical-align:top}th{color:#fff;background:var(--navy)}tr:last-child td{border:0}
+.finding{display:flex;gap:14px}.num{flex:0 0 34px;height:34px;border-radius:10px;color:#fff;background:var(--orange);font-weight:900;text-align:center;line-height:34px}footer{margin-top:70px;padding-top:25px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media(max-width:980px){.metrics{grid-template-columns:repeat(3,1fr)}.flow{grid-template-columns:repeat(3,1fr)}.step:nth-child(3):after{display:none}}@media(max-width:680px){.hero{padding:54px 24px 78px}main{padding-inline:16px}.metrics,.two,.flow{grid-template-columns:1fr}.step:after{display:none}.turn{grid-template-columns:1fr}.bar-row{grid-template-columns:105px 1fr 58px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-inner"><div class="eyebrow">Clio Project Context Memory · M8</div><h1>End-to-End<br>실행 관찰 보고서</h1><p>Repository 등록부터 Knowledge 생성, hybrid retrieval, Agent의 실제 도구 탐색, citation 검증과 멱등 replay까지 재현 가능한 실행으로 관찰했다.</p><div class="stamp"><span>2026-08-05 KST</span><span>M8-E2E-VISUAL-20260805</span><span>PostgreSQL + pgvector</span><span>외부 LLM API</span></div></div></header>
+<main>
+<nav><a href="#result">결과</a><a href="#scenario">시나리오</a><a href="#ingest">지식 생성</a><a href="#agent">Agent 행동</a><a href="#retrieval">검색</a><a href="#findings">관찰·개선점</a><a href="#evidence">검증 근거</a></nav>
+<section id="result"><div class="label">Executive result</div><h2>전체 경로 통과, snapshot 일관성 유지</h2><p class="lead">새 프로젝트로 실제 bare Git mirror, 외부 LLM, PostgreSQL metadata, Knowledge Markdown, pgvector와 FTS를 모두 거쳤다. 분석은 같은 commit을 끝까지 유지했고 Quality Gate가 22개 citation을 검사한 뒤 통과했다.</p>
+<div class="grid metrics"><article class="card metric"><strong class="success">PASS</strong><span>Quality Gate</span></article><article class="card metric"><strong>15</strong><span>생성 Knowledge</span></article><article class="card metric"><strong>32</strong><span>LLM Source Unit</span></article><article class="card metric"><strong>22</strong><span>분석 Citation</span></article><article class="card metric"><strong>0.101s</strong><span>멱등 Replay</span></article></div>
+<div class="callout good"><strong>결론.</strong> “고정 commit의 코드 → provenance가 있는 active Knowledge → 같은 snapshot의 Agent 검색·검증” 계약이 실제 인프라와 외부 모델 조합에서 성립했다.</div></section>
+
+<section id="scenario"><div class="label">Test scenario</div><h2>무엇을 어떤 순서로 요청했나</h2><div class="flow">
+<div class="step"><b>01 · REQUEST</b><span>Repository 등록</span><small>repository_added<br>main + full SHA</small></div><div class="step"><b>02 · MIRROR</b><span>Git snapshot</span><small>42 tracked files<br>bare mirror</small></div><div class="step"><b>03 · SYNTHESIS</b><span>PCM 지식 생성</span><small>32 units → 15 topics<br>15 changes</small></div><div class="step"><b>04 · RETRIEVAL</b><span>Hybrid 검색</span><small>vector + FTS<br>8 results</small></div><div class="step"><b>05 · AGENT</b><span>이슈 분석</span><small>Knowledge + Code<br>반복 탐색</small></div><div class="step"><b>06 · VERIFY</b><span>검증·Replay</span><small>citation PASS<br>revision 유지</small></div></div>
+<pre><code>Repository request
+project_id    = M8-E2E-VISUAL-20260805
+repository_id = clio-agent-graph
+branch        = main
+commit        = 76287a963b6e243bcd4d89d5d4a6bef5b21c4cd1
+
+Analysis request
+issue_id      = "ToolCallingAgent architecture and service boundary"</code></pre>
+<div class="callout"><strong>재현성 주의.</strong> 대상은 현재 worktree가 아니라 Git HEAD commit이다. 미커밋 M7·M8 변경은 코드 지식 입력에 포함되지 않았고, 실행 애플리케이션은 현재 worktree 코드다. 이 테스트는 snapshot 재현성을 검증하지만 최신 미커밋 코드의 지식 품질 평가는 아니다.</div></section>
+
+<section id="ingest"><div class="label">Repository → Knowledge</div><h2>47.685초 동안 수행된 작업</h2><div class="timeline">
+<div class="event"><div class="time">GRAPH</div><h3>요청 검증과 쓰기 경계 진입</h3><p><code>validate_request → route_request → prepare_repository_sync</code>. source URI는 Agent에 노출되지 않았다.</p></div>
+<div class="event"><div class="time">GIT</div><h3>Bare mirror와 commit 활성화</h3><p>지정 SHA를 검증하고 42개 tracked file을 가진 Git object snapshot을 등록했다.</p></div>
+<div class="event"><div class="time">SOURCE</div><h3>Bounded source collection</h3><p>확장자 allowlist, secret-file 차단, 크기·파일·unit 상한으로 32개 line-range unit을 만들고 secret 값을 masking했다.</p></div>
+<div class="event"><div class="time">LLM · 25.544s</div><h3>Topic extraction</h3><p>32개 unit에서 architecture·component·domain 주제 15개를 추출하고 제공된 source-unit ID만 인용했다.</p></div>
+<div class="event"><div class="time">RETRIEVAL</div><h3>기존 후보 조회</h3><p>PCM revision 0에서 topic별 hybrid candidate를 조회했다. 새 프로젝트라 모두 create 후보였다.</p></div>
+<div class="event"><div class="time">LLM · 21.388s</div><h3>Atomic change-set</h3><p>15개 create 변경을 반환했고 Service가 event, base revision, target과 source 참조를 재검증했다.</p></div>
+<div class="event"><div class="time">COMMIT</div><h3>PCM revision 1 활성화</h3><p>Knowledge 15개와 repository provenance를 commit하고 pgvector·keyword index를 revision 1로 맞췄다.</p></div></div>
+<div class="grid two"><article class="card"><h3>LLM 처리시간</h3><div class="bar-row"><span>Topic 추출</span><div class="bar"><i style="width:100%"></i></div><b>25.544s</b></div><div class="bar-row"><span>Change-set</span><div class="bar orange"><i style="width:83.7%"></i></div><b>21.388s</b></div></article><article class="card"><h3>Commit 결과</h3><p><code>8af3c7f7-a594-495b-82a2-db6104ac0f4c</code></p><p>PCM <strong>1</strong> · index <strong>1</strong></p><p>created <strong>15</strong> · updated <strong>0</strong> · unchanged <strong>0</strong></p></article></div></section>
+
+<section id="agent"><div class="label">Observed agent behavior</div><h2>Agent는 질문을 어떻게 조사했나</h2><p class="lead">raw code·본문은 저장하지 않고 도구명, 안전한 인자와 결과 메타데이터만 요약했다.</p><div class="grid two">
+<article class="card agent"><div class="agent-head"><h3>Issue Analyst</h3><span>facts 8 · hypotheses 4</span></div><div class="agent-body">
+<div class="turn"><span class="badge">ORIENT</span><p><code>list_project_repositories</code>로 Repository 1개와 commit을 확인하고 PCM 지식 8건을 확보했다.</p></div>
+<div class="turn"><span class="badge">SEARCH</span><p><code>search_repository_code("ToolCallingAgent")</code>와 class 검색을 병렬 호출해 11건·1건을 찾았다.</p></div>
+<div class="turn"><span class="badge read">READ</span><p><code>llm.py</code>부터 agent, node, graph, service, tool, model, test 파일을 읽었다. 모두 같은 SHA였다.</p></div>
+<div class="turn"><span class="badge">REFINE</span><p>“async service boundary mock tool…”로 PCM을 재검색하고 graph·memory sync 경계까지 확장했다.</p></div>
+<div class="turn"><span class="badge">SYNTHESIZE</span><p>사실 8개, hypothesis 4개와 citation을 가진 구조화 분석을 생성했다.</p></div></div></article>
+<article class="card agent"><div class="agent-head"><h3>Resolution Planner</h3><span>동일 snapshot 재사용</span></div><div class="agent-body">
+<div class="turn"><span class="badge">ORIENT</span><p>Repository 목록과 service boundary·dependency injection PCM 검색 2개를 병렬 실행했다.</p></div>
+<div class="turn"><span class="badge read">VERIFY</span><p><code>project_context.py</code>, <code>mock.py</code>, <code>tools/context.py</code>, <code>llm.py</code>로 abstraction을 검증했다.</p></div>
+<div class="turn"><span class="badge read">EXPAND</span><p>agent, node, graph, memory sync, state/configuration 및 tests로 탐색을 넓혔다.</p></div>
+<div class="turn"><span class="badge">PLAN</span><p>근거를 구현 단계·acceptance criteria·risk를 가진 resolution plan으로 바꿨다.</p></div>
+<div class="turn"><span class="badge">GATE</span><p>Quality Gate가 Knowledge revision과 Repository commit을 대조해 <strong>passed</strong> 처리했다.</p></div></div></article></div>
+<div class="callout"><strong>핵심 행동.</strong> 초기 <code>search_code</code>는 긴 issue 문자열 exact grep이라 0건이었지만, Agent가 짧은 symbol query로 재검색해 11건을 찾았다. seed retrieval 실패를 agentic exploration이 복구했다.</div></section>
+
+<section id="retrieval"><div class="label">Hybrid retrieval</div><h2>생성 지식은 즉시 검색 가능했다</h2><div class="grid metrics"><article class="card metric"><strong>1</strong><span>PCM revision</span></article><article class="card metric"><strong>1</strong><span>Index revision</span></article><article class="card metric"><strong class="success">ON</strong><span>Vector</span></article><article class="card metric"><strong class="success">ON</strong><span>Keyword</span></article><article class="card metric"><strong>8</strong><span>결과</span></article></div>
+<div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>#</th><th>유형</th><th>Knowledge</th><th>실제 provenance</th><th>RRF</th></tr></thead><tbody>
+<tr><td>1</td><td>component</td><td>Bug report processing agent for matching</td><td><code>agents/report_processing.py:1–48</code></td><td>0.032522</td></tr>
+<tr><td>2</td><td>component</td><td>Read-only tools exposed to LLM agents</td><td><code>tools/context.py:1–34</code></td><td>0.031319</td></tr>
+<tr><td>3</td><td>component</td><td>Issue analysis and resolution planning agents</td><td><code>agents/issue_analysis.py:1–75</code></td><td>0.031258</td></tr>
+<tr><td>4</td><td>domain_rule</td><td>Structured output models for LLM agents</td><td><code>agents/models.py:1–67</code></td><td>0.030366</td></tr>
+<tr><td>5</td><td>component</td><td>LLM provider configuration and agent invocation</td><td><code>llm.py:1–120</code></td><td>0.030331</td></tr>
+</tbody></table></div><p class="lead">상위 결과 모두 <code>source_type=repository</code>, repository ID와 동일 full commit SHA를 보유했다.</p></section>
+
+<section id="findings"><div class="label">Findings</div><h2>성공과 함께 드러난 개선점</h2><div class="grid two">
+<article class="card finding"><div class="num">1</div><div><h3>Snapshot 계약 작동</h3><p>Knowledge, Tool 응답, citation이 동일 SHA에 묶여 branch 이동 영향을 받지 않는다.</p></div></article>
+<article class="card finding"><div class="num">2</div><div><h3>Agent 탐색 비용</h3><p>분석 124.145초. tool-call budget, 중복 path cache와 relevance stopping rule이 필요하다.</p></div></article>
+<article class="card finding"><div class="num">3</div><div><h3>Seed query 개선</h3><p>긴 exact grep 대신 symbol/token 분해나 trigram 코드 검색이 필요하다.</p></div></article>
+<article class="card finding"><div class="num">4</div><div><h3>분류 Guardrail</h3><p>코드에서 domain_rule도 생성됐다. repository topic 유형 정책을 명시할 필요가 있다.</p></div></article>
+<article class="card finding"><div class="num">5</div><div><h3>Replay 효과</h3><p>47.685초 작업이 0.101초로 줄었고 LLM 호출과 revision 증가를 생략했다.</p></div></article>
+<article class="card finding"><div class="num">6</div><div><h3>운영 관측성</h3><p>tool name·latency·result count·snapshot만 표준 trace로 남기면 민감정보 없이 진단 가능하다.</p></div></article></div></section>
+
+<section id="evidence"><div class="label">Validation evidence</div><h2>테스트와 인프라 상태</h2><div class="table-wrap"><table><thead><tr><th>검증</th><th>결과</th><th>의미</th></tr></thead><tbody>
+<tr><td>Repository graph</td><td>PASS · 47.685s</td><td>mirror → LLM → PCM commit</td></tr><tr><td>Hybrid retrieval</td><td>PASS · 8건</td><td>vector + keyword 사용</td></tr><tr><td>Issue Analysis</td><td>PASS · 124.145s</td><td>facts 8 · hypotheses 4 · citations 22</td></tr><tr><td>Quality Gate</td><td>PASS</td><td>revision·commit 검증</td></tr><tr><td>Replay</td><td>PASS · 0.101s</td><td>동일 commit ID · revision 유지</td></tr><tr><td>pytest</td><td>64 passed · 1 skipped</td><td>전체 회귀</td></tr><tr><td>PostgreSQL marker</td><td>1 passed</td><td>Docker pgvector adapter</td></tr><tr><td>Ruff</td><td>PASS</td><td>lint·format</td></tr>
+</tbody></table></div><div class="callout good"><strong>민감정보 처리.</strong> source URI credential, LLM 원문, 코드 본문, API key는 포함하지 않았다. trace에는 도구명, 안전한 검색어·path, result count, commit과 상태만 남겼다.</div></section>
+<footer>Clio PCM M8 End-to-End Execution Report · Actual run evidence · 2026-08-05</footer>
+</main></body></html>
