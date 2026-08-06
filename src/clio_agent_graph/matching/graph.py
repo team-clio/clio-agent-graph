@@ -1,10 +1,13 @@
 """Report Normalizer, Retrieval, Matcher를 제공하는 독립 실행 그래프."""
 
 import os
+from collections.abc import Sequence
 from typing import Any
 
+from langchain_core.tools import BaseTool
 from langgraph.graph import END, START, StateGraph
 
+from clio_agent_graph.matching.agentic_retrieval import build_agentic_issue_retrieval_graph
 from clio_agent_graph.matching.defaults import load_default_issue_match_model
 from clio_agent_graph.matching.models import MatchPolicySettings
 from clio_agent_graph.matching.node import (
@@ -36,10 +39,15 @@ def build_report_matching_graph(
     retrieval_subgraph: Any | None = None,
     match_model: IssueMatchModel | None = None,
     match_policy: MatchPolicySettings | None = None,
+    normalization_tools: Sequence[BaseTool] = (),
+    retrieval_tools: Sequence[BaseTool] = (),
+    matching_tools: Sequence[BaseTool] = (),
 ):
     """주입 가능한 NM·RAG·RM 구성요소로 독립 실행 그래프를 만든다."""
 
-    normalization_model = model if model is not None else load_default_normalization_model()
+    normalization_model = (
+        model if model is not None else load_default_normalization_model(normalization_tools)
+    )
     payload_limit = (
         max_raw_payload_bytes
         if max_raw_payload_bytes is not None
@@ -49,10 +57,15 @@ def build_report_matching_graph(
         normalization_model,
         max_raw_payload_bytes=payload_limit,
     )
-    issue_retrieval_graph = (
-        retrieval_subgraph if retrieval_subgraph is not None else build_issue_retrieval_subgraph()
+    if retrieval_subgraph is not None:
+        issue_retrieval_graph = retrieval_subgraph
+    elif retrieval_tools:
+        issue_retrieval_graph = build_agentic_issue_retrieval_graph(tools=retrieval_tools)
+    else:
+        issue_retrieval_graph = build_issue_retrieval_subgraph()
+    issue_match_model = (
+        match_model if match_model is not None else load_default_issue_match_model(matching_tools)
     )
-    issue_match_model = match_model if match_model is not None else load_default_issue_match_model()
     policy_settings = match_policy if match_policy is not None else load_match_policy_settings()
     matcher = ReportMatcher(issue_match_model, settings=policy_settings)
 

@@ -1,9 +1,13 @@
 """최초 분석과 재분석이 공유하는 IA LangGraph 오케스트레이터."""
 
+from collections.abc import Sequence
 from typing import Any, Literal, TypedDict
 
+from langchain_core.tools import BaseTool
 from langgraph.graph import END, START, StateGraph
 
+from clio_agent_graph.agent_runtime import ToolCallRecord
+from clio_agent_graph.analysis.agentic_explorer import build_agentic_code_exploration_graph
 from clio_agent_graph.analysis.defaults import (
     load_default_code_explorer,
     load_default_initial_judgment_model,
@@ -73,6 +77,8 @@ class AnalysisGraphState(TypedDict, total=False):
     exploration_directive: ExplorationDirective
     exploration_request: ExplorationRequest
     exploration_response: ExplorationResponse
+    exploration_tool_calls: list[ToolCallRecord]
+    judgment_tool_calls: list[ToolCallRecord]
     analysis_draft: AnalysisDraft
     warnings: list[str]
     issue_analysis: IssueAnalysis
@@ -88,14 +94,21 @@ def build_issue_analyzer_graph(
     *,
     code_exploration_subgraph: Any | None = None,
     judgment_model: JudgmentModel | None = None,
+    exploration_tools: Sequence[BaseTool] = (),
+    judgment_tools: Sequence[BaseTool] = (),
 ):
     """최초 분석 전용 Judgment subagent를 사용하는 공개 그래프를 만든다."""
 
-    model = judgment_model if judgment_model is not None else load_default_initial_judgment_model()
+    model = (
+        judgment_model
+        if judgment_model is not None
+        else load_default_initial_judgment_model(judgment_tools)
+    )
     return _build_analysis_graph(
         mode=AnalysisMode.INITIAL,
         input_schema=InitialGraphInput,
         code_exploration_subgraph=code_exploration_subgraph,
+        exploration_tools=exploration_tools,
         judgment_subgraph=build_judgment_subgraph(model),
     )
 
@@ -104,14 +117,21 @@ def build_issue_reanalyzer_graph(
     *,
     code_exploration_subgraph: Any | None = None,
     judgment_model: JudgmentModel | None = None,
+    exploration_tools: Sequence[BaseTool] = (),
+    judgment_tools: Sequence[BaseTool] = (),
 ):
     """이전 가설 재판단 subagent를 사용하는 공개 그래프를 만든다."""
 
-    model = judgment_model if judgment_model is not None else load_default_revision_judgment_model()
+    model = (
+        judgment_model
+        if judgment_model is not None
+        else load_default_revision_judgment_model(judgment_tools)
+    )
     return _build_analysis_graph(
         mode=AnalysisMode.REVISION,
         input_schema=ReanalysisGraphInput,
         code_exploration_subgraph=code_exploration_subgraph,
+        exploration_tools=exploration_tools,
         judgment_subgraph=build_judgment_subgraph(model),
     )
 
@@ -121,12 +141,15 @@ def _build_analysis_graph(
     mode: AnalysisMode,
     input_schema: type,
     code_exploration_subgraph: Any | None,
+    exploration_tools: Sequence[BaseTool],
     judgment_subgraph: Any,
 ):
     """상황별 입력과 판단 subagent를 공통 탐색 오케스트레이터에 연결한다."""
 
     if code_exploration_subgraph is not None:
         explorer = code_exploration_subgraph
+    elif exploration_tools:
+        explorer = build_agentic_code_exploration_graph(tools=exploration_tools)
     else:
         explorer = build_code_exploration_subgraph(load_default_code_explorer())
 
@@ -155,6 +178,8 @@ def _build_analysis_graph(
             "relations": [],
             "asked_questions": [],
             "exploration_round": 0,
+            "exploration_tool_calls": [],
+            "judgment_tool_calls": [],
             "warnings": [],
         }
 

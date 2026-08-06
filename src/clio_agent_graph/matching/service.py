@@ -4,6 +4,7 @@ import os
 
 from pydantic import ValidationError
 
+from clio_agent_graph.agent_runtime import ToolCallRecord
 from clio_agent_graph.matching.errors import IssueMatchError, IssueMatchOutputError
 from clio_agent_graph.matching.models import (
     CandidateComparison,
@@ -45,6 +46,13 @@ class ReportMatcher:
             candidates=candidates,
             comparisons=comparisons,
         )
+
+    @property
+    def last_tool_calls(self) -> list[ToolCallRecord]:
+        """모델 adapter가 지원하면 직전 후보 조사 Tool 기록을 반환한다."""
+
+        calls = getattr(self._model, "last_tool_calls", [])
+        return [dict(item) for item in calls]
 
     def compare(
         self,

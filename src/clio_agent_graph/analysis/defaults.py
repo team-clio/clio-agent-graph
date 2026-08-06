@@ -1,35 +1,50 @@
 """IA의 환경별 기본 Judgment 모델과 Code Explorer 선택."""
 
 import os
+from collections.abc import Sequence
+
+from langchain_core.tools import BaseTool
 
 from clio_agent_graph.analysis.errors import CodeExplorerNotConfiguredError
 from clio_agent_graph.analysis.exploration_subgraph import CodeExplorer
 from clio_agent_graph.analysis.ports import JudgmentModel
-from clio_agent_graph.configuration import load_chat_backend
+from clio_agent_graph.configuration import ModelBackendConfigurationError, load_chat_backend
 
 
-def load_default_initial_judgment_model() -> JudgmentModel:
+def load_default_initial_judgment_model(
+    tools: Sequence[BaseTool] = (),
+) -> JudgmentModel:
     """최초 분석용 기본 adapter를 선택한다."""
 
     if load_chat_backend() == "codex":
+        if tools:
+            raise ModelBackendConfigurationError(
+                "Injected LangChain tools are not supported by the codex IA backend."
+            )
         from clio_agent_graph.analysis.codex_adapter import CodexInitialJudgmentModel
 
         return CodexInitialJudgmentModel()
     from clio_agent_graph.analysis.langchain_adapter import LangChainInitialJudgmentModel
 
-    return LangChainInitialJudgmentModel()
+    return LangChainInitialJudgmentModel(tools=tools)
 
 
-def load_default_revision_judgment_model() -> JudgmentModel:
+def load_default_revision_judgment_model(
+    tools: Sequence[BaseTool] = (),
+) -> JudgmentModel:
     """재분석용 기본 adapter를 선택한다."""
 
     if load_chat_backend() == "codex":
+        if tools:
+            raise ModelBackendConfigurationError(
+                "Injected LangChain tools are not supported by the codex IA backend."
+            )
         from clio_agent_graph.analysis.codex_adapter import CodexRevisionJudgmentModel
 
         return CodexRevisionJudgmentModel()
     from clio_agent_graph.analysis.langchain_adapter import LangChainRevisionJudgmentModel
 
-    return LangChainRevisionJudgmentModel()
+    return LangChainRevisionJudgmentModel(tools=tools)
 
 
 def load_default_code_explorer() -> CodeExplorer | None:

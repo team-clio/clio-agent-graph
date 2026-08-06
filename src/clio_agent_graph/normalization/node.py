@@ -20,6 +20,10 @@ def create_normalize_report_node(
         """JSON 형태의 그래프 입력을 검증하고 정규화 결과를 상태에 기록한다."""
 
         report = NormalizeReportInput.model_validate(state["bug_report"])
-        return {"normalized_report": normalizer.normalize(report)}
+        normalized_report = normalizer.normalize(report)
+        return {
+            "normalized_report": normalized_report,
+            "normalization_tool_calls": normalizer.last_tool_calls,
+        }
 
     return normalize_report

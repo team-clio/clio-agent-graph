@@ -5,6 +5,7 @@ from typing import Any, Literal, TypedDict
 from langgraph.graph import END, START, StateGraph
 from pydantic import ValidationError
 
+from clio_agent_graph.agent_runtime import ToolCallRecord
 from clio_agent_graph.analysis.errors import JudgmentError, JudgmentOutputError
 from clio_agent_graph.analysis.models import (
     AnalysisDraft,
@@ -36,6 +37,7 @@ class JudgmentState(JudgmentInput, total=False):
 
     exploration_directive: ExplorationDirective
     analysis_draft: AnalysisDraft
+    judgment_tool_calls: list[ToolCallRecord]
 
 
 class JudgmentOutput(TypedDict, total=False):
@@ -43,6 +45,7 @@ class JudgmentOutput(TypedDict, total=False):
 
     exploration_directive: ExplorationDirective
     analysis_draft: AnalysisDraft
+    judgment_tool_calls: list[ToolCallRecord]
 
 
 def build_judgment_subgraph(model: JudgmentModel):
@@ -66,7 +69,10 @@ def build_judgment_subgraph(model: JudgmentModel):
             ),
             ExplorationDirective,
         )
-        return {"exploration_directive": directive}
+        return {
+            "exploration_directive": directive,
+            "judgment_tool_calls": [dict(item) for item in getattr(model, "last_tool_calls", [])],
+        }
 
     def analyze_evidence(state: JudgmentState) -> dict[str, Any]:
         """Evidence를 분석 초안으로 바꾸고 잘못된 출력은 한 번 교정한다."""
@@ -93,7 +99,10 @@ def build_judgment_subgraph(model: JudgmentModel):
             call_and_validate,
             AnalysisDraft,
         )
-        return {"analysis_draft": draft}
+        return {
+            "analysis_draft": draft,
+            "judgment_tool_calls": [dict(item) for item in getattr(model, "last_tool_calls", [])],
+        }
 
     builder = StateGraph(
         JudgmentState,

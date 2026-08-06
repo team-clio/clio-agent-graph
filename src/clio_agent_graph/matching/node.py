@@ -29,7 +29,10 @@ def create_judge_issue_match_node(
             IssueCandidate.model_validate(candidate) for candidate in state["issue_candidates"]
         ]
         comparisons = matcher.compare(report=report, candidates=candidates)
-        return {"candidate_comparisons": comparisons}
+        return {
+            "candidate_comparisons": comparisons,
+            "matching_tool_calls": matcher.last_tool_calls,
+        }
 
     return judge_issue_match
 

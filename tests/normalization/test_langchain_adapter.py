@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from langchain_core.tools import tool
 
 from clio_agent_graph.normalization import NormalizationOutputError
 from clio_agent_graph.normalization.langchain_adapter import LangChainNormalizationModel
@@ -113,3 +114,50 @@ def test_provider_error_is_not_wrapped_as_output_error(
 
     with pytest.raises(RuntimeError, match="provider unavailable"):
         LangChainNormalizationModel("openai:test-model").extract("report")
+
+
+def test_adapter_uses_autonomous_agent_when_tools_are_provided(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    @tool
+    def read_report_attachment(attachment_id: str) -> dict[str, str]:
+        """Read a report attachment."""
+
+        return {"attachment_id": attachment_id}
+
+    captured: dict[str, Any] = {}
+
+    class FakeToolAgent:
+        last_tool_calls = [
+            {
+                "name": "read_report_attachment",
+                "arguments": {"attachment_id": "LOG-1"},
+                "call_id": "call-1",
+            }
+        ]
+
+        def __init__(self, **kwargs: Any) -> None:
+            captured.update(kwargs)
+
+        def invoke(self, prompt: str) -> NormalizationDraft:
+            assert "Normalize the following bug report" in prompt
+            return NormalizationDraft(observed_behavior="첨부 로그에서 timeout을 확인했다.")
+
+    monkeypatch.setattr(
+        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
+        lambda _model_name: object(),
+    )
+    monkeypatch.setattr(
+        "clio_agent_graph.normalization.langchain_adapter.StructuredToolAgent",
+        FakeToolAgent,
+    )
+
+    adapter = LangChainNormalizationModel(
+        "openai:test-model",
+        tools=[read_report_attachment],
+    )
+    result = adapter.extract("attachment_id=LOG-1")
+
+    assert result.observed_behavior == "첨부 로그에서 timeout을 확인했다."
+    assert captured["tools"] == [read_report_attachment]
+    assert adapter.last_tool_calls[0]["name"] == "read_report_attachment"

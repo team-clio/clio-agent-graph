@@ -2,6 +2,7 @@
 
 from typing import TypedDict
 
+from clio_agent_graph.agent_runtime import ToolCallRecord
 from clio_agent_graph.matching.models import (
     CandidateComparison,
     IssueCandidate,
@@ -25,8 +26,11 @@ class ReportMatchingState(TypedDict, total=False):
     project_id: int
     bug_id: int
     normalized_report: NormalizedReport
+    normalization_tool_calls: list[ToolCallRecord]
     issue_candidates: list[IssueCandidate]
+    retrieval_tool_calls: list[ToolCallRecord]
     candidate_comparisons: list[CandidateComparison]
+    matching_tool_calls: list[ToolCallRecord]
     match_decision: MatchDecision
 
 

@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from clio_agent_graph.agent_runtime import ToolCallRecord
 from clio_agent_graph.normalization.models import (
     AffectedSurface,
     Environment,
@@ -58,6 +59,13 @@ class ReportNormalizer:
         report_text = self._build_report_text(report)
         draft = self._extract_with_one_correction(report_text)
         return self._build_result(report, draft)
+
+    @property
+    def last_tool_calls(self) -> list[ToolCallRecord]:
+        """모델 adapter가 지원하면 직전 자율 조사 Tool 기록을 반환한다."""
+
+        calls = getattr(self._model, "last_tool_calls", [])
+        return [dict(item) for item in calls]
 
     def _extract_with_one_correction(self, report_text: str) -> NormalizationDraft:
         """첫 structured output 오류를 피드백하고 두 번째 오류는 명시적으로 실패시킨다."""

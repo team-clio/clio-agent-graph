@@ -256,6 +256,41 @@ IA의 Code Explorer는 ChatGPT로 로그인된 Codex CLI를 읽기 전용으로 
 Evidence 후보를 수집할 수 있습니다. 탐색기를 설정하지 않은 IA 그래프는
 `CodeExplorerNotConfiguredError`로 실패해 정상적인 검색 결과 0건과 설정 실패를 구분합니다.
 
+## 자율 Tool 선택
+
+기본 그래프는 기존의 결정적인 NM·Hybrid Retrieval·RM·IA 경로를 유지합니다. 역할별 Tool을
+그래프 빌더에 주입하면 LangChain agent가 현재 입력과 Tool observation을 보고 필요한 Tool, 호출 순서,
+추가 조사 여부와 종료 시점을 직접 결정합니다.
+
+```python
+report_matching_graph = build_report_matching_graph(
+    normalization_tools=[read_report_attachment, lookup_project_glossary],
+    retrieval_tools=[search_issues_exact, search_issues_semantic, read_issue],
+    matching_tools=[read_representative_bugs, read_issue_history],
+)
+
+issue_analyzer_graph = build_issue_analyzer_graph(
+    exploration_tools=[
+        list_project_repositories,
+        search_repository_code,
+        read_repository_file,
+        search_project_knowledge,
+        read_project_knowledge,
+    ],
+    judgment_tools=[trace_knowledge_sources],
+)
+```
+
+Tool은 project와 repository snapshot이 closure에 고정된 읽기 전용 Tool로 만드는 것을 원칙으로 합니다.
+Agent는 최종 Pydantic schema를 벗어날 수 없고 Tool·모델 호출 및 graph recursion 상한이 적용됩니다.
+선택한 Tool 이름과 인자는 graph 내부 state의 `normalization_tool_calls`, `retrieval_tool_calls`,
+`matching_tool_calls`, `exploration_tool_calls`, `judgment_tool_calls`에 기록됩니다. 공개 출력에는 이 감사
+정보를 포함하지 않습니다.
+
+현재 외부 LangChain Tool 주입은 `CLIO_CHAT_BACKEND=langchain`에서 지원합니다. Codex backend는 Codex
+자체 읽기 도구를 사용하는 기존 경로를 유지하며, provider와 Tool runtime 통합 전에는 외부 Tool을 함께
+주입하면 명시적인 설정 오류로 실패합니다.
+
 ## 로컬 실행
 
 ```bash
