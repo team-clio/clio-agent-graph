@@ -37,45 +37,38 @@ class FakeChatModel:
 def test_model_is_created_lazily_and_reused(monkeypatch: pytest.MonkeyPatch) -> None:
     structured_model = FakeStructuredModel({"observed_behavior": "결제 요청이 실패한다."})
     chat_model = FakeChatModel(structured_model)
-    initialized_models: list[str] = []
+    build_calls: list[bool] = []
 
-    def fake_init_chat_model(model_name: str) -> FakeChatModel:
-        initialized_models.append(model_name)
+    def fake_build_chat_model() -> FakeChatModel:
+        build_calls.append(True)
         return chat_model
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
-        fake_init_chat_model,
+        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        fake_build_chat_model,
     )
-    adapter = LangChainNormalizationModel("openai:test-model")
+    adapter = LangChainNormalizationModel()
 
-    assert initialized_models == []
+    assert build_calls == []
 
     first = adapter.extract("first report")
     second = adapter.extract("second report")
 
     assert first.observed_behavior == "결제 요청이 실패한다."
     assert second.observed_behavior == "결제 요청이 실패한다."
-    assert initialized_models == ["openai:test-model"]
+    assert build_calls == [True]
     assert chat_model.schemas == [NormalizationDraft]
 
 
-def test_adapter_uses_environment_model_and_passes_correction_feedback(
+def test_adapter_passes_correction_feedback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     structured_model = FakeStructuredModel({})
     chat_model = FakeChatModel(structured_model)
-    initialized_models: list[str] = []
-
-    monkeypatch.setenv("CLIO_MODEL", "openai:environment-model")
-
-    def fake_init_chat_model(model_name: str) -> FakeChatModel:
-        initialized_models.append(model_name)
-        return chat_model
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
-        fake_init_chat_model,
+        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        lambda: chat_model,
     )
 
     LangChainNormalizationModel().extract(
@@ -83,7 +76,6 @@ def test_adapter_uses_environment_model_and_passes_correction_feedback(
         correction_feedback="expected_behavior must be null",
     )
 
-    assert initialized_models == ["openai:environment-model"]
     human_message = structured_model.calls[0][1]
     assert "expected_behavior must be null" in str(human_message.content)
 
@@ -94,12 +86,12 @@ def test_invalid_structured_result_is_wrapped_for_service_correction(
     structured_model = FakeStructuredModel({"unexpected_field": "not allowed"})
     chat_model = FakeChatModel(structured_model)
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
-        lambda _model_name: chat_model,
+        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        lambda: chat_model,
     )
 
     with pytest.raises(NormalizationOutputError, match="Extra inputs are not permitted"):
-        LangChainNormalizationModel("openai:test-model").extract("report")
+        LangChainNormalizationModel().extract("report")
 
 
 def test_provider_error_is_not_wrapped_as_output_error(
@@ -108,12 +100,12 @@ def test_provider_error_is_not_wrapped_as_output_error(
     structured_model = FakeStructuredModel(RuntimeError("provider unavailable"))
     chat_model = FakeChatModel(structured_model)
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
-        lambda _model_name: chat_model,
+        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        lambda: chat_model,
     )
 
     with pytest.raises(RuntimeError, match="provider unavailable"):
-        LangChainNormalizationModel("openai:test-model").extract("report")
+        LangChainNormalizationModel().extract("report")
 
 
 def test_adapter_uses_autonomous_agent_when_tools_are_provided(
@@ -144,8 +136,8 @@ def test_adapter_uses_autonomous_agent_when_tools_are_provided(
             return NormalizationDraft(observed_behavior="첨부 로그에서 timeout을 확인했다.")
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.init_chat_model",
-        lambda _model_name: object(),
+        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        lambda: object(),
     )
     monkeypatch.setattr(
         "clio_agent_graph.normalization.langchain_adapter.StructuredToolAgent",
@@ -153,7 +145,6 @@ def test_adapter_uses_autonomous_agent_when_tools_are_provided(
     )
 
     adapter = LangChainNormalizationModel(
-        "openai:test-model",
         tools=[read_report_attachment],
     )
     result = adapter.extract("attachment_id=LOG-1")

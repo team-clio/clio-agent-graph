@@ -1,10 +1,8 @@
 """LangChain chat model을 RM 후보 비교 Protocol에 연결하는 adapter."""
 
-import os
 from collections.abc import Sequence
 from typing import Any
 
-from langchain.chat_models import init_chat_model
 from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import BaseTool
@@ -16,12 +14,11 @@ from clio_agent_graph.agent_runtime import (
     StructuredToolAgent,
     ToolCallRecord,
 )
+from clio_agent_graph.llm import build_chat_model
 from clio_agent_graph.matching.errors import IssueMatchOutputError
 from clio_agent_graph.matching.models import IssueCandidate, MatchComparisonDraft
 from clio_agent_graph.matching.prompts import SYSTEM_PROMPT, build_user_prompt
 from clio_agent_graph.normalization.models import NormalizedReport
-
-DEFAULT_MODEL = "openai:gpt-4.1-mini"
 
 
 class LangChainIssueMatchModel:
@@ -29,13 +26,11 @@ class LangChainIssueMatchModel:
 
     def __init__(
         self,
-        model_name: str | None = None,
         *,
         tools: Sequence[BaseTool] = (),
         agent_limits: AgentLimits | None = None,
     ) -> None:
         # 실제 모델은 API key를 요구할 수 있으므로 첫 compare 호출까지 만들지 않는다.
-        self._model_name = model_name
         self._tools = list(tools)
         self._agent_limits = agent_limits
         self._chat_model: Any | None = None
@@ -106,6 +101,5 @@ class LangChainIssueMatchModel:
         """structured runnable과 Tool agent가 공유할 chat model을 지연 생성한다."""
 
         if self._chat_model is None:
-            model_name = self._model_name or os.getenv("CLIO_MODEL", DEFAULT_MODEL)
-            self._chat_model = init_chat_model(model_name)
+            self._chat_model = build_chat_model()
         return self._chat_model

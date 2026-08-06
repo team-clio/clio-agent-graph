@@ -20,18 +20,18 @@ def test_model_is_created_lazily_on_first_comparison() -> None:
     chat_model.with_structured_output.return_value = structured_model
 
     with patch(
-        "clio_agent_graph.matching.langchain_adapter.init_chat_model",
+        "clio_agent_graph.matching.langchain_adapter.build_chat_model",
         return_value=chat_model,
-    ) as init_chat_model:
-        adapter = LangChainIssueMatchModel("test:model")
-        init_chat_model.assert_not_called()
+    ) as build_chat_model:
+        adapter = LangChainIssueMatchModel()
+        build_chat_model.assert_not_called()
 
         result = adapter.compare(
             NormalizedReport(bug_report_id=351, observed_behavior="오류가 발생한다."),
             [IssueCandidate(issue_id=19, title="기존 오류", retrieval_score=0.8)],
         )
 
-    init_chat_model.assert_called_once_with("test:model")
+    build_chat_model.assert_called_once_with()
     chat_model.with_structured_output.assert_called_once_with(MatchComparisonDraft)
     assert result.comparisons[0].issue_id == 19
 
@@ -57,7 +57,7 @@ def test_matcher_uses_candidate_investigation_tools() -> None:
 
     with (
         patch(
-            "clio_agent_graph.matching.langchain_adapter.init_chat_model",
+            "clio_agent_graph.matching.langchain_adapter.build_chat_model",
             return_value=object(),
         ),
         patch(
@@ -66,7 +66,6 @@ def test_matcher_uses_candidate_investigation_tools() -> None:
         ) as agent_class,
     ):
         adapter = LangChainIssueMatchModel(
-            "test:model",
             tools=[read_issue_history],
         )
         result = adapter.compare(

@@ -39,14 +39,14 @@ def test_judgment_model_is_created_lazily() -> None:
     chat_model.with_structured_output.return_value = plan_model
 
     with patch(
-        "clio_agent_graph.analysis.langchain_adapter.init_chat_model",
+        "clio_agent_graph.analysis.langchain_adapter.build_chat_model",
         return_value=chat_model,
-    ) as init_chat_model:
-        adapter = LangChainInitialJudgmentModel("test:model")
-        init_chat_model.assert_not_called()
+    ) as build_chat_model:
+        adapter = LangChainInitialJudgmentModel()
+        build_chat_model.assert_not_called()
 
         result = adapter.plan(_context(), [], [])
 
-    init_chat_model.assert_called_once_with("test:model")
+    build_chat_model.assert_called_once_with()
     chat_model.with_structured_output.assert_called_once_with(ExplorationDirective)
     assert result.questions == []

@@ -8,47 +8,69 @@ from clio_agent_graph.llm import LLMSettings, ToolCallingAgent
 from clio_agent_graph.tools.reports import load_report
 
 
-def test_deepseek_is_the_default_provider_without_credentials(
+def test_openai_model_is_the_single_default_selection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     for name in (
-        "CLIO_LLM_PROVIDER",
-        "CLIO_LLM_MODEL",
-        "CLIO_LLM_BASE_URL",
-        "CLIO_LLM_API_KEY_ENV",
-        "DEEPSEEK_API_KEY",
+        "CLIO_MODEL",
+        "CLIO_MODEL_BASE_URL",
+        "CLIO_MODEL_API_KEY_ENV",
+        "CLIO_MODEL_EXTRA_BODY",
     ):
         monkeypatch.delenv(name, raising=False)
 
     settings = LLMSettings.from_env()
 
-    assert settings.provider == "deepseek"
-    assert settings.model == "deepseek-chat"
-    assert settings.base_url == "https://api.deepseek.com"
-    with pytest.raises(RuntimeError, match="API key"):
-        _ = settings.use_llm
+    assert settings.provider == "openai"
+    assert settings.model == "openai:gpt-4.1-mini"
+    assert settings.base_url is None
 
 
-def test_openai_compatible_provider_uses_environment_configuration(
+def test_custom_endpoint_options_apply_to_the_selected_global_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("CLIO_LLM_PROVIDER", "openai_compatible")
-    monkeypatch.setenv("CLIO_LLM_MODEL", "local-model")
-    monkeypatch.setenv("CLIO_LLM_BASE_URL", "http://localhost:8000/v1")
-    monkeypatch.setenv("CLIO_LLM_API_KEY_ENV", "LOCAL_LLM_KEY")
+    monkeypatch.setenv("CLIO_MODEL", "openai:local-model")
+    monkeypatch.setenv("CLIO_MODEL_BASE_URL", "http://localhost:8000/v1")
+    monkeypatch.setenv("CLIO_MODEL_API_KEY_ENV", "LOCAL_LLM_KEY")
+    monkeypatch.setenv("CLIO_MODEL_EXTRA_BODY", '{"thinking":{"type":"disabled"}}')
     monkeypatch.setenv("LOCAL_LLM_KEY", "test-key")
+    captured: dict[str, object] = {}
 
-    settings = LLMSettings.from_env()
+    def fake_init_chat_model(model: str, **kwargs: object) -> object:
+        captured["model"] = model
+        captured["kwargs"] = kwargs
+        return object()
 
-    assert settings.use_llm is True
-    assert settings.model == "local-model"
+    monkeypatch.setattr(llm, "init_chat_model", fake_init_chat_model)
+
+    result = llm.build_chat_model()
+
+    assert result is not None
+    assert captured == {
+        "model": "openai:local-model",
+        "kwargs": {
+            "base_url": "http://localhost:8000/v1",
+            "api_key": "test-key",
+            "extra_body": {"thinking": {"type": "disabled"}},
+        },
+    }
 
 
-def test_llm_requires_a_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+def test_llm_requires_explicitly_selected_key_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CLIO_MODEL_API_KEY_ENV", "MISSING_PROVIDER_KEY")
+    monkeypatch.delenv("MISSING_PROVIDER_KEY", raising=False)
 
-    with pytest.raises(RuntimeError, match="API key"):
-        _ = LLMSettings.from_env().use_llm
+    with pytest.raises(RuntimeError, match="MISSING_PROVIDER_KEY"):
+        LLMSettings.from_env()
+
+
+def test_model_selection_requires_provider_prefix(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CLIO_MODEL", "model-without-provider")
+
+    with pytest.raises(ValueError, match="provider:model"):
+        LLMSettings.from_env()
 
 
 class _AgentResponse(BaseModel):
@@ -58,7 +80,6 @@ class _AgentResponse(BaseModel):
 def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
     captured: dict[str, object] = {}
 
     class FakeAgent:
@@ -70,7 +91,7 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
         captured["kwargs"] = kwargs
         return FakeAgent()
 
-    monkeypatch.setattr(llm, "build_chat_model", lambda settings: object())
+    monkeypatch.setattr(llm, "build_chat_model", lambda: object())
     monkeypatch.setattr(llm, "create_agent", fake_create_agent)
 
     result = ToolCallingAgent(

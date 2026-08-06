@@ -1,18 +1,15 @@
 """LLM이 제공된 코드·PCM·이력 Tool을 선택하는 IA Exploration subgraph."""
 
 import json
-import os
 from collections.abc import Sequence
 from typing import Any, Protocol, TypedDict
 
-from langchain.chat_models import init_chat_model
 from langchain_core.tools import BaseTool
 from langgraph.graph import END, START, StateGraph
 
 from clio_agent_graph.agent_runtime import AgentLimits, StructuredToolAgent, ToolCallRecord
 from clio_agent_graph.analysis.models import ExplorationRequest, ExplorationResponse
-
-DEFAULT_MODEL = "openai:gpt-4.1-mini"
+from clio_agent_graph.llm import build_chat_model
 
 SYSTEM_PROMPT = """당신은 Issue Analyzer의 읽기 전용 Evidence Explorer입니다.
 현재 질문에 답하기 위해 제공된 코드·프로젝트 지식·변경 이력 Tool 중 필요한 것을 직접 선택하세요.
@@ -45,7 +42,6 @@ class AgenticExplorationOutput(TypedDict):
 def build_agentic_code_exploration_graph(
     *,
     tools: Sequence[BaseTool] = (),
-    model_name: str | None = None,
     agent: ExplorationAgent | None = None,
     agent_limits: AgentLimits | None = None,
 ):
@@ -61,7 +57,7 @@ def build_agentic_code_exploration_graph(
         nonlocal actual_agent
         if actual_agent is None:
             actual_agent = StructuredToolAgent(
-                model=init_chat_model(model_name or os.getenv("CLIO_MODEL", DEFAULT_MODEL)),
+                model=build_chat_model(),
                 tools=list(tools),
                 system_prompt=SYSTEM_PROMPT,
                 response_model=ExplorationResponse,

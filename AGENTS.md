@@ -54,5 +54,5 @@ and include sample requests/responses or screenshots when they clarify observabl
 ## Configuration & Secrets
 
 Copy `.env.example` to `.env` for local configuration. Never commit API keys, LangSmith tokens,
-or provider credentials. Prefer the deterministic mock fallback for tests; configure
-`CLIO_LLM_*` variables and `DEEPSEEK_API_KEY` only for live LLM runs.
+or provider credentials. Prefer the deterministic mock fallback for tests; configure the global
+`CLIO_MODEL` selection and the selected provider's credential only for live LLM runs.

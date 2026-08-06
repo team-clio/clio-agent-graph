@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Protocol
 
 from clio_agent_graph.services.pcm import DocumentKnowledgePipeline, InMemoryPCM
-from clio_agent_graph.services.pcm.knowledge_model import OpenAICompatibleKnowledgeModel
+from clio_agent_graph.services.pcm.knowledge_model import LangChainKnowledgeModel
 from clio_agent_graph.services.pcm.postgres import PostgresPCM
 from clio_agent_graph.services.pcm.reader import ProjectContextReader
 from clio_agent_graph.services.pcm.repository_pipeline import RepositoryKnowledgePipeline
@@ -45,7 +45,7 @@ def get_application_services() -> ApplicationServices:
         pcm = InMemoryPCM()
         source_store = None
     repositories = GitRepositoryService.from_data_root(storage.data_root)
-    knowledge_model = OpenAICompatibleKnowledgeModel()
+    knowledge_model = LangChainKnowledgeModel()
     return ApplicationServices(
         pcm=pcm,
         document_pipeline=DocumentKnowledgePipeline(

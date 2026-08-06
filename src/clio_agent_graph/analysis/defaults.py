@@ -8,22 +8,13 @@ from langchain_core.tools import BaseTool
 from clio_agent_graph.analysis.errors import CodeExplorerNotConfiguredError
 from clio_agent_graph.analysis.exploration_subgraph import CodeExplorer
 from clio_agent_graph.analysis.ports import JudgmentModel
-from clio_agent_graph.configuration import ModelBackendConfigurationError, load_chat_backend
 
 
 def load_default_initial_judgment_model(
     tools: Sequence[BaseTool] = (),
 ) -> JudgmentModel:
-    """최초 분석용 기본 adapter를 선택한다."""
+    """전역 LangChain 모델을 사용하는 최초 분석 adapter를 선택한다."""
 
-    if load_chat_backend() == "codex":
-        if tools:
-            raise ModelBackendConfigurationError(
-                "Injected LangChain tools are not supported by the codex IA backend."
-            )
-        from clio_agent_graph.analysis.codex_adapter import CodexInitialJudgmentModel
-
-        return CodexInitialJudgmentModel()
     from clio_agent_graph.analysis.langchain_adapter import LangChainInitialJudgmentModel
 
     return LangChainInitialJudgmentModel(tools=tools)
@@ -32,16 +23,8 @@ def load_default_initial_judgment_model(
 def load_default_revision_judgment_model(
     tools: Sequence[BaseTool] = (),
 ) -> JudgmentModel:
-    """재분석용 기본 adapter를 선택한다."""
+    """전역 LangChain 모델을 사용하는 재분석 adapter를 선택한다."""
 
-    if load_chat_backend() == "codex":
-        if tools:
-            raise ModelBackendConfigurationError(
-                "Injected LangChain tools are not supported by the codex IA backend."
-            )
-        from clio_agent_graph.analysis.codex_adapter import CodexRevisionJudgmentModel
-
-        return CodexRevisionJudgmentModel()
     from clio_agent_graph.analysis.langchain_adapter import LangChainRevisionJudgmentModel
 
     return LangChainRevisionJudgmentModel(tools=tools)

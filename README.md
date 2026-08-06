@@ -81,7 +81,7 @@ Issue 분석은 요청 시작 시 PCM snapshot을 고정하고, 같은 snapshot�
 장기 지식을 검색·읽기·출처 추적합니다. `document_added` 경로도 실제 PCM vertical slice에
 연결되어 있습니다.
 
-정규화된 Markdown을 heading 단위 Source로 나누고, `.env`의 기존 `CLIO_LLM_*` 설정을 사용하는
+정규화된 Markdown을 heading 단위 Source로 나누고, 다른 Agent와 동일한 전역 `CLIO_MODEL`을 사용하는
 Knowledge LLM으로 topic과 변경안을 생성한 뒤 PCM revision으로 commit합니다.
 `CLIO_PCM_DATABASE_URL`을 설정하면 PostgreSQL metadata와 immutable Markdown 파일에
 영속화하고, 설정하지 않으면 개발용 in-memory PCM을 사용합니다. Vector 의미 검색은
@@ -172,18 +172,21 @@ Tool 뒤의 인프라 구현입니다. PCM Tool의 project와 snapshot은 Graph�
 
 이슈 생성·연결, 분석 저장, 문서·레포지토리 인덱싱 같은 쓰기 작업은 Agent에
 노출하지 않고 Graph Node가 Service를 직접 호출합니다. 리포트 매칭·이슈 분석·해결 계획
-Agent는 `create_agent` 기반의 실제 Tool-calling loop만 사용하며, `DEEPSEEK_API_KEY`가
-없으면 실행을 시작하지 않고 설정 오류로 실패합니다.
+Agent는 `create_agent` 기반의 실제 Tool-calling loop를 사용합니다. provider 인증은 LangChain integration이
+해당 provider의 표준 환경 변수에서 읽습니다.
 
-기본값은 DeepSeek의 OpenAI 호환 API입니다. 다른 OpenAI 호환 공급자로 바꾸려면 아래
-환경 변수만 변경합니다.
+모든 LLM 호출은 노드별 설정 없이 하나의 `CLIO_MODEL=provider:model` 선택을 공유합니다. 예를 들어
+OpenAI를 선택하면 다음과 같습니다.
 
 ```dotenv
-CLIO_LLM_PROVIDER=openai_compatible
-CLIO_LLM_MODEL=<provider-model>
-CLIO_LLM_BASE_URL=<provider-base-url>
-CLIO_LLM_API_KEY_ENV=<environment-variable-containing-key>
+CLIO_MODEL=openai:gpt-4.1-mini
+OPENAI_API_KEY=<provider-key>
 ```
+
+Anthropic·Google 등은 해당 LangChain provider integration을 설치한 뒤 같은 형식으로 교체합니다. 커스텀
+OpenAI 호환 endpoint는 `CLIO_MODEL_BASE_URL`, `CLIO_MODEL_API_KEY_ENV`와 필요 시
+`CLIO_MODEL_EXTRA_BODY`를 보조 연결 옵션으로 사용합니다. 이 값들은 다른 모델을 고르는 노드별 설정이
+아니라 선택한 전역 모델의 연결 정보입니다.
 
 - 프로젝트 snapshot 고정
 - PCM Knowledge hybrid 검색
@@ -287,9 +290,8 @@ Agent는 최종 Pydantic schema를 벗어날 수 없고 Tool·모델 호출 및 
 `matching_tool_calls`, `exploration_tool_calls`, `judgment_tool_calls`에 기록됩니다. 공개 출력에는 이 감사
 정보를 포함하지 않습니다.
 
-현재 외부 LangChain Tool 주입은 `CLIO_CHAT_BACKEND=langchain`에서 지원합니다. Codex backend는 Codex
-자체 읽기 도구를 사용하는 기존 경로를 유지하며, provider와 Tool runtime 통합 전에는 외부 Tool을 함께
-주입하면 명시적인 설정 오류로 실패합니다.
+외부 Tool은 전역으로 선택된 LangChain ChatModel의 tool calling 기능을 사용합니다. Codex CLI는 application
+Tool runtime을 대신하지 않으며, 아래의 선택적 읽기 전용 Code Explorer로만 분리해 사용합니다.
 
 ## 로컬 실행
 
@@ -309,8 +311,12 @@ langgraph dev
 - 그래프 ID: `clio_agent`, `report_matcher`, `bug_retrieval_indexer`,
   `bug_retrieval_backfill`, `issue_analyzer`, `issue_reanalyzer`
 
-기본 `langchain` backend에서 `CLIO_MODEL`은 NM·RM·IA가 공유하는 모델 식별자입니다. ChatGPT Plus·Pro
-구독 로그인을 로컬 테스트에 사용하려면 먼저 Codex CLI 로그인을 확인한 뒤 backend를 바꿉니다.
+`CLIO_MODEL`은 루트 Tool-calling Agent, NM, Retrieval Agent, RM, IA와 PCM Knowledge 생성까지 모든 chat
+LLM 사용 지점이 공유하는 유일한 모델 식별자입니다. 값을 변경하고 서버를 재시작하면 전체 실행이 새
+provider/model을 사용합니다.
+
+Codex CLI는 전역 chat model과 별개인 선택적 Code Explorer입니다. 이를 사용할 때만 ChatGPT Plus·Pro
+구독 로그인을 확인하고 탐색기를 활성화합니다.
 
 ```bash
 codex login status
@@ -318,15 +324,13 @@ codex login status
 ```
 
 ```text
-CLIO_CHAT_BACKEND=codex
 CLIO_CODEX_TIMEOUT_SECONDS=300
 CLIO_CODE_EXPLORER=codex
 CLIO_CODEBASE_PATH=/absolute/path/to/clio-server
 ```
 
-이 경로는 `codex exec`를 일회성·읽기 전용으로 실행하며 저장된 ChatGPT OAuth 자격 증명을 사용합니다.
-`OPENAI_API_KEY`는 Codex 자식 프로세스에 전달하지 않습니다. 일반 OpenAI API를 쓸 때는
-`CLIO_CHAT_BACKEND=langchain`과 provider API key를 사용하면 됩니다.
+이 탐색 경로는 `codex exec`를 일회성·읽기 전용으로 실행하며 저장된 ChatGPT OAuth 자격 증명을
+사용합니다. `OPENAI_API_KEY`는 Codex 자식 프로세스에 전달하지 않습니다.
 
 Issue Retrieval Agent에는 PostgreSQL과 embedding 설정이 필요합니다. 로컬 기본 구성은
 `clio-server/compose.yaml`의 Ollama에서 Qwen3 Embedding 0.6B를 실행합니다.

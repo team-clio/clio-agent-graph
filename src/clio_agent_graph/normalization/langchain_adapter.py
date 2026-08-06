@@ -1,10 +1,8 @@
 """LangChain chat model을 NM 전용 Protocol에 연결하는 adapter."""
 
-import os
 from collections.abc import Sequence
 from typing import Any
 
-from langchain.chat_models import init_chat_model
 from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import BaseTool
@@ -16,11 +14,10 @@ from clio_agent_graph.agent_runtime import (
     StructuredToolAgent,
     ToolCallRecord,
 )
+from clio_agent_graph.llm import build_chat_model
 from clio_agent_graph.normalization.models import NormalizationDraft
 from clio_agent_graph.normalization.ports import NormalizationOutputError
 from clio_agent_graph.normalization.prompts import SYSTEM_PROMPT, build_user_prompt
-
-DEFAULT_MODEL = "openai:gpt-4.1-mini"
 
 
 class LangChainNormalizationModel:
@@ -28,13 +25,11 @@ class LangChainNormalizationModel:
 
     def __init__(
         self,
-        model_name: str | None = None,
         *,
         tools: Sequence[BaseTool] = (),
         agent_limits: AgentLimits | None = None,
     ) -> None:
         # 모델 객체는 네트워크 설정이나 API key를 요구할 수 있어 첫 호출까지 만들지 않는다.
-        self._model_name = model_name
         self._tools = list(tools)
         self._agent_limits = agent_limits
         self._chat_model: Any | None = None
@@ -103,6 +98,5 @@ class LangChainNormalizationModel:
         """Tool agent와 structured runnable이 공유할 실제 chat model을 만든다."""
 
         if self._chat_model is None:
-            model_name = self._model_name or os.getenv("CLIO_MODEL", DEFAULT_MODEL)
-            self._chat_model = init_chat_model(model_name)
+            self._chat_model = build_chat_model()
         return self._chat_model

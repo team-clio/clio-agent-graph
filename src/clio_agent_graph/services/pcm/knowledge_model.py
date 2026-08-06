@@ -1,4 +1,4 @@
-"""기존 CLIO_LLM 설정을 사용하는 PCM Knowledge 모델."""
+"""전역으로 선택된 LangChain 모델을 사용하는 PCM Knowledge 모델."""
 
 import json
 from collections.abc import Mapping, Sequence
@@ -7,7 +7,7 @@ from typing import Protocol, TypeVar
 from langchain_core.messages import AIMessage
 from pydantic import BaseModel, ValidationError
 
-from clio_agent_graph.llm import LLMSettings, _json_object, build_chat_model
+from clio_agent_graph.llm import _json_object, build_chat_model
 from clio_agent_graph.services.pcm.errors import KnowledgeModelOutputError
 from clio_agent_graph.services.pcm.models import (
     DocumentSourceUnit,
@@ -46,11 +46,8 @@ class KnowledgeModel(Protocol):
     ) -> KnowledgeChangeDraftSet: ...
 
 
-class OpenAICompatibleKnowledgeModel:
-    """`.env`에서 주입된 기존 CLIO_LLM_* 설정을 재사용한다."""
-
-    def __init__(self, settings: LLMSettings | None = None) -> None:
-        self._settings = settings
+class LangChainKnowledgeModel:
+    """다른 모든 Agent와 같은 ``CLIO_MODEL`` 선택을 재사용한다."""
 
     async def extract_topics(
         self,
@@ -112,9 +109,7 @@ class OpenAICompatibleKnowledgeModel:
         payload: dict[str, object],
         response_model: type[StructuredResult],
     ) -> StructuredResult:
-        settings = self._settings or LLMSettings.from_env()
-        _ = settings.use_llm
-        model = build_chat_model(settings)
+        model = build_chat_model()
         prompt = (
             "You are the knowledge synthesis component of Clio Project Context Memory. "
             "Do not invent sources or identifiers. Return only one JSON object matching this "
@@ -128,3 +123,7 @@ class OpenAICompatibleKnowledgeModel:
             return response_model.model_validate_json(_json_object(response.content))
         except (ValidationError, ValueError) as exc:
             raise KnowledgeModelOutputError(f"Invalid Knowledge LLM output: {exc}") from exc
+
+
+# 이전 공개 이름은 호출부 호환을 위해 남기되 별도 provider 설정은 받지 않는다.
+OpenAICompatibleKnowledgeModel = LangChainKnowledgeModel

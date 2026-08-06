@@ -1,4 +1,4 @@
-"""교체 가능한 LLM 공급자와 LangChain Agent 실행기."""
+"""전역 LLM 선택과 LangChain Agent 실행기."""
 
 import json
 import os
@@ -6,70 +6,81 @@ from dataclasses import dataclass
 from typing import Any, TypeVar
 
 from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
 
+DEFAULT_MODEL = "openai:gpt-4.1-mini"
+
 
 @dataclass(frozen=True)
 class LLMSettings:
-    """환경 변수로 설정하는 OpenAI 호환 LLM 연결 정보."""
+    """모든 LLM 사용 지점이 공유하는 하나의 provider/model 설정."""
 
-    provider: str
     model: str
-    base_url: str
-    api_key: str | None
+    base_url: str | None = None
+    api_key_env: str | None = None
+    api_key: str | None = None
+    extra_body: dict[str, Any] | None = None
 
     @classmethod
     def from_env(cls) -> "LLMSettings":
-        provider = os.getenv("CLIO_LLM_PROVIDER", "deepseek")
-        defaults = {
-            "deepseek": ("deepseek-chat", "https://api.deepseek.com", "DEEPSEEK_API_KEY"),
-            "openai_compatible": ("", "", ""),
-        }
-        if provider not in defaults:
-            raise ValueError(f"Unsupported CLIO_LLM_PROVIDER: {provider}")
-        default_model, default_base_url, default_key_env = defaults[provider]
-        key_env = os.getenv("CLIO_LLM_API_KEY_ENV", default_key_env)
+        """단일 ``CLIO_MODEL=provider:model`` 선택과 선택적 연결 옵션을 읽는다."""
+
+        model = os.getenv("CLIO_MODEL", DEFAULT_MODEL).strip()
+        if not model or ":" not in model:
+            raise ValueError("CLIO_MODEL must use the 'provider:model' format.")
+
+        api_key_env = os.getenv("CLIO_MODEL_API_KEY_ENV", "").strip() or None
+        api_key = os.getenv(api_key_env) if api_key_env else None
+        if api_key_env and not api_key:
+            raise RuntimeError(f"LLM execution requires the API key in {api_key_env}.")
+
+        extra_body_value = os.getenv("CLIO_MODEL_EXTRA_BODY", "").strip()
+        extra_body: dict[str, Any] | None = None
+        if extra_body_value:
+            try:
+                parsed_extra_body = json.loads(extra_body_value)
+            except json.JSONDecodeError as exc:
+                raise ValueError("CLIO_MODEL_EXTRA_BODY must be a JSON object.") from exc
+            if not isinstance(parsed_extra_body, dict):
+                raise ValueError("CLIO_MODEL_EXTRA_BODY must be a JSON object.")
+            extra_body = parsed_extra_body
+
         return cls(
-            provider=provider,
-            model=os.getenv("CLIO_LLM_MODEL", default_model),
-            base_url=os.getenv("CLIO_LLM_BASE_URL", default_base_url),
-            api_key=os.getenv(key_env) if key_env else None,
+            model=model,
+            base_url=os.getenv("CLIO_MODEL_BASE_URL", "").strip() or None,
+            api_key_env=api_key_env,
+            api_key=api_key,
+            extra_body=extra_body,
         )
 
     @property
-    def use_llm(self) -> bool:
-        if not self.api_key:
-            raise RuntimeError("LLM execution requires the configured API key.")
-        return True
+    def provider(self) -> str:
+        """LangChain model identifier의 provider prefix."""
+
+        return self.model.split(":", 1)[0]
 
 
-def build_chat_model(settings: LLMSettings):
-    """선택된 OpenAI 호환 공급자의 LangChain ChatModel을 생성한다."""
+def build_chat_model():
+    """전역 선택을 LangChain provider integration에 위임해 ChatModel을 만든다."""
 
-    if not settings.model or not settings.base_url:
-        raise RuntimeError("LLM mode requires CLIO_LLM_MODEL and CLIO_LLM_BASE_URL.")
-    try:
-        from langchain_openai import ChatOpenAI
-    except ImportError as exc:
-        raise RuntimeError('Install LLM support with: pip install -e ".[llm]"') from exc
-    model_kwargs: dict[str, Any] = {
-        "model": settings.model,
-        "api_key": settings.api_key,
-        "base_url": settings.base_url,
-    }
-    if settings.provider == "deepseek":
-        # LangChain's structured-output strategy sets tool_choice. DeepSeek rejects that
-        # parameter in thinking mode, so Agent runs use its compatible non-thinking mode.
-        model_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
-    return ChatOpenAI(**model_kwargs)
+    selected = LLMSettings.from_env()
+    model_kwargs: dict[str, Any] = {}
+    if selected.base_url:
+        model_kwargs["base_url"] = selected.base_url
+    if selected.api_key:
+        model_kwargs["api_key"] = selected.api_key
+    if selected.extra_body:
+        model_kwargs["extra_body"] = selected.extra_body
+    return init_chat_model(selected.model, **model_kwargs)
 
 
 class ToolCallingAgent:
-    """실제 LLM Tool-calling Agent를 실행한다."""
+    """전역으로 선택된 LLM을 사용하는 Tool-calling Agent."""
 
     def __init__(
         self,
@@ -85,10 +96,8 @@ class ToolCallingAgent:
         self.response_model = response_model
 
     def _create_agent(self):
-        settings = LLMSettings.from_env()
-        _ = settings.use_llm
         return create_agent(
-            model=build_chat_model(settings),
+            model=build_chat_model(),
             tools=self.tools,
             system_prompt=(
                 f"{self.system_prompt}\n\nWhen you are finished, return only one JSON object. "

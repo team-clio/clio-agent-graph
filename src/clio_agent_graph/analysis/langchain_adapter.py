@@ -1,10 +1,8 @@
 """LangChain 모델을 Initial·Revision Judgment Protocol에 연결하는 adapter."""
 
-import os
 from collections.abc import Sequence
 from typing import Any
 
-from langchain.chat_models import init_chat_model
 from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import BaseTool
@@ -30,8 +28,7 @@ from clio_agent_graph.analysis.prompts import (
     build_analysis_prompt,
     build_plan_prompt,
 )
-
-DEFAULT_MODEL = "openai:gpt-4.1-mini"
+from clio_agent_graph.llm import build_chat_model
 
 
 class _LangChainJudgmentModel:
@@ -40,13 +37,11 @@ class _LangChainJudgmentModel:
     def __init__(
         self,
         system_prompt: str,
-        model_name: str | None = None,
         *,
         tools: Sequence[BaseTool] = (),
         agent_limits: AgentLimits | None = None,
     ) -> None:
         self._system_prompt = system_prompt
-        self._model_name = model_name
         self._tools = list(tools)
         self._agent_limits = agent_limits
         self._chat_model: Any | None = None
@@ -132,8 +127,7 @@ class _LangChainJudgmentModel:
         """첫 plan 또는 analyze 호출 전에는 실제 provider 모델을 만들지 않는다."""
 
         if self._chat_model is None:
-            model_name = self._model_name or os.getenv("CLIO_MODEL", DEFAULT_MODEL)
-            self._chat_model = init_chat_model(model_name)
+            self._chat_model = build_chat_model()
         return self._chat_model
 
     def _get_plan_model(self) -> Any:
@@ -184,14 +178,12 @@ class LangChainInitialJudgmentModel(_LangChainJudgmentModel):
 
     def __init__(
         self,
-        model_name: str | None = None,
         *,
         tools: Sequence[BaseTool] = (),
         agent_limits: AgentLimits | None = None,
     ) -> None:
         super().__init__(
             INITIAL_SYSTEM_PROMPT,
-            model_name,
             tools=tools,
             agent_limits=agent_limits,
         )
@@ -202,14 +194,12 @@ class LangChainRevisionJudgmentModel(_LangChainJudgmentModel):
 
     def __init__(
         self,
-        model_name: str | None = None,
         *,
         tools: Sequence[BaseTool] = (),
         agent_limits: AgentLimits | None = None,
     ) -> None:
         super().__init__(
             REVISION_SYSTEM_PROMPT,
-            model_name,
             tools=tools,
             agent_limits=agent_limits,
         )

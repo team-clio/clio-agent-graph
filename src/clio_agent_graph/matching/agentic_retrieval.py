@@ -1,11 +1,9 @@
 """LLM이 제공된 검색 Tool을 선택하는 Issue Retrieval subgraph."""
 
 import json
-import os
 from collections.abc import Sequence
 from typing import Any, Protocol, TypedDict
 
-from langchain.chat_models import init_chat_model
 from langchain_core.tools import BaseTool
 from langgraph.graph import END, START, StateGraph
 
@@ -14,14 +12,13 @@ from clio_agent_graph.agent_runtime import (
     StructuredToolAgent,
     ToolCallRecord,
 )
+from clio_agent_graph.llm import build_chat_model
 from clio_agent_graph.matching.models import (
     IssueCandidate,
     IssueRetrievalRequest,
     IssueRetrievalResponse,
 )
 from clio_agent_graph.normalization.models import NormalizedReport
-
-DEFAULT_MODEL = "openai:gpt-4.1-mini"
 
 SYSTEM_PROMPT = """당신은 Report Matcher 앞에서 기존 Issue 후보를 조사하는 Retrieval Agent입니다.
 제공된 검색 Tool 중 현재 Bug에 필요한 것을 직접 선택하세요.
@@ -59,7 +56,6 @@ class AgenticRetrievalOutput(TypedDict):
 def build_agentic_issue_retrieval_graph(
     *,
     tools: Sequence[BaseTool] = (),
-    model_name: str | None = None,
     agent: RetrievalAgent | None = None,
     agent_limits: AgentLimits | None = None,
 ):
@@ -75,7 +71,7 @@ def build_agentic_issue_retrieval_graph(
         nonlocal actual_agent
         if actual_agent is None:
             actual_agent = StructuredToolAgent(
-                model=init_chat_model(model_name or os.getenv("CLIO_MODEL", DEFAULT_MODEL)),
+                model=build_chat_model(),
                 tools=list(tools),
                 system_prompt=SYSTEM_PROMPT,
                 response_model=IssueRetrievalResponse,
