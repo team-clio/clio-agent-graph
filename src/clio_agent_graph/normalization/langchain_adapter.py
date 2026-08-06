@@ -18,6 +18,7 @@ from clio_agent_graph.llm import build_chat_model
 from clio_agent_graph.normalization.models import NormalizationDraft
 from clio_agent_graph.normalization.ports import NormalizationOutputError
 from clio_agent_graph.normalization.prompts import SYSTEM_PROMPT, build_user_prompt
+from clio_agent_graph.structured_output import bind_structured_output
 
 
 class LangChainNormalizationModel:
@@ -75,8 +76,8 @@ class LangChainNormalizationModel:
         """최초 호출에서만 실제 chat model과 structured output runnable을 만든다."""
 
         if self._structured_model is None:
-            self._structured_model = self._get_chat_model().with_structured_output(
-                NormalizationDraft
+            self._structured_model = bind_structured_output(
+                self._get_chat_model(), NormalizationDraft
             )
         return self._structured_model
 

@@ -19,6 +19,7 @@ from clio_agent_graph.matching.errors import IssueMatchOutputError
 from clio_agent_graph.matching.models import IssueCandidate, MatchComparisonDraft
 from clio_agent_graph.matching.prompts import SYSTEM_PROMPT, build_user_prompt
 from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.structured_output import bind_structured_output
 
 
 class LangChainIssueMatchModel:
@@ -78,8 +79,8 @@ class LangChainIssueMatchModel:
         """최초 비교 호출에서만 실제 chat model을 만든다."""
 
         if self._structured_model is None:
-            self._structured_model = self._get_chat_model().with_structured_output(
-                MatchComparisonDraft
+            self._structured_model = bind_structured_output(
+                self._get_chat_model(), MatchComparisonDraft
             )
         return self._structured_model
 

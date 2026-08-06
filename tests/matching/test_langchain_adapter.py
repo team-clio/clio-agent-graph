@@ -32,7 +32,9 @@ def test_model_is_created_lazily_on_first_comparison() -> None:
         )
 
     build_chat_model.assert_called_once_with()
-    chat_model.with_structured_output.assert_called_once_with(MatchComparisonDraft)
+    chat_model.with_structured_output.assert_called_once_with(
+        MatchComparisonDraft, method="function_calling"
+    )
     assert result.comparisons[0].issue_id == 19
 
 

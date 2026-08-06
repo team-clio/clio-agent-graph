@@ -188,6 +188,12 @@ OpenAI 호환 endpoint는 `CLIO_MODEL_BASE_URL`, `CLIO_MODEL_API_KEY_ENV`와 필
 `CLIO_MODEL_EXTRA_BODY`를 보조 연결 옵션으로 사용합니다. 이 값들은 다른 모델을 고르는 노드별 설정이
 아니라 선택한 전역 모델의 연결 정보입니다.
 
+구조화 출력은 provider-native JSON Schema API에 의존하지 않습니다. 일반 NM·RM·IA·PCM 호출은
+LangChain `function_calling`, 자율 Agent의 최종 응답은 `ToolStrategy`를 공통으로 사용합니다. 따라서
+LangChain integration과 tool calling을 지원하는 모델이면 동일한 Pydantic 출력 계약과 Tool runtime을
+공유합니다. Tool calling을 지원하지 않는 모델은 자율 Tool 선택이 필요한 Clio 실행 모델로 사용할 수
+없습니다.
+
 - 프로젝트 snapshot 고정
 - PCM Knowledge hybrid 검색
 - Knowledge 전체 Markdown 읽기

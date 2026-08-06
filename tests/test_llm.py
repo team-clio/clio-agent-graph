@@ -1,5 +1,4 @@
 import pytest
-from langchain_core.messages import AIMessage
 from pydantic import BaseModel
 
 from clio_agent_graph import llm
@@ -85,7 +84,7 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
     class FakeAgent:
         def invoke(self, request: dict[str, object]) -> dict[str, object]:
             captured["request"] = request
-            return {"messages": [AIMessage(content='{"answer":"done"}')]}
+            return {"structured_response": {"answer": "done"}}
 
     def fake_create_agent(**kwargs: object) -> FakeAgent:
         captured["kwargs"] = kwargs

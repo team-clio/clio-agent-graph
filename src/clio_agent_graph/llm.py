@@ -7,9 +7,10 @@ from typing import Any, TypeVar
 
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
+
+from clio_agent_graph.structured_output import tool_strategy
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
 
@@ -105,14 +106,15 @@ class ToolCallingAgent:
                 f"{', '.join(self.response_model.model_fields)}. Follow this output schema: "
                 f"{json.dumps(self.response_model.model_json_schema())}"
             ),
+            response_format=tool_strategy(self.response_model),
             name=self.name,
         )
 
     def _parse_result(self, result: dict[str, Any]) -> dict[str, Any]:
-        message = result["messages"][-1]
-        if not isinstance(message, AIMessage) or not isinstance(message.content, str):
-            raise RuntimeError("LLM Agent did not return a text final response.")
-        return self.response_model.model_validate_json(_json_object(message.content)).model_dump()
+        structured = result.get("structured_response")
+        if structured is None:
+            raise RuntimeError("LLM Agent did not return a structured response.")
+        return self.response_model.model_validate(structured).model_dump()
 
     def invoke(self, prompt: str) -> dict[str, Any]:
         result = self._create_agent().invoke({"messages": [{"role": "user", "content": prompt}]})

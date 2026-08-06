@@ -12,6 +12,8 @@ from langchain_core.tools import BaseTool
 from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel, ValidationError
 
+from clio_agent_graph.structured_output import tool_strategy
+
 StructuredResult = TypeVar("StructuredResult", bound=BaseModel)
 
 TOOL_AUTONOMY_RULES = """
@@ -81,7 +83,7 @@ class StructuredToolAgent(Generic[StructuredResult]):
             model=model,
             tools=tools,
             system_prompt=system_prompt.rstrip() + TOOL_AUTONOMY_RULES,
-            response_format=response_model,
+            response_format=tool_strategy(response_model),
             middleware=(
                 ToolCallLimitMiddleware(
                     run_limit=self._limits.max_tool_calls,

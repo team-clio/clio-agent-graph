@@ -4,10 +4,9 @@ import json
 from collections.abc import Mapping, Sequence
 from typing import Protocol, TypeVar
 
-from langchain_core.messages import AIMessage
 from pydantic import BaseModel, ValidationError
 
-from clio_agent_graph.llm import _json_object, build_chat_model
+from clio_agent_graph.llm import build_chat_model
 from clio_agent_graph.services.pcm.errors import KnowledgeModelOutputError
 from clio_agent_graph.services.pcm.models import (
     DocumentSourceUnit,
@@ -18,6 +17,7 @@ from clio_agent_graph.services.pcm.models import (
     RepositorySourceUnit,
     TopicExtractionResult,
 )
+from clio_agent_graph.structured_output import bind_structured_output
 
 StructuredResult = TypeVar("StructuredResult", bound=BaseModel)
 KnowledgeSourceUnit = DocumentSourceUnit | RepositorySourceUnit
@@ -109,7 +109,7 @@ class LangChainKnowledgeModel:
         payload: dict[str, object],
         response_model: type[StructuredResult],
     ) -> StructuredResult:
-        model = build_chat_model()
+        model = bind_structured_output(build_chat_model(), response_model)
         prompt = (
             "You are the knowledge synthesis component of Clio Project Context Memory. "
             "Do not invent sources or identifiers. Return only one JSON object matching this "
@@ -117,10 +117,8 @@ class LangChainKnowledgeModel:
             f"Task:\n{task}\n\nInput:\n{json.dumps(payload, ensure_ascii=False)}"
         )
         response = await model.ainvoke(prompt)
-        if not isinstance(response, AIMessage) or not isinstance(response.content, str):
-            raise KnowledgeModelOutputError("Knowledge LLM did not return text output.")
         try:
-            return response_model.model_validate_json(_json_object(response.content))
+            return response_model.model_validate(response)
         except (ValidationError, ValueError) as exc:
             raise KnowledgeModelOutputError(f"Invalid Knowledge LLM output: {exc}") from exc
 

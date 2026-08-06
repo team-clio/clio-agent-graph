@@ -1,5 +1,6 @@
 from typing import Any
 
+from langchain.agents.structured_output import ToolStrategy
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 from pydantic import BaseModel
@@ -71,6 +72,6 @@ def test_structured_agent_records_llm_selected_tools(monkeypatch) -> None:
         }
     ]
     assert captured["tools"] == [lookup_context]
-    assert captured["response_format"] is AgentResult
+    assert isinstance(captured["response_format"], ToolStrategy)
     assert "Decide which of the provided tools" in captured["system_prompt"]
     assert compiled.configs == [{"recursion_limit": 40}]

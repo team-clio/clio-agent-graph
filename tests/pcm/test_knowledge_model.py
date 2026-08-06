@@ -1,5 +1,4 @@
 import pytest
-from langchain_core.messages import AIMessage
 
 from clio_agent_graph.services.pcm import knowledge_model
 from clio_agent_graph.services.pcm.knowledge_model import LangChainKnowledgeModel
@@ -12,23 +11,27 @@ async def test_knowledge_model_reuses_global_chat_model_factory(
 ) -> None:
     captured: dict[str, object] = {}
 
-    class FakeChatModel:
-        async def ainvoke(self, prompt: str) -> AIMessage:
+    class FakeStructuredModel:
+        async def ainvoke(self, prompt: str) -> dict[str, object]:
             captured["prompt"] = prompt
-            return AIMessage(
-                content="""
-                {
-                  "topics": [{
-                    "topic_key": "permissions",
-                    "title": "Permissions",
-                    "knowledge_type": "domain_rule",
-                    "summary": "Edit permissions.",
-                    "source_unit_ids": ["DSU-1"],
-                    "suggested_search_queries": ["edit permissions"]
-                  }]
-                }
-                """
-            )
+            return {
+                "topics": [
+                    {
+                        "topic_key": "permissions",
+                        "title": "Permissions",
+                        "knowledge_type": "domain_rule",
+                        "summary": "Edit permissions.",
+                        "source_unit_ids": ["DSU-1"],
+                        "suggested_search_queries": ["edit permissions"],
+                    }
+                ]
+            }
+
+    class FakeChatModel:
+        def with_structured_output(self, schema: type, *, method: str) -> FakeStructuredModel:
+            captured["schema"] = schema
+            captured["method"] = method
+            return FakeStructuredModel()
 
     def fake_build_chat_model() -> FakeChatModel:
         captured["model_built"] = True
@@ -50,5 +53,6 @@ async def test_knowledge_model_reuses_global_chat_model_factory(
     )
 
     assert captured["model_built"] is True
+    assert captured["method"] == "function_calling"
     assert result.topics[0].source_unit_ids == ("DSU-1",)
     assert "TopicExtractionResult" in str(captured["prompt"])

@@ -48,5 +48,7 @@ def test_judgment_model_is_created_lazily() -> None:
         result = adapter.plan(_context(), [], [])
 
     build_chat_model.assert_called_once_with()
-    chat_model.with_structured_output.assert_called_once_with(ExplorationDirective)
+    chat_model.with_structured_output.assert_called_once_with(
+        ExplorationDirective, method="function_calling"
+    )
     assert result.questions == []

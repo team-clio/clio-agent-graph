@@ -29,6 +29,7 @@ from clio_agent_graph.analysis.prompts import (
     build_plan_prompt,
 )
 from clio_agent_graph.llm import build_chat_model
+from clio_agent_graph.structured_output import bind_structured_output
 
 
 class _LangChainJudgmentModel:
@@ -134,14 +135,14 @@ class _LangChainJudgmentModel:
         """탐색 질문 schema를 사용하는 runnable을 최초 한 번만 만든다."""
 
         if self._plan_model is None:
-            self._plan_model = self._get_chat_model().with_structured_output(ExplorationDirective)
+            self._plan_model = bind_structured_output(self._get_chat_model(), ExplorationDirective)
         return self._plan_model
 
     def _get_analysis_model(self) -> Any:
         """분석 초안 schema를 사용하는 runnable을 최초 한 번만 만든다."""
 
         if self._analysis_model is None:
-            self._analysis_model = self._get_chat_model().with_structured_output(AnalysisDraft)
+            self._analysis_model = bind_structured_output(self._get_chat_model(), AnalysisDraft)
         return self._analysis_model
 
     def _get_plan_agent(self) -> StructuredToolAgent[ExplorationDirective]:

@@ -29,7 +29,10 @@ class FakeChatModel:
         self.structured_model = structured_model
         self.schemas: list[type] = []
 
-    def with_structured_output(self, schema: type) -> FakeStructuredModel:
+    def with_structured_output(
+        self, schema: type, *, method: str | None = None
+    ) -> FakeStructuredModel:
+        assert method == "function_calling"
         self.schemas.append(schema)
         return self.structured_model
 
