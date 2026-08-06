@@ -2,8 +2,12 @@
   "$schema": "https://langgra.ph/schema.json",
   "dependencies": ["."],
   "graphs": {
-    "clio_agent": "./src/clio_agent_graph/graph.py:graph"
+    "clio_agent": "./src/clio_agent_graph/graph.py:graph",
+    "report_matcher": "./src/clio_agent_graph/matching/graph.py:report_matching_graph",
+    "bug_retrieval_indexer": "./src/clio_agent_graph/retrieval/graph.py:bug_retrieval_indexer_graph",
+    "bug_retrieval_backfill": "./src/clio_agent_graph/retrieval/graph.py:bug_retrieval_backfill_graph",
+    "issue_analyzer": "./src/clio_agent_graph/analysis/graph.py:issue_analyzer_graph",
+    "issue_reanalyzer": "./src/clio_agent_graph/analysis/graph.py:issue_reanalyzer_graph"
   },
   "env": ".env"
 }
-
