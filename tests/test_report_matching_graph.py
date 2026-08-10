@@ -1,8 +1,8 @@
 import pytest
 
-from clio_agent_graph.matching.errors import IssueRetrievalNotConfiguredError
-from clio_agent_graph.matching.graph import build_report_matching_graph
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.workflows.reporting.matching.errors import IssueRetrievalNotConfiguredError
+from clio_agent_graph.workflows.reporting.matching.graph import build_report_matching_graph
+from clio_agent_graph.workflows.reporting.matching.models import (
     CandidateComparison,
     IssueCandidate,
     IssueRetrievalRequest,
@@ -11,8 +11,10 @@ from clio_agent_graph.matching.models import (
     MatchComparisonDraft,
     RepresentativeBug,
 )
-from clio_agent_graph.matching.retrieval_subgraph import build_issue_retrieval_subgraph
-from clio_agent_graph.normalization.models import (
+from clio_agent_graph.workflows.reporting.matching.retrieval_subgraph import (
+    build_issue_retrieval_subgraph,
+)
+from clio_agent_graph.workflows.reporting.normalization.models import (
     AffectedSurface,
     ErrorSignals,
     NormalizationDraft,

@@ -1,6 +1,8 @@
-from clio_agent_graph.matching.retrieval_subgraph import build_issue_retrieval_subgraph
-from clio_agent_graph.normalization.models import ErrorSignals, NormalizedReport
-from clio_agent_graph.retrieval.models import (
+from clio_agent_graph.workflows.reporting.matching.retrieval_subgraph import (
+    build_issue_retrieval_subgraph,
+)
+from clio_agent_graph.workflows.reporting.normalization.models import ErrorSignals, NormalizedReport
+from clio_agent_graph.workflows.reporting.retrieval.models import (
     BugSearchHit,
     HydratedIssue,
     RetrievalScope,

@@ -2,14 +2,14 @@ import json
 
 import pytest
 
-from clio_agent_graph.retrieval.embedding_factory import (
+from clio_agent_graph.workflows.reporting.retrieval.embedding_factory import (
     load_default_embedding_model,
 )
-from clio_agent_graph.retrieval.errors import (
+from clio_agent_graph.workflows.reporting.retrieval.errors import (
     RetrievalConfigurationError,
     RetrievalDataError,
 )
-from clio_agent_graph.retrieval.ollama_embedding import (
+from clio_agent_graph.workflows.reporting.retrieval.ollama_embedding import (
     QUERY_INSTRUCTION,
     OllamaEmbeddingModel,
 )
@@ -41,7 +41,7 @@ def test_ollama_adapter_separates_document_and_instructed_query(monkeypatch) -> 
         return _FakeResponse(b'{"embeddings": [[0.1, 0.2, 0.3]]}')
 
     monkeypatch.setattr(
-        "clio_agent_graph.retrieval.ollama_embedding.urlopen",
+        "clio_agent_graph.workflows.reporting.retrieval.ollama_embedding.urlopen",
         fake_urlopen,
     )
     model = OllamaEmbeddingModel(
@@ -62,7 +62,7 @@ def test_ollama_adapter_separates_document_and_instructed_query(monkeypatch) -> 
 
 def test_ollama_adapter_rejects_invalid_response(monkeypatch) -> None:
     monkeypatch.setattr(
-        "clio_agent_graph.retrieval.ollama_embedding.urlopen",
+        "clio_agent_graph.workflows.reporting.retrieval.ollama_embedding.urlopen",
         lambda *_args, **_kwargs: _FakeResponse(b'{"embeddings": []}'),
     )
 

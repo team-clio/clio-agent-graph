@@ -2,8 +2,11 @@ from pathlib import Path
 
 import pytest
 
-from clio_agent_graph.matching.models import IssueCandidate, IssueRetrievalResponse
-from clio_agent_graph.retrieval.evaluation import (
+from clio_agent_graph.workflows.reporting.matching.models import (
+    IssueCandidate,
+    IssueRetrievalResponse,
+)
+from clio_agent_graph.workflows.reporting.retrieval.evaluation import (
     evaluate_retrieval,
     load_evaluation_cases,
 )

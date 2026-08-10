@@ -1,6 +1,8 @@
-from clio_agent_graph.agent_runtime import ToolCallRecord
-from clio_agent_graph.analysis.agentic_explorer import build_agentic_code_exploration_graph
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.runtime.agent_runtime import ToolCallRecord
+from clio_agent_graph.workflows.analysis.agentic_explorer import (
+    build_agentic_code_exploration_graph,
+)
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisIssue,
     EvidenceCandidate,
@@ -8,7 +10,7 @@ from clio_agent_graph.analysis.models import (
     ExplorationRequest,
     ExplorationResponse,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 class FakeExplorationAgent:

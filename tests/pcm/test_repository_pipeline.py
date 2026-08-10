@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from clio_agent_graph.services.pcm import InMemoryPCM
-from clio_agent_graph.services.pcm.models import (
+from clio_agent_graph.context.pcm import InMemoryPCM
+from clio_agent_graph.context.pcm.models import (
     ExtractedTopic,
     IngestRepositoryCommand,
     KnowledgeCandidate,
@@ -15,8 +15,19 @@ from clio_agent_graph.services.pcm.models import (
     RepositorySourceUnit,
     TopicExtractionResult,
 )
-from clio_agent_graph.services.pcm.repository_pipeline import RepositoryKnowledgePipeline
-from clio_agent_graph.services.repository import GitRepositoryService
+from clio_agent_graph.context.pcm.repository_pipeline import RepositoryKnowledgePipeline
+from clio_agent_graph.context.repository import GitRepositoryService
+
+
+@pytest.fixture(autouse=True)
+def allow_local_repository_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep isolated pipeline tests local; production registration requires HTTPS."""
+
+    monkeypatch.setattr(
+        GitRepositoryService,
+        "_validate_https_source_uri",
+        staticmethod(lambda source_uri: None),
+    )
 
 
 def git(repository: Path, *arguments: str) -> str:

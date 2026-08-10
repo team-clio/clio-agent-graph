@@ -4,12 +4,9 @@ from collections.abc import Mapping, Sequence
 import pytest
 from pydantic import ValidationError
 
-from clio_agent_graph.graph import graph
-from clio_agent_graph.llm import ToolCallingAgent
-from clio_agent_graph.nodes import issue_analysis, memory_sync
-from clio_agent_graph.services.application import ApplicationServices
-from clio_agent_graph.services.pcm import DocumentKnowledgePipeline, InMemoryPCM
-from clio_agent_graph.services.pcm.models import (
+from clio_agent_graph.context.application import ApplicationServices
+from clio_agent_graph.context.pcm import DocumentKnowledgePipeline, InMemoryPCM
+from clio_agent_graph.context.pcm.models import (
     DocumentSourceUnit,
     ExtractedTopic,
     KnowledgeCandidate,
@@ -18,6 +15,9 @@ from clio_agent_graph.services.pcm.models import (
     ProjectContextSnapshot,
     TopicExtractionResult,
 )
+from clio_agent_graph.graph import graph
+from clio_agent_graph.runtime.llm import ToolCallingAgent
+from clio_agent_graph.workflows.orchestration.nodes import issue_analysis, memory_sync
 
 
 @pytest.fixture(autouse=True)

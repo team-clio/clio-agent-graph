@@ -5,7 +5,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 from pydantic import BaseModel
 
-from clio_agent_graph.agent_runtime import StructuredToolAgent
+from clio_agent_graph.runtime.agent_runtime import StructuredToolAgent
 
 
 class AgentResult(BaseModel):
@@ -52,7 +52,7 @@ def test_structured_agent_records_llm_selected_tools(monkeypatch) -> None:
         captured.update(kwargs)
         return compiled
 
-    monkeypatch.setattr("clio_agent_graph.agent_runtime.create_agent", fake_create_agent)
+    monkeypatch.setattr("clio_agent_graph.runtime.agent_runtime.create_agent", fake_create_agent)
     agent = StructuredToolAgent(
         model=object(),
         tools=[lookup_context],

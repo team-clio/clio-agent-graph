@@ -5,11 +5,11 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, inspect, text
 
-from clio_agent_graph.matching.models import IssueRetrievalRequest
-from clio_agent_graph.normalization.models import ErrorSignals, NormalizedReport
-from clio_agent_graph.retrieval.models import BugIndexInput, IndexStatus
-from clio_agent_graph.retrieval.postgres import PostgresRetrievalRepository
-from clio_agent_graph.retrieval.query import (
+from clio_agent_graph.workflows.reporting.matching.models import IssueRetrievalRequest
+from clio_agent_graph.workflows.reporting.normalization.models import ErrorSignals, NormalizedReport
+from clio_agent_graph.workflows.reporting.retrieval.models import BugIndexInput, IndexStatus
+from clio_agent_graph.workflows.reporting.retrieval.postgres import PostgresRetrievalRepository
+from clio_agent_graph.workflows.reporting.retrieval.query import (
     build_search_query,
     build_search_text,
     calculate_document_hash,

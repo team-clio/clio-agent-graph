@@ -1,13 +1,13 @@
 import pytest
 
-from clio_agent_graph.services.pcm import (
+from clio_agent_graph.context.pcm import (
     InMemoryPCM,
     KnowledgeChange,
     KnowledgeChangeSet,
     KnowledgeSearchRequest,
     SourceReference,
 )
-from clio_agent_graph.services.pcm.errors import (
+from clio_agent_graph.context.pcm.errors import (
     KnowledgeNotFoundError,
     PCMRevisionConflict,
     PCMValidationError,

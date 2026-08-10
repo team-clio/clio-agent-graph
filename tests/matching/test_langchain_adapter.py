@@ -2,13 +2,13 @@ from unittest.mock import Mock, patch
 
 from langchain_core.tools import tool
 
-from clio_agent_graph.matching.langchain_adapter import LangChainIssueMatchModel
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.workflows.reporting.matching.langchain_adapter import LangChainIssueMatchModel
+from clio_agent_graph.workflows.reporting.matching.models import (
     CandidateComparison,
     IssueCandidate,
     MatchComparisonDraft,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def test_model_is_created_lazily_on_first_comparison() -> None:
@@ -20,7 +20,7 @@ def test_model_is_created_lazily_on_first_comparison() -> None:
     chat_model.with_structured_output.return_value = structured_model
 
     with patch(
-        "clio_agent_graph.matching.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.matching.langchain_adapter.build_chat_model",
         return_value=chat_model,
     ) as build_chat_model:
         adapter = LangChainIssueMatchModel()
@@ -59,11 +59,11 @@ def test_matcher_uses_candidate_investigation_tools() -> None:
 
     with (
         patch(
-            "clio_agent_graph.matching.langchain_adapter.build_chat_model",
+            "clio_agent_graph.workflows.reporting.matching.langchain_adapter.build_chat_model",
             return_value=object(),
         ),
         patch(
-            "clio_agent_graph.matching.langchain_adapter.StructuredToolAgent",
+            "clio_agent_graph.workflows.reporting.matching.langchain_adapter.StructuredToolAgent",
             return_value=fake_agent,
         ) as agent_class,
     ):

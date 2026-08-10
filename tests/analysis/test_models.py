@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisIssue,
     AnalysisStatus,
@@ -14,7 +14,7 @@ from clio_agent_graph.analysis.models import (
     ReanalysisInput,
     RootCauseHypothesis,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def _bug(bug_id: int = 72) -> AnalysisBug:

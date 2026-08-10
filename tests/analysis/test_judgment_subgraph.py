@@ -1,8 +1,8 @@
 import pytest
 
-from clio_agent_graph.analysis.errors import JudgmentError
-from clio_agent_graph.analysis.judgment_subgraph import build_judgment_subgraph
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.errors import JudgmentError
+from clio_agent_graph.workflows.analysis.judgment_subgraph import build_judgment_subgraph
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisDraft,
     AnalysisIssue,
@@ -16,7 +16,7 @@ from clio_agent_graph.analysis.models import (
     JudgmentPhase,
     RootCauseHypothesis,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 class FakeJudgmentModel:

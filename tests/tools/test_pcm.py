@@ -1,13 +1,13 @@
 import pytest
 
-from clio_agent_graph.services.pcm import (
+from clio_agent_graph.context.pcm import (
     InMemoryPCM,
     KnowledgeChange,
     KnowledgeChangeSet,
     SourceReference,
 )
-from clio_agent_graph.services.pcm.errors import KnowledgeNotFoundError
-from clio_agent_graph.tools.pcm import PCMToolContext, PCMToolFactory
+from clio_agent_graph.context.pcm.errors import KnowledgeNotFoundError
+from clio_agent_graph.context.tools.pcm import PCMToolContext, PCMToolFactory
 
 
 def source(revision: str) -> SourceReference:

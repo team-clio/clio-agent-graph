@@ -2,10 +2,10 @@ import math
 
 import pytest
 
-from clio_agent_graph.retrieval.embedding_factory import (
+from clio_agent_graph.workflows.reporting.retrieval.embedding_factory import (
     load_default_embedding_model,
 )
-from clio_agent_graph.retrieval.local_embedding import (
+from clio_agent_graph.workflows.reporting.retrieval.local_embedding import (
     LOCAL_HASH_DIMENSION,
     LOCAL_HASH_MODEL,
     LocalHashEmbeddingModel,

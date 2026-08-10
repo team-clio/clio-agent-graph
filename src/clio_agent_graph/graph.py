@@ -2,20 +2,20 @@
 
 from langgraph.graph import END, START, StateGraph
 
-from clio_agent_graph.graphs import (
+from clio_agent_graph.workflows.orchestration.graphs import (
     build_code_change_sync_graph,
     build_document_sync_graph,
     build_issue_analysis_graph,
     build_report_processing_graph,
     build_repository_sync_graph,
 )
-from clio_agent_graph.nodes.common import (
+from clio_agent_graph.workflows.orchestration.nodes.common import (
     finalize_request,
     route_request,
     select_subgraph,
     validate_request,
 )
-from clio_agent_graph.state import ClioState
+from clio_agent_graph.workflows.orchestration.state import ClioState
 
 
 def build_graph():

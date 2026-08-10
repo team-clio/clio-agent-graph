@@ -1,5 +1,5 @@
-from clio_agent_graph.services.pcm.chunking import MarkdownKnowledgeChunker
-from clio_agent_graph.services.pcm.models import KnowledgeDocument, SourceReference
+from clio_agent_graph.context.pcm.chunking import MarkdownKnowledgeChunker
+from clio_agent_graph.context.pcm.models import KnowledgeDocument, SourceReference
 
 
 def knowledge(body: str) -> KnowledgeDocument:

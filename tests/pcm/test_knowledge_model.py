@@ -1,8 +1,8 @@
 import pytest
 
-from clio_agent_graph.services.pcm import knowledge_model
-from clio_agent_graph.services.pcm.knowledge_model import LangChainKnowledgeModel
-from clio_agent_graph.services.pcm.models import DocumentSourceUnit
+from clio_agent_graph.context.pcm import knowledge_model
+from clio_agent_graph.context.pcm.knowledge_model import LangChainKnowledgeModel
+from clio_agent_graph.context.pcm.models import DocumentSourceUnit
 
 
 @pytest.mark.asyncio

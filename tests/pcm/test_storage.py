@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from clio_agent_graph.services.pcm.errors import PCMValidationError
-from clio_agent_graph.services.pcm.models import IngestDocumentCommand
-from clio_agent_graph.services.pcm.storage import MarkdownStore
+from clio_agent_graph.context.pcm.errors import PCMValidationError
+from clio_agent_graph.context.pcm.models import IngestDocumentCommand
+from clio_agent_graph.context.pcm.storage import MarkdownStore
 
 
 @pytest.mark.asyncio

@@ -3,14 +3,13 @@
 ## Project Structure & Module Organization
 
 This is a Python 3.11+ LangGraph agent server. Application code is in
-`src/clio_agent_graph/`: `graph.py` defines the top-level router;
-`graphs/` holds reusable subgraphs; `nodes/` implements graph steps;
-`agents/` contains tool-calling agents; `tools/` defines their exposed
-boundaries; and `services/` contains infrastructure adapters and mocks.
-Request schemas and shared state live in `requests.py` and `state.py`.
-Tests mirror the source organization under `tests/`, for example
-`tests/nodes/test_plan_request.py`. Runtime graph configuration is in
-`langgraph.json`.
+`src/clio_agent_graph/`: `graph.py` is the stable server entrypoint;
+`workflows/orchestration/` handles event routing; `workflows/reporting/`
+contains normalization, retrieval, and matching; and `workflows/analysis/`
+contains issue analysis. PCM, repository access, and read-only agent tools
+live under `context/`. Shared LLM and tool-calling support lives under
+`runtime/`. Tests are grouped by behavior under `tests/`. Runtime graph
+configuration is in `langgraph.json`.
 
 ## Build, Test, and Development Commands
 
@@ -38,8 +37,8 @@ give agents direct access to write operations.
 
 ## Testing Guidelines
 
-Write pytest tests named `test_<behavior>()`, placing node tests in `tests/nodes/` and
-cross-graph behavior in `tests/test_graph.py`. Exercise public graph inputs with representative
+Write pytest tests named `test_<behavior>()`, placing orchestration node tests in `tests/nodes/`
+and cross-graph behavior in `tests/test_graph.py`. Exercise public graph inputs with representative
 request payloads and assert both results and routing/terminal status. Add regression coverage for
 every behavior change; there is no repository-wide coverage threshold configured.
 

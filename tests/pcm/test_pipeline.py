@@ -2,13 +2,13 @@ from collections.abc import Mapping, Sequence
 
 import pytest
 
-from clio_agent_graph.services.pcm import (
+from clio_agent_graph.context.pcm import (
     DocumentKnowledgePipeline,
     IngestDocumentCommand,
     InMemoryPCM,
 )
-from clio_agent_graph.services.pcm.errors import KnowledgeModelOutputError
-from clio_agent_graph.services.pcm.models import (
+from clio_agent_graph.context.pcm.errors import KnowledgeModelOutputError
+from clio_agent_graph.context.pcm.models import (
     DocumentSourceUnit,
     ExtractedTopic,
     KnowledgeCandidate,

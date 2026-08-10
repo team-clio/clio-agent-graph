@@ -3,7 +3,7 @@ from typing import Any
 from langchain.agents.structured_output import ToolStrategy
 from pydantic import BaseModel
 
-from clio_agent_graph.structured_output import bind_structured_output, tool_strategy
+from clio_agent_graph.runtime.structured_output import bind_structured_output, tool_strategy
 
 
 class ExampleResult(BaseModel):

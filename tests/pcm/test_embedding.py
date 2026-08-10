@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from clio_agent_graph.services.pcm.embedding import DeterministicLocalEmbedding
+from clio_agent_graph.context.pcm.embedding import DeterministicLocalEmbedding
 
 
 @pytest.mark.asyncio

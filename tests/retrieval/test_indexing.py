@@ -1,13 +1,13 @@
-from clio_agent_graph.normalization.models import (
+from clio_agent_graph.workflows.reporting.normalization.models import (
     NormalizationDraft,
     NormalizedReport,
     NormalizeReportInput,
 )
-from clio_agent_graph.retrieval.graph import (
+from clio_agent_graph.workflows.reporting.retrieval.graph import (
     build_bug_retrieval_backfill_graph,
     build_bug_retrieval_indexer_graph,
 )
-from clio_agent_graph.retrieval.models import BugIndexResult, IndexStatus
+from clio_agent_graph.workflows.reporting.retrieval.models import BugIndexResult, IndexStatus
 
 
 class FakeEmbeddingModel:

@@ -1,16 +1,16 @@
 from unittest.mock import Mock, patch
 
-from clio_agent_graph.analysis.langchain_adapter import (
+from clio_agent_graph.workflows.analysis.langchain_adapter import (
     LangChainInitialJudgmentModel,
 )
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisIssue,
     AnalysisMode,
     ExplorationDirective,
     JudgmentContext,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def _context() -> JudgmentContext:
@@ -39,7 +39,7 @@ def test_judgment_model_is_created_lazily() -> None:
     chat_model.with_structured_output.return_value = plan_model
 
     with patch(
-        "clio_agent_graph.analysis.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.analysis.langchain_adapter.build_chat_model",
         return_value=chat_model,
     ) as build_chat_model:
         adapter = LangChainInitialJudgmentModel()

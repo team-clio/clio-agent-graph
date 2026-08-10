@@ -1,14 +1,14 @@
 import pytest
 
-from clio_agent_graph.nodes import issue_analysis
-from clio_agent_graph.services.application import ApplicationServices
-from clio_agent_graph.services.pcm import (
+from clio_agent_graph.context.application import ApplicationServices
+from clio_agent_graph.context.pcm import (
     DocumentKnowledgePipeline,
     InMemoryPCM,
     KnowledgeChange,
     KnowledgeChangeSet,
     SourceReference,
 )
+from clio_agent_graph.workflows.orchestration.nodes import issue_analysis
 
 
 @pytest.mark.asyncio

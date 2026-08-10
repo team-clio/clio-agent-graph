@@ -1,7 +1,9 @@
 import pytest
 
-from clio_agent_graph.retrieval.errors import RetrievalConfigurationError
-from clio_agent_graph.retrieval.langchain_embedding import LangChainEmbeddingModel
+from clio_agent_graph.workflows.reporting.retrieval.errors import RetrievalConfigurationError
+from clio_agent_graph.workflows.reporting.retrieval.langchain_embedding import (
+    LangChainEmbeddingModel,
+)
 
 
 def test_embedding_model_is_not_created_during_construction(monkeypatch) -> None:

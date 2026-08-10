@@ -1,18 +1,18 @@
 import pytest
 
-from clio_agent_graph.matching.errors import (
+from clio_agent_graph.workflows.reporting.matching.errors import (
     IssueRetrievalError,
     IssueRetrievalNotConfiguredError,
 )
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.workflows.reporting.matching.models import (
     IssueCandidate,
     IssueRetrievalRequest,
     IssueRetrievalResponse,
 )
-from clio_agent_graph.matching.retrieval_subgraph import (
+from clio_agent_graph.workflows.reporting.matching.retrieval_subgraph import (
     build_issue_retrieval_subgraph,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def _input() -> dict[str, object]:

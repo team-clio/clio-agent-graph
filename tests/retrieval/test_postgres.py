@@ -1,7 +1,7 @@
 import pytest
 
-from clio_agent_graph.retrieval.errors import RetrievalConfigurationError
-from clio_agent_graph.retrieval.postgres import (
+from clio_agent_graph.workflows.reporting.retrieval.errors import RetrievalConfigurationError
+from clio_agent_graph.workflows.reporting.retrieval.postgres import (
     PostgresRetrievalRepository,
     normalize_database_url,
 )

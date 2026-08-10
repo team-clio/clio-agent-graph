@@ -1,15 +1,21 @@
 import pytest
 
-from clio_agent_graph.matching.errors import IssueMatchError, IssueMatchOutputError
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.workflows.reporting.matching.errors import (
+    IssueMatchError,
+    IssueMatchOutputError,
+)
+from clio_agent_graph.workflows.reporting.matching.models import (
     CandidateComparison,
     IssueCandidate,
     MatchAction,
     MatchComparisonDraft,
     RepresentativeBug,
 )
-from clio_agent_graph.matching.service import ReportMatcher, load_match_policy_settings
-from clio_agent_graph.normalization.models import (
+from clio_agent_graph.workflows.reporting.matching.service import (
+    ReportMatcher,
+    load_match_policy_settings,
+)
+from clio_agent_graph.workflows.reporting.normalization.models import (
     AffectedSurface,
     ErrorSignals,
     NormalizedReport,

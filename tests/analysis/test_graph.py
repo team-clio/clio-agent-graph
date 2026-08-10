@@ -1,17 +1,17 @@
 import pytest
 
-from clio_agent_graph.analysis.errors import (
+from clio_agent_graph.workflows.analysis.errors import (
     CodeExplorerNotConfiguredError,
     JudgmentOutputError,
 )
-from clio_agent_graph.analysis.exploration_subgraph import (
+from clio_agent_graph.workflows.analysis.exploration_subgraph import (
     build_code_exploration_subgraph,
 )
-from clio_agent_graph.analysis.graph import (
+from clio_agent_graph.workflows.analysis.graph import (
     build_issue_analyzer_graph,
     build_issue_reanalyzer_graph,
 )
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisDraft,
     AnalysisStatus,
     EvidenceCandidate,
@@ -214,7 +214,7 @@ def _draft() -> AnalysisDraft:
 
 
 def _completed_previous_analysis() -> IssueAnalysis:
-    from clio_agent_graph.analysis.models import Evidence
+    from clio_agent_graph.workflows.analysis.models import Evidence
 
     return IssueAnalysis(
         analysis_job_id=500,
