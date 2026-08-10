@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from clio_agent_graph.codex_exec import (
+from clio_agent_graph.runtime.codex_exec import (
     CodexExecError,
     CodexExecOutputError,
     CodexExecStructuredInvoker,

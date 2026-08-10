@@ -1,8 +1,11 @@
 import pytest
 
-from clio_agent_graph.normalization.models import ErrorSignals, NormalizedReport
-from clio_agent_graph.retrieval.fusion import aggregate_issue_candidates, fuse_bug_hits
-from clio_agent_graph.retrieval.models import (
+from clio_agent_graph.workflows.reporting.normalization.models import ErrorSignals, NormalizedReport
+from clio_agent_graph.workflows.reporting.retrieval.fusion import (
+    aggregate_issue_candidates,
+    fuse_bug_hits,
+)
+from clio_agent_graph.workflows.reporting.retrieval.models import (
     BugSearchHit,
     HydratedIssue,
     RetrievalSettings,

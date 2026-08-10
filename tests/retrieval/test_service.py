@@ -1,14 +1,14 @@
 import pytest
 
-from clio_agent_graph.matching.models import IssueRetrievalRequest
-from clio_agent_graph.normalization.models import NormalizedReport
-from clio_agent_graph.retrieval.errors import (
+from clio_agent_graph.workflows.reporting.matching.models import IssueRetrievalRequest
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.retrieval.errors import (
     RetrievalConfigurationError,
     RetrievalIndexNotReadyError,
     RetrievalOperationError,
 )
-from clio_agent_graph.retrieval.models import RetrievalScope, RetrievalSettings
-from clio_agent_graph.retrieval.service import IssueRetrieverService
+from clio_agent_graph.workflows.reporting.retrieval.models import RetrievalScope, RetrievalSettings
+from clio_agent_graph.workflows.reporting.retrieval.service import IssueRetrieverService
 
 
 class FakeEmbeddingModel:

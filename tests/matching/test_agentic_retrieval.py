@@ -1,10 +1,12 @@
-from clio_agent_graph.agent_runtime import ToolCallRecord
-from clio_agent_graph.matching.agentic_retrieval import build_agentic_issue_retrieval_graph
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.runtime.agent_runtime import ToolCallRecord
+from clio_agent_graph.workflows.reporting.matching.agentic_retrieval import (
+    build_agentic_issue_retrieval_graph,
+)
+from clio_agent_graph.workflows.reporting.matching.models import (
     IssueCandidate,
     IssueRetrievalResponse,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 class FakeRetrievalAgent:

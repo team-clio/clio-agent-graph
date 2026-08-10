@@ -5,14 +5,14 @@ from uuid import uuid4
 import asyncpg
 import pytest
 
-from clio_agent_graph.services.pcm.models import (
+from clio_agent_graph.context.pcm.models import (
     KnowledgeChange,
     KnowledgeChangeSet,
     KnowledgeSearchRequest,
     SourceReference,
 )
-from clio_agent_graph.services.pcm.postgres import PostgresPCM
-from clio_agent_graph.services.pcm.storage import MarkdownStore
+from clio_agent_graph.context.pcm.postgres import PostgresPCM
+from clio_agent_graph.context.pcm.storage import MarkdownStore
 
 pytestmark = pytest.mark.postgres
 

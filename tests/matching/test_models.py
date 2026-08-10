@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from clio_agent_graph.matching.models import (
+from clio_agent_graph.workflows.reporting.matching.models import (
     IssueCandidate,
     IssueRetrievalResponse,
     MatchAction,
@@ -9,7 +9,7 @@ from clio_agent_graph.matching.models import (
     MatchPolicySettings,
     RepresentativeBug,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def test_issue_candidate_requires_comparable_content() -> None:

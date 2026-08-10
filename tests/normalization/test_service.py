@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from clio_agent_graph.normalization import (
+from clio_agent_graph.workflows.reporting.normalization import (
     AffectedSurface,
     Environment,
     ErrorSignals,
@@ -12,8 +12,8 @@ from clio_agent_graph.normalization import (
     NormalizeReportInput,
     Reproduction,
 )
-from clio_agent_graph.normalization.ports import NormalizationOutputError
-from clio_agent_graph.normalization.service import (
+from clio_agent_graph.workflows.reporting.normalization.ports import NormalizationOutputError
+from clio_agent_graph.workflows.reporting.normalization.service import (
     REDACTED_VALUE,
     ReportNormalizer,
     ReportPayloadTooLargeError,

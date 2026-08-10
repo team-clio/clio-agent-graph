@@ -1,13 +1,13 @@
 import pytest
 
-from clio_agent_graph.analysis.errors import (
+from clio_agent_graph.workflows.analysis.errors import (
     CodeExplorationError,
     CodeExplorerNotConfiguredError,
 )
-from clio_agent_graph.analysis.exploration_subgraph import (
+from clio_agent_graph.workflows.analysis.exploration_subgraph import (
     build_code_exploration_subgraph,
 )
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisIssue,
     EvidenceCandidate,
@@ -15,7 +15,7 @@ from clio_agent_graph.analysis.models import (
     ExplorationRequest,
     ExplorationResponse,
 )
-from clio_agent_graph.normalization.models import NormalizedReport
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizedReport
 
 
 def _request() -> ExplorationRequest:

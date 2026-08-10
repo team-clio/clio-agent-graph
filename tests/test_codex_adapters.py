@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from clio_agent_graph.analysis.codex_adapter import CodexInitialJudgmentModel
-from clio_agent_graph.analysis.codex_explorer import CodexCodeExplorer
-from clio_agent_graph.analysis.models import (
+from clio_agent_graph.workflows.analysis.codex_adapter import CodexInitialJudgmentModel
+from clio_agent_graph.workflows.analysis.codex_explorer import CodexCodeExplorer
+from clio_agent_graph.workflows.analysis.models import (
     AnalysisBug,
     AnalysisIssue,
     AnalysisMode,
@@ -13,10 +13,16 @@ from clio_agent_graph.analysis.models import (
     ExplorationResponse,
     JudgmentContext,
 )
-from clio_agent_graph.matching.codex_adapter import CodexIssueMatchModel
-from clio_agent_graph.matching.models import IssueCandidate, MatchComparisonDraft
-from clio_agent_graph.normalization.codex_adapter import CodexNormalizationModel
-from clio_agent_graph.normalization.models import NormalizationDraft, NormalizedReport
+from clio_agent_graph.workflows.reporting.matching.codex_adapter import CodexIssueMatchModel
+from clio_agent_graph.workflows.reporting.matching.models import (
+    IssueCandidate,
+    MatchComparisonDraft,
+)
+from clio_agent_graph.workflows.reporting.normalization.codex_adapter import CodexNormalizationModel
+from clio_agent_graph.workflows.reporting.normalization.models import (
+    NormalizationDraft,
+    NormalizedReport,
+)
 
 
 class _FakeInvoker:

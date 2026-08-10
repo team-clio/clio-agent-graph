@@ -3,9 +3,11 @@ from typing import Any
 import pytest
 from langchain_core.tools import tool
 
-from clio_agent_graph.normalization import NormalizationOutputError
-from clio_agent_graph.normalization.langchain_adapter import LangChainNormalizationModel
-from clio_agent_graph.normalization.models import NormalizationDraft
+from clio_agent_graph.workflows.reporting.normalization import NormalizationOutputError
+from clio_agent_graph.workflows.reporting.normalization.langchain_adapter import (
+    LangChainNormalizationModel,
+)
+from clio_agent_graph.workflows.reporting.normalization.models import NormalizationDraft
 
 
 class FakeStructuredModel:
@@ -47,7 +49,7 @@ def test_model_is_created_lazily_and_reused(monkeypatch: pytest.MonkeyPatch) -> 
         return chat_model
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.build_chat_model",
         fake_build_chat_model,
     )
     adapter = LangChainNormalizationModel()
@@ -70,7 +72,7 @@ def test_adapter_passes_correction_feedback(
     chat_model = FakeChatModel(structured_model)
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.build_chat_model",
         lambda: chat_model,
     )
 
@@ -89,7 +91,7 @@ def test_invalid_structured_result_is_wrapped_for_service_correction(
     structured_model = FakeStructuredModel({"unexpected_field": "not allowed"})
     chat_model = FakeChatModel(structured_model)
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.build_chat_model",
         lambda: chat_model,
     )
 
@@ -103,7 +105,7 @@ def test_provider_error_is_not_wrapped_as_output_error(
     structured_model = FakeStructuredModel(RuntimeError("provider unavailable"))
     chat_model = FakeChatModel(structured_model)
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.build_chat_model",
         lambda: chat_model,
     )
 
@@ -139,11 +141,11 @@ def test_adapter_uses_autonomous_agent_when_tools_are_provided(
             return NormalizationDraft(observed_behavior="첨부 로그에서 timeout을 확인했다.")
 
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.build_chat_model",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.build_chat_model",
         lambda: object(),
     )
     monkeypatch.setattr(
-        "clio_agent_graph.normalization.langchain_adapter.StructuredToolAgent",
+        "clio_agent_graph.workflows.reporting.normalization.langchain_adapter.StructuredToolAgent",
         FakeToolAgent,
     )
 

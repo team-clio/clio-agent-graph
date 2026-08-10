@@ -197,14 +197,35 @@ LangChain integration과 tool calling을 지원하는 모델이면 동일한 Pyd
 
 ## 독립 실행 분석 그래프
 
+루트 이벤트 오케스트레이터와 독립 분석 그래프는 서로 다른 공개 계약이다. 루트의
+`clio_agent`는 문자열 기반 이벤트 ID와 PCM·repository lifecycle을 다루고, 독립 그래프는
+Clio Server가 제공하는 정규화된 숫자 ID 및 분석 payload를 처리한다. 두 계약을 암묵적으로
+변환하지 않고 `langgraph.json`의 별도 entrypoint로 유지한다.
+
+의존성 방향은 다음 규칙을 따른다.
+
+```text
+graph entrypoint → workflow(graphs, matching, analysis) → node/service → port/model
+                                                        ↓
+                                                     adapter
+```
+
+- 기능 패키지는 상위 workflow의 state를 import하지 않는다.
+- 각 subgraph는 전역 `ClioState` 대신 자신의 workflow state만 사용한다.
+- Agent에 전달되는 Tool은 읽기 전용이며, 쓰기 작업은 graph node가 수행한다.
+- 외부 구현은 service 또는 adapter 뒤에 두고 graph 생성 경계에서 조립한다.
+
 ```text
 src/clio_agent_graph/
-├── graph.py           # request_type 기반 루트 요청 라우터
-├── state.py           # 루트 라우터의 공유 state
-├── normalization/     # NM 계약·서비스·모델 adapter
-├── matching/          # 독립 NM/RAG/RM 그래프·상태·비교 정책
-├── retrieval/         # Hybrid Bug 검색·색인·PostgreSQL adapter
-└── analysis/          # IA 계약·Code Explorer·Judgment subagent·공통 오케스트레이터
+├── graph.py                 # 안정적인 Agent Server 진입점
+├── workflows/
+│   ├── orchestration/       # 이벤트 요청·상태·노드·root subgraph
+│   ├── reporting/           # 정규화·검색·매칭 workflow
+│   └── analysis/            # 코드 탐색·판단·재분석 workflow
+├── context/
+│   ├── pcm/                 # Project Context Memory와 영속화
+│   └── tools/               # snapshot-bound 읽기 전용 Agent Tool
+└── runtime/                 # LLM·Codex·tool-calling·structured output
 ```
 
 현재 흐름:
@@ -539,7 +560,7 @@ CLIO_RUN_POSTGRES_TESTS=1 pytest -m postgres
 만들지 않습니다.
 
 ```bash
-python -m clio_agent_graph.retrieval.evaluation evals/issue_retrieval_cases.json
+python -m clio_agent_graph.workflows.reporting.retrieval.evaluation evals/issue_retrieval_cases.json
 ```
 
 ## 다음 구현 지점

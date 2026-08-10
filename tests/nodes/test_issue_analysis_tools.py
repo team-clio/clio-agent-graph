@@ -1,12 +1,12 @@
 import pytest
 
-from clio_agent_graph.nodes import issue_analysis
-from clio_agent_graph.services.application import (
+from clio_agent_graph.context.application import (
     ApplicationServices,
     DocumentKnowledgePipeline,
 )
-from clio_agent_graph.services.pcm import InMemoryPCM
-from clio_agent_graph.services.pcm.models import ProjectContextSnapshot
+from clio_agent_graph.context.pcm import InMemoryPCM
+from clio_agent_graph.context.pcm.models import ProjectContextSnapshot
+from clio_agent_graph.workflows.orchestration.nodes import issue_analysis
 
 
 class _RepositoryService:

@@ -6,7 +6,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from clio_agent_graph.retrieval.postgres import normalize_database_url
+from clio_agent_graph.workflows.reporting.retrieval.postgres import normalize_database_url
 
 config = context.config
 if config.config_file_name is not None:

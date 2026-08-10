@@ -1,12 +1,12 @@
-from clio_agent_graph.matching.models import IssueRetrievalRequest
-from clio_agent_graph.normalization.models import (
+from clio_agent_graph.workflows.reporting.matching.models import IssueRetrievalRequest
+from clio_agent_graph.workflows.reporting.normalization.models import (
     AffectedSurface,
     Environment,
     ErrorSignals,
     NormalizedReport,
     Reproduction,
 )
-from clio_agent_graph.retrieval.query import (
+from clio_agent_graph.workflows.reporting.retrieval.query import (
     build_search_query,
     build_search_text,
     calculate_document_hash,

@@ -1,7 +1,7 @@
 import pytest
 
-from clio_agent_graph.services.pcm.errors import PCMValidationError
-from clio_agent_graph.services.pcm.markdown import MarkdownSourceParser
+from clio_agent_graph.context.pcm.errors import PCMValidationError
+from clio_agent_graph.context.pcm.markdown import MarkdownSourceParser
 
 
 def test_splits_markdown_by_heading_hierarchy() -> None:

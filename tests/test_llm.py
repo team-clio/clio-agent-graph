@@ -1,10 +1,14 @@
 import pytest
 from pydantic import BaseModel
 
-from clio_agent_graph import llm
-from clio_agent_graph.agents.models import IssueAnalysisOutput, MatchDecision, ResolutionPlan
-from clio_agent_graph.llm import LLMSettings, ToolCallingAgent
-from clio_agent_graph.tools.reports import load_report
+from clio_agent_graph.context.tools.reports import load_report
+from clio_agent_graph.runtime import llm
+from clio_agent_graph.runtime.llm import LLMSettings, ToolCallingAgent
+from clio_agent_graph.workflows.orchestration.agents.models import (
+    IssueAnalysisOutput,
+    MatchDecision,
+    ResolutionPlan,
+)
 
 
 def test_openai_model_is_the_single_default_selection(

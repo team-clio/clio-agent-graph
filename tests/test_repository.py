@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from clio_agent_graph.services.pcm.models import ProjectContextSnapshot
-from clio_agent_graph.services.repository import GitRepositoryService, RepositoryError
-from clio_agent_graph.tools.repository import RepositoryToolFactory
+from clio_agent_graph.context.pcm.models import ProjectContextSnapshot
+from clio_agent_graph.context.repository import GitRepositoryService, RepositoryError
+from clio_agent_graph.context.tools.repository import RepositoryToolFactory
 
 
 @pytest.fixture(autouse=True)

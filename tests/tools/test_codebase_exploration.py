@@ -1,9 +1,9 @@
 import pytest
 from langchain_core.tools import tool
 
-from clio_agent_graph.analysis.models import ExplorationResponse
-from clio_agent_graph.services.pcm.models import ProjectContextSnapshot
-from clio_agent_graph.tools.codebase_exploration import CodebaseExplorationToolFactory
+from clio_agent_graph.context.pcm.models import ProjectContextSnapshot
+from clio_agent_graph.context.tools.codebase_exploration import CodebaseExplorationToolFactory
+from clio_agent_graph.workflows.analysis.models import ExplorationResponse
 
 
 class _RepositoryTools:
@@ -48,7 +48,7 @@ async def test_explore_codebase_returns_explorer_evidence(
             }
 
     monkeypatch.setattr(
-        "clio_agent_graph.tools.codebase_exploration.build_agentic_code_exploration_graph",
+        "clio_agent_graph.context.tools.codebase_exploration.build_agentic_code_exploration_graph",
         lambda *, tools: _Graph(),
     )
     snapshot = ProjectContextSnapshot(
