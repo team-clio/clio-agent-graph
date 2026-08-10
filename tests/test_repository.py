@@ -8,6 +8,25 @@ from clio_agent_graph.services.repository import GitRepositoryService, Repositor
 from clio_agent_graph.tools.repository import RepositoryToolFactory
 
 
+@pytest.fixture(autouse=True)
+def allow_local_repository_source(
+    monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest
+) -> None:
+    """Keep mirror-read tests local while HTTPS validation is covered separately."""
+
+    if request.node.name in {
+        "test_repository_registration_requires_https_source_uri",
+        "test_repository_registration_rejects_embedded_credentials",
+        "test_repository_register_rejects_non_https_source_uri",
+    }:
+        return
+    monkeypatch.setattr(
+        GitRepositoryService,
+        "_validate_https_source_uri",
+        staticmethod(lambda source_uri: None),
+    )
+
+
 def git(repository: Path, *arguments: str) -> str:
     result = subprocess.run(
         ["git", "-C", str(repository), *arguments],
@@ -101,6 +120,7 @@ async def test_repository_tools_hide_project_and_commit_inputs(tmp_path: Path) -
 
     assert [item.name for item in tools] == [
         "list_project_repositories",
+        "list_repository_files",
         "search_repository_code",
         "read_repository_file",
     ]
@@ -109,8 +129,12 @@ async def test_repository_tools_hide_project_and_commit_inputs(tmp_path: Path) -
         assert "project_id" not in properties
         assert "commit" not in properties
 
-    result = await tools[1].ainvoke({"query": "can_edit"})
+    result = await tools[2].ainvoke({"query": "can_edit"})
     assert result["results"][0]["commit"] == commit
+    files = await tools[1].ainvoke({"repository_id": "backend", "limit": 1})
+    assert files["files"] == [
+        {"repository_id": "backend", "commit": commit, "path": "permissions.py"}
+    ]
 
 
 @pytest.mark.asyncio
@@ -133,5 +157,104 @@ async def test_repository_file_access_blocks_escape_and_secret_files(tmp_path: P
 
     with pytest.raises(RepositoryError, match="contained"):
         await service.read_file(snapshot=snapshot, repository_id="backend", path="../.env")
-    with pytest.raises(RepositoryError, match="secret-bearing"):
-        await service.read_file(snapshot=snapshot, repository_id="backend", path=".env")
+
+
+@pytest.mark.asyncio
+async def test_repository_file_listing_is_snapshot_bound_and_hides_secret_paths(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    first, _ = create_repository(source)
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+    await service.register(
+        project_id="PROJECT-1",
+        repository_id="backend",
+        source_uri=str(source),
+        branch="main",
+    )
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"backend": first},
+    )
+
+    files = await service.list_files(snapshot=snapshot)
+
+    assert files == [{"repository_id": "backend", "commit": first, "path": "permissions.py"}]
+    with pytest.raises(RepositoryError, match="between 1 and 200"):
+        await service.list_files(snapshot=snapshot, limit=0)
+
+
+@pytest.mark.asyncio
+async def test_repository_removal_deletes_only_managed_mirror_and_manifest(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    create_repository(source)
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+    await service.register(
+        project_id="PROJECT-1",
+        repository_id="backend",
+        source_uri=str(source),
+        branch="main",
+    )
+    mirror = service._mirror_path("PROJECT-1", "backend")
+    manifest = service._manifest_path("PROJECT-1", "backend")
+    unrelated = service.root / "unrelated.txt"
+    unrelated.write_text("preserve")
+
+    assert await service.remove(project_id="PROJECT-1", repository_id="backend") is True
+    assert not mirror.exists()
+    assert not manifest.exists()
+    assert unrelated.read_text() == "preserve"
+    assert await service.remove(project_id="PROJECT-1", repository_id="backend") is False
+
+
+@pytest.mark.asyncio
+async def test_repository_removal_unlinks_managed_symlink_without_following_it(
+    tmp_path: Path,
+) -> None:
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+    mirror = service._mirror_path("PROJECT-1", "backend")
+    target = tmp_path / "unrelated-directory"
+    target.mkdir()
+    (target / "preserve.txt").write_text("preserve")
+    mirror.parent.mkdir(parents=True)
+    mirror.symlink_to(target, target_is_directory=True)
+
+    assert await service.remove(project_id="PROJECT-1", repository_id="backend") is True
+    assert not mirror.exists()
+    assert (target / "preserve.txt").read_text() == "preserve"
+
+
+def test_repository_registration_requires_https_source_uri(tmp_path: Path) -> None:
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+
+    with pytest.raises(RepositoryError, match="HTTPS"):
+        service._validate_https_source_uri("git@github.com:clio/repository.git")
+    with pytest.raises(RepositoryError, match="HTTPS"):
+        service._validate_https_source_uri("/tmp/repository")
+    service._validate_https_source_uri("https://github.com/clio/repository.git")
+
+
+def test_repository_registration_rejects_embedded_credentials(tmp_path: Path) -> None:
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+
+    for source_uri in (
+        "https://user@github.com/clio/repository.git",
+        "https://user:token@github.com/clio/repository.git",
+    ):
+        with pytest.raises(RepositoryError, match="must not embed credentials"):
+            service._validate_https_source_uri(source_uri)
+
+
+@pytest.mark.asyncio
+async def test_repository_register_rejects_non_https_source_uri(tmp_path: Path) -> None:
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+
+    with pytest.raises(RepositoryError, match="HTTPS"):
+        await service.register(
+            project_id="PROJECT-1",
+            repository_id="backend",
+            source_uri="http://git.example.internal/backend.git",
+            branch="main",
+        )

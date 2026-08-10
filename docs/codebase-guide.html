@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Clio Agent Graph 코드베이스 입문 안내서">
+  <title>Clio Agent Graph 코드베이스 안내서</title>
+  <style>
+    :root { --ink:#162d2b; --muted:#60736e; --paper:#f5f7f3; --card:#fff; --line:#dbe3dd; --green:#08775d; --green-soft:#e3f4ec; --orange:#d8673f; --orange-soft:#fff0e8; --blue:#376f86; --blue-soft:#e9f3f7; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Pretendard,"Noto Sans KR",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.7; }
+    .wrap { width:min(1120px, calc(100% - 40px)); margin:auto; } a { color:inherit; }
+    header { color:#fff; background:linear-gradient(125deg,#123c38,#08775d 62%,#23a17d); overflow:hidden; }
+    .hero { min-height:440px; padding:74px 0 84px; position:relative; } .hero:after { content:""; position:absolute; width:390px; height:390px; border:48px solid rgba(255,255,255,.1); border-radius:50%; right:-130px; bottom:-180px; }
+    .eyebrow,.kicker { margin:0 0 10px; color:#a8e6cf; font-size:.76rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:820px; margin:0; font-size:clamp(2.65rem,6.5vw,5.2rem); line-height:1.04; letter-spacing:-.065em; } .hero .intro { max-width:690px; margin:22px 0 0; color:#d8eee6; font-size:1.13rem; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; } .chip { padding:5px 10px; border:1px solid rgba(255,255,255,.27); border-radius:999px; background:rgba(255,255,255,.09); font-size:.78rem; }
+    nav { position:sticky; top:0; z-index:5; border-bottom:1px solid var(--line); background:rgba(255,255,255,.94); backdrop-filter:blur(10px); } nav .wrap { display:flex; gap:20px; overflow:auto; } nav a { padding:13px 0; white-space:nowrap; color:#52665f; font-size:.82rem; font-weight:700; text-decoration:none; } nav a:hover { color:var(--green); }
+    section { padding:70px 0; } section:nth-of-type(even) { background:#fff; } .kicker { color:var(--orange); } h2 { margin:0; font-size:clamp(2rem,4.4vw,3.25rem); line-height:1.16; letter-spacing:-.055em; } h3 { margin:0 0 8px; font-size:1.14rem; letter-spacing:-.025em; } .lead { max-width:780px; margin:16px 0 0; color:var(--muted); font-size:1.06rem; }
+    .grid { display:grid; gap:16px; margin-top:30px; } .three { grid-template-columns:repeat(3,1fr); } .two { grid-template-columns:repeat(2,1fr); } .card { padding:23px; border:1px solid var(--line); border-radius:17px; background:var(--card); } .card p { margin:0; color:var(--muted); font-size:.93rem; } .num { display:grid; width:38px; height:38px; margin-bottom:14px; place-items:center; border-radius:11px; background:var(--green-soft); color:var(--green); font-weight:850; }
+    .note { margin-top:28px; padding:20px 23px; border-left:5px solid var(--green); border-radius:0 13px 13px 0; background:var(--green-soft); } .note p { margin:0; } .note strong { color:var(--green); }
+    .diagram { margin-top:29px; padding:25px; overflow-x:auto; border:1px solid var(--line); border-radius:19px; background:#fff; box-shadow:0 12px 35px rgba(20,59,48,.06); } .flow { min-width:800px; display:flex; align-items:stretch; gap:12px; } .box { flex:1; padding:17px; border:1px solid var(--line); border-radius:13px; background:#fff; } .box.green { border-color:#9fd8c3; background:var(--green-soft); } .box.orange { border-color:#f2c0ac; background:var(--orange-soft); } .box.blue { border-color:#b8d9e6; background:var(--blue-soft); } .box small { display:block; color:var(--muted); font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; } .box b { display:block; margin-top:4px; font-size:.98rem; } .box span { display:block; margin-top:7px; color:var(--muted); font-size:.82rem; line-height:1.45; } .arrow { display:grid; align-items:center; color:var(--orange); font-size:1.35rem; font-weight:900; }
+    .tree { margin-top:28px; padding:22px 24px; overflow:auto; border-radius:17px; background:#183532; color:#deeee8; font: .88rem/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre; } .tree .dir { color:#a6e4cc; font-weight:800; } .tree .file { color:#f6c0a9; } code { padding:.12em .35em; border-radius:5px; background:#edf1ed; color:#155545; font: .88em ui-monospace,SFMono-Regular,Menlo,monospace; }
+    table { width:100%; margin-top:28px; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:#fff; } th,td { padding:14px 16px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; } th { background:#edf4f0; color:#50635e; font-size:.78rem; } td { font-size:.9rem; } tr:last-child td { border-bottom:0; } td:first-child { font-weight:750; white-space:nowrap; }
+    .route { display:grid; grid-template-columns:180px 1fr; gap:0 22px; margin-top:27px; } .route dt { padding:14px 0; border-bottom:1px solid var(--line); color:var(--green); font-weight:800; } .route dd { margin:0; padding:14px 0; border-bottom:1px solid var(--line); color:var(--muted); } .tag { display:inline-block; margin-right:6px; padding:2px 7px; border-radius:999px; color:var(--blue); background:var(--blue-soft); font-size:.71rem; font-weight:800; }
+    .steps { counter-reset:step; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:28px; } .step { position:relative; padding:47px 18px 19px; border-radius:15px; background:var(--orange-soft); } .step:before { counter-increment:step; content:counter(step); position:absolute; top:16px; left:18px; color:var(--orange); font-size:.8rem; font-weight:900; } .step p { margin:0; color:#765142; font-size:.89rem; }
+    footer { padding:34px 20px; background:#e6ece7; color:#637770; text-align:center; font-size:.83rem; }
+    @media (max-width:760px) { .hero { min-height:400px; padding:62px 0 70px; } section { padding:54px 0; } .three,.two,.steps { grid-template-columns:1fr; } .route { grid-template-columns:1fr; gap:0; } .route dt { padding-bottom:2px; border-bottom:0; } .route dd { padding-top:2px; } }
+  </style>
+</head>
+<body>
+  <header id="top"><div class="wrap hero">
+    <p class="eyebrow">Clio · Developer onboarding</p>
+    <h1>처음 보는 사람을 위한<br>Clio Agent Graph 지도</h1>
+    <p class="intro">이 프로젝트는 요청 종류에 따라 여러 LangGraph workflow를 실행하는 Python Agent Server입니다. 이 문서는 “어디부터 읽고, 어느 코드가 무엇을 책임지는지”에 초점을 맞춘 코드베이스 안내서입니다.</p>
+    <div class="chips"><span class="chip">Python 3.11+</span><span class="chip">LangGraph</span><span class="chip">Pydantic contracts</span><span class="chip">PCM · Git · Retrieval</span></div>
+  </div></header>
+  <nav><div class="wrap"><a href="#mental-model">한 문장 모델</a><a href="#request">요청 흐름</a><a href="#map">폴더 지도</a><a href="#workflows">주요 workflow</a><a href="#layers">계층과 경계</a><a href="#reading">읽는 순서</a><a href="#today">현재 변경</a></div></nav>
+  <main>
+    <section id="mental-model"><div class="wrap">
+      <p class="kicker">01 · Mental model</p><h2>“요청 라우터 + 목적별 서브그래프 + 안전하게 분리한 도구와 서비스”</h2>
+      <p class="lead">먼저 이 세 덩어리만 기억하면 됩니다. 루트 graph가 요청을 검증하고, 알맞은 workflow가 일을 순서대로 수행하며, Agent는 읽기 전용 Tool을 통해서만 프로젝트 정보를 봅니다.</p>
+      <div class="grid three">
+        <article class="card"><div class="num">1</div><h3>Root Graph</h3><p><code>graph.py</code>가 <code>request_type</code>을 보고 작업 경로를 정합니다. API 진입점은 여기 하나입니다.</p></article>
+        <article class="card"><div class="num">2</div><h3>Subgraph와 Node</h3><p><code>graphs/</code>는 흐름도, <code>nodes/</code>는 각 단계에서 실제로 할 일을 담습니다.</p></article>
+        <article class="card"><div class="num">3</div><h3>Agent · Tool · Service</h3><p>Agent가 판단·도구 선택을 하고, Tool이 권한 경계를 만들며, Service가 PCM·Git·DB 같은 기반 기능을 구현합니다.</p></article>
+      </div>
+      <div class="note"><p><strong>처음엔 세부 AI 프롬프트부터 읽지 않아도 됩니다.</strong> <code>graph.py → requests.py → graphs/ → nodes/</code> 순서로 읽으면 실행 경로가 먼저 잡힙니다.</p></div>
+    </div></section>
+    <section id="request"><div class="wrap">
+      <p class="kicker">02 · Request lifecycle</p><h2>모든 요청은 같은 입구에서<br>검증되고 분기됩니다</h2>
+      <p class="lead">외부에서 들어오는 JSON은 Pydantic 모델로 검증된 뒤 공통 상태에 펼쳐집니다. 이후에는 각 workflow가 그 상태를 채워 결과를 만들고, 마지막에 공통 응답 형태로 정리됩니다.</p>
+      <div class="diagram"><div class="flow">
+        <div class="box orange"><small>Input</small><b>request JSON</b><span>request_id, request_type, project_id, payload</span></div><div class="arrow">→</div>
+        <div class="box green"><small>graph.py</small><b>validate_request</b><span>requests.py 계약으로 입력 검증</span></div><div class="arrow">→</div>
+        <div class="box green"><small>graph.py</small><b>route_request</b><span>request_type별 subgraph 선택</span></div><div class="arrow">→</div>
+        <div class="box blue"><small>graphs/</small><b>업무 workflow</b><span>리포트·분석·동기화 중 하나 실행</span></div><div class="arrow">→</div>
+        <div class="box orange"><small>common.py</small><b>finalize_request</b><span>status, result를 공통 형태로 반환</span></div>
+      </div></div>
+      <dl class="route">
+        <dt>process_report</dt><dd><span class="tag">Report Processing</span>버그 리포트를 정규화하고 기존 이슈와 매칭합니다. 새 이슈면 Issue Analysis로 이어집니다.</dd>
+        <dt>analyze_issue</dt><dd><span class="tag">Issue Analysis</span>문서·코드·이력을 모아 원인 분석과 해결 계획을 만듭니다.</dd>
+        <dt>document_added / deleted</dt><dd><span class="tag">Document Sync</span>프로젝트 문서 지식(PCM)을 생성하거나 삭제 흐름을 처리합니다.</dd>
+        <dt>repository_added / removed</dt><dd><span class="tag">Repository Sync</span>서버 관리 Git mirror를 등록·갱신하거나 제거합니다.</dd>
+        <dt>repository_changed</dt><dd><span class="tag">Code Change Sync</span>활성 commit을 확인하고 변경 파일을 계산한 뒤 새 revision을 활성화합니다.</dd>
+      </dl>
+    </div></section>
+    <section id="map"><div class="wrap">
+      <p class="kicker">03 · File map</p><h2>폴더 이름이 곧<br>아키텍처의 경계입니다</h2>
+      <p class="lead">대부분의 코드는 <code>src/clio_agent_graph/</code> 아래에 있습니다. 같은 기능이라도 “실행 순서”, “AI 호출”, “외부 접근”을 서로 다른 폴더에 둡니다.</p>
+      <div class="tree"><span class="dir">src/clio_agent_graph/</span>
+├── <span class="file">graph.py</span>              # Root Graph: 전체 요청 라우터
+├── <span class="file">requests.py</span>           # 들어오는 JSON의 Pydantic 계약
+├── <span class="file">state.py</span>              # Graph들이 공유하는 실행 상태
+├── <span class="dir">graphs/</span>                # Node를 연결해 workflow를 정의
+├── <span class="dir">nodes/</span>                 # workflow 한 단계의 orchestration
+├── <span class="dir">agents/</span>                # LLM tool-calling Agent
+├── <span class="dir">tools/</span>                 # Agent에 공개하는 읽기 경계
+├── <span class="dir">services/</span>              # PCM, Git mirror, 외부 adapter
+├── <span class="dir">analysis/</span>              # 독립 Issue Analyzer와 code explorer
+├── <span class="dir">matching/</span>              # Report Matcher 독립 graph
+├── <span class="dir">normalization/</span>         # Report Normalizer 계약·adapter
+└── <span class="dir">retrieval/</span>              # Hybrid 검색과 retrieval index
+
+<span class="dir">tests/</span>                      # 위 구조를 대체로 그대로 반영한 pytest
+<span class="dir">docs/</span>                       # 사람이 읽는 설계·실행 문서</div>
+      <table><thead><tr><th>궁금한 것</th><th>가장 먼저 볼 파일</th><th>그 다음</th></tr></thead><tbody>
+        <tr><td>어떤 요청을 받나?</td><td><code>requests.py</code></td><td><code>nodes/common.py</code></td></tr>
+        <tr><td>이슈 분석은 어떻게 하나?</td><td><code>graphs/issue_analysis.py</code></td><td><code>nodes/issue_analysis.py</code>, <code>agents/issue_analysis.py</code></td></tr>
+        <tr><td>프로젝트 지식은 어디 있나?</td><td><code>services/pcm/models.py</code></td><td><code>services/pcm/reader.py</code>, <code>writer.py</code>, <code>postgres.py</code></td></tr>
+        <tr><td>코드는 안전하게 어떻게 읽나?</td><td><code>services/repository.py</code></td><td><code>tools/repository.py</code>, <code>tools/codebase_exploration.py</code></td></tr>
+      </tbody></table>
+    </div></section>
+    <section id="workflows"><div class="wrap">
+      <p class="kicker">04 · Main workflows</p><h2>가장 중요한 두 workflow부터<br>따라가 보세요</h2>
+      <div class="grid two">
+        <article class="card"><h3>Report Processing</h3><p>버그 리포트를 받아 표준화하고, 과거 이슈 후보를 찾은 다음, 기존 이슈 연결·사람 검토·새 이슈 생성 중 하나를 결정합니다. 새 이슈일 때만 Issue Analysis를 재사용합니다.</p><p style="margin-top:14px"><code>load_and_normalize_report → search_issue_candidates → match_report → apply_match_decision</code></p></article>
+        <article class="card"><h3>Issue Analysis</h3><p>시작 시 PCM revision과 repository commit을 snapshot으로 고정합니다. 이후 문서·코드·이력을 병렬 탐색하고, 분석과 해결 계획을 만든 뒤 citation 품질을 확인합니다.</p><p style="margin-top:14px"><code>prepare_analysis → (3개 검색 병렬) → analyze_issue → plan_resolution → quality_gate</code></p></article>
+      </div>
+      <div class="diagram"><div class="flow">
+        <div class="box green"><small>1</small><b>prepare_analysis</b><span>프로젝트 snapshot을 한 번 고정</span></div><div class="arrow">→</div>
+        <div class="box blue"><small>2 · parallel</small><b>문서 · 코드 · 이력 탐색</b><span>서로 독립된 evidence를 동시에 수집</span></div><div class="arrow">→</div>
+        <div class="box green"><small>3</small><b>analyze_issue</b><span>읽기 Tool을 가진 Agent가 사실·근거를 정리</span></div><div class="arrow">→</div>
+        <div class="box orange"><small>4</small><b>quality_gate</b><span>citation과 revision 일치 여부를 검사</span></div>
+      </div></div>
+      <div class="note"><p><strong>snapshot이 중요한 이유:</strong> 분석 중에 문서나 branch가 바뀌어도, 한 요청 안에서는 같은 PCM revision과 같은 Git commit만 보게 합니다. 결과의 근거를 나중에 재확인할 수 있습니다.</p></div>
+    </div></section>
+    <section id="layers"><div class="wrap">
+      <p class="kicker">05 · Boundaries</p><h2>AI에게는 판단을 맡기고,<br>쓰기와 권한은 코드가 통제합니다</h2>
+      <p class="lead">이 프로젝트에서 가장 중요한 설계 규칙입니다. Node는 실행 순서를 책임지고, Agent는 읽기 Tool을 사용해 판단하며, write 작업은 Node가 Service를 직접 호출합니다.</p>
+      <div class="grid three">
+        <article class="card"><div class="num">N</div><h3>Node</h3><p>상태를 읽고 다음 호출을 조합합니다. 등록, commit, 저장처럼 부작용이 있는 작업도 Node에서 시작합니다.</p></article>
+        <article class="card"><div class="num">T</div><h3>Tool</h3><p>Agent의 입력과 권한을 좁힙니다. PCM Tool은 project와 snapshot을 closure로 고정해 Agent가 임의 범위를 지정하지 못하게 합니다.</p></article>
+        <article class="card"><div class="num">S</div><h3>Service</h3><p>Git, PostgreSQL, Markdown 저장소처럼 실제 인프라에 접근합니다. 테스트에서는 in-memory 구현이나 mock으로 바꿉니다.</p></article>
+      </div>
+      <table><thead><tr><th>주체</th><th>가능한 일</th><th>의도적으로 못 하는 일</th></tr></thead><tbody>
+        <tr><td>Agent</td><td>검색, 문서 읽기, 코드 탐색, 분석·계획 생성</td><td>프로젝트 지식·이슈·repository를 직접 쓰기</td></tr>
+        <tr><td>Tool</td><td>입력값 검증, snapshot 범위 고정, 안전한 결과 전달</td><td>Agent에게 credential 또는 임의 파일 시스템을 노출</td></tr>
+        <tr><td>Service</td><td>PCM revision, Git mirror, 검색 index 관리</td><td>Agent의 판단을 우회해 임의 업무 workflow를 결정</td></tr>
+      </tbody></table>
+    </div></section>
+    <section id="reading"><div class="wrap">
+      <p class="kicker">06 · First-week reading path</p><h2>코드를 전부 읽기보다,<br>한 요청을 끝까지 따라가세요</h2>
+      <p class="lead">처음에는 <code>analyze_issue</code> 요청 하나를 선택하는 것을 권합니다. 라우팅, 상태, 병렬 실행, Agent Tool, Service 호출까지 모두 볼 수 있는 대표 경로입니다.</p>
+      <div class="steps">
+        <article class="step"><h3>입력 계약</h3><p><code>requests.py</code>에서 <code>AnalyzeIssueRequest</code>의 필드를 읽습니다.</p></article>
+        <article class="step"><h3>라우팅</h3><p><code>graph.py</code>와 <code>nodes/common.py</code>에서 해당 request_type이 어디로 가는지 봅니다.</p></article>
+        <article class="step"><h3>workflow</h3><p><code>graphs/issue_analysis.py</code>에서 노드 순서와 병렬 구간을 확인합니다.</p></article>
+        <article class="step"><h3>구현과 검증</h3><p><code>nodes/issue_analysis.py</code>와 대응 테스트를 나란히 읽습니다.</p></article>
+      </div>
+      <div class="note"><p><strong>테스트는 설계 문서에 가깝습니다.</strong> 예를 들어 <code>tests/nodes/test_issue_analysis.py</code>는 graph가 어떤 상태를 만들고, quality gate가 어떤 경우에 재시도·검토로 가는지 빠르게 보여줍니다.</p></div>
+    </div></section>
+    <section id="today"><div class="wrap">
+      <p class="kicker">07 · Current working-tree changes</p><h2>현재 변경은 repository 접근을<br>더 안전하고 단순하게 만드는 작업입니다</h2>
+      <p class="lead">이 안내서를 작성할 때 확인한 작업 트리 기준입니다. 아직 스테이징된 변경이므로, 확정된 공개 동작으로 보기 전에는 테스트와 리뷰가 필요합니다.</p>
+      <div class="grid two">
+        <article class="card"><h3>외부 입력과 삭제 안전성</h3><p>Repository 등록 <code>source_uri</code>를 HTTPS URL로 제한하고 embedded credential을 거부합니다. 제거 시에는 이 프로젝트가 관리하는 bare mirror와 manifest만 idempotent하게 지웁니다.</p></article>
+        <article class="card"><h3>Agent에 보이는 코드 탐색 표면</h3><p>Issue Analysis Agent는 저수준 파일 목록·검색·읽기 Tool을 직접 받지 않고 <code>explore_codebase</code> 하나를 받습니다. 내부 explorer가 제한된 도구를 선택해 cited evidence를 돌려줍니다.</p></article>
+        <article class="card"><h3>Snapshot-bound 파일 목록</h3><p><code>list_repository_files</code>가 추가되어 고정 commit의 tracked 파일을 제한적으로 나열합니다. secret 경로와 범위 밖 접근은 계속 차단합니다.</p></article>
+        <article class="card"><h3>PCM reconciliation은 TODO</h3><p>Repository lifecycle에서 repository-derived PCM knowledge를 ingest·삭제하던 처리는 제거됐습니다. 해당 정합화는 명시적인 후속 작업입니다.</p></article>
+      </div>
+    </div></section>
+  </main>
+  <footer>Clio Agent Graph · 코드베이스 입문용 문서 · 시작점: <code>src/clio_agent_graph/graph.py</code></footer>
+</body>
+</html>

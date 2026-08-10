@@ -126,9 +126,11 @@ Knowledge commit 뒤에는 변경된 Markdown만 heading 단위로 chunking하�
 Markdown에서 자동 backfill합니다. 임베딩이나 indexing이 실패하면 Knowledge commit은
 유지되고 최신 canonical Markdown을 대상으로 keyword-only 검색으로 전환됩니다.
 
-Repository는 on-premise PCM data volume 아래 bare Git mirror로 저장됩니다. 등록 요청에는
-Graph Node만 사용하는 `source_uri`를 전달하고, Agent에는 remote URL이나 credential을
-노출하지 않습니다.
+Repository는 on-premise PCM data volume 아래 bare Git mirror로 저장됩니다. 등록 요청의
+`source_uri`는 HTTPS URL만 허용하며, Graph Node만 이를 사용하므로 Agent에는 remote URL이나
+credential을 노출하지 않습니다. private repository DBMS credential lookup은 TODO입니다.
+제거 요청은 해당 repository ID로 해시된 server-managed bare mirror와 manifest만 물리적으로
+삭제하며, 재시도해도 안전합니다.
 
 ```json
 {
@@ -137,31 +139,23 @@ Graph Node만 사용하는 `source_uri`를 전달하고, Agent에는 remote URL�
   "project_id": "PROJECT-1",
   "payload": {
     "repository_id": "backend",
-    "source_uri": "/srv/git/backend",
+    "source_uri": "https://git.example.internal/platform/backend.git",
     "branch": "main",
     "commit": "0123456789abcdef0123456789abcdef01234567"
   }
 }
 ```
 
-분석 시작 시 활성 commit을 snapshot에 복사합니다. 코드 검색과 파일 읽기는 항상 해당
-commit을 사용하며, line range 제한, 경로 탈출 차단, secret 파일 거부와 값 masking을
-적용합니다. `repository_changed`는 현재 active `before_commit`을 검증하고 branch head인
-`after_commit`만 활성화합니다.
+분석 시작 시 활성 commit을 snapshot에 복사합니다. 코드 검색, 파일 목록, 파일 읽기는 항상 해당
+commit을 사용하며, line range/결과 수 제한, 경로 탈출 차단, secret 파일 거부와 값 masking을
+적용합니다. Issue Analysis outer agent에는 저수준 파일 시스템 Tool 대신 objective와 선택적
+exploration context만 받는 `explore_codebase` Tool이 제공됩니다. 이 Tool은 내부 agentic explorer가
+목록·검색·bounded 읽기를 선택하고 structured cited evidence를 반환합니다. `repository_changed`는
+현재 active `before_commit`을 검증하고 branch head인 `after_commit`만 활성화합니다.
 
-Repository 등록과 commit 변경 뒤에는 bounded source collection을 실행합니다. tracked
-text source 중 지원 확장자만 선택하고 파일당 64KB, 기본 30개 파일, 총 120KB, 60개
-source unit으로 제한합니다. LLM은 이 source unit에서 architecture·component·operation
-지식을 추출하고, 기존 PCM 후보와 비교해 create·update·no-change change set을 만듭니다.
-Knowledge provenance에는 다음 정보가 보존됩니다.
-
-- `source_type=repository`
-- repository ID와 전체 commit SHA
-- 파일 경로와 시작·끝 line
-- masking 이후 source content hash
-
-동일 repository event를 재처리하면 기존 Knowledge commit을 반환하므로 LLM 호출과 PCM
-revision 증가가 반복되지 않습니다.
+Repository lifecycle은 repository-derived PCM knowledge를 ingest 또는 삭제하지 않습니다.
+해당 knowledge reconciliation은 명시적인 TODO로 남아 있습니다. 따라서 repository provenance를
+보존하는 bounded source collection·LLM extraction·PCM commit은 현재 lifecycle 요청에서 수행하지 않습니다.
 
 ## Agent · Tool · Service
 

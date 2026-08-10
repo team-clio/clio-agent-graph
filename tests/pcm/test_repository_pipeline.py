@@ -19,6 +19,17 @@ from clio_agent_graph.services.pcm.repository_pipeline import RepositoryKnowledg
 from clio_agent_graph.services.repository import GitRepositoryService
 
 
+@pytest.fixture(autouse=True)
+def allow_local_repository_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep isolated pipeline tests local; production registration requires HTTPS."""
+
+    monkeypatch.setattr(
+        GitRepositoryService,
+        "_validate_https_source_uri",
+        staticmethod(lambda source_uri: None),
+    )
+
+
 def git(repository: Path, *arguments: str) -> str:
     result = subprocess.run(
         ["git", "-C", str(repository), *arguments],

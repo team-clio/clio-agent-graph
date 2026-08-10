@@ -23,6 +23,23 @@ class RepositoryToolFactory:
             return {"repositories": [item.model_dump(mode="json") for item in repositories]}
 
         @tool
+        async def list_repository_files(
+            repository_id: str | None = None,
+            limit: int = 100,
+        ) -> dict[str, object]:
+            """현재 snapshot commit의 비밀 경로를 제외한 tracked 파일을 제한적으로 나열한다."""
+
+            try:
+                files = await service.list_files(
+                    snapshot=snapshot,
+                    repository_id=repository_id,
+                    limit=limit,
+                )
+            except RepositoryError as error:
+                return {"error": str(error), "files": []}
+            return {"files": files}
+
+        @tool
         async def search_repository_code(
             query: str,
             repository_id: str | None = None,
@@ -65,4 +82,9 @@ class RepositoryToolFactory:
                     "path": path,
                 }
 
-        return [list_project_repositories, search_repository_code, read_repository_file]
+        return [
+            list_project_repositories,
+            list_repository_files,
+            search_repository_code,
+            read_repository_file,
+        ]

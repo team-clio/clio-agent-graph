@@ -2,11 +2,7 @@
 
 from clio_agent_graph.services.application import get_application_services
 from clio_agent_graph.services.mock import mock_service
-from clio_agent_graph.services.pcm import (
-    IngestDocumentCommand,
-    IngestRepositoryCommand,
-    KnowledgeCommitResult,
-)
+from clio_agent_graph.services.pcm import IngestDocumentCommand, KnowledgeCommitResult
 from clio_agent_graph.state import ClioState
 
 
@@ -103,17 +99,7 @@ async def build_repository_index(state: ClioState) -> dict[str, object]:
             commit=state.get("revision"),
         )
         sync = registration.model_dump(mode="json")
-        pipeline = get_application_services().repository_pipeline
-        if pipeline is not None:
-            knowledge = await pipeline.ingest(
-                IngestRepositoryCommand(
-                    event_id=state["request_id"],
-                    project_id=state["project_id"],
-                    repository_id=state["repository_id"],
-                    commit=registration.active_commit,
-                )
-            )
-            sync["knowledge"] = _knowledge_result(knowledge)
+        # TODO: reconcile repository-derived PCM knowledge after repository lifecycle changes.
     return {
         "repository_sync": sync,
         "completed_nodes": {"build_repository_index": True},
@@ -190,17 +176,7 @@ async def commit_code_revision(state: ClioState) -> dict[str, object]:
             **registration.model_dump(mode="json"),
             "changed_paths": state["code_change"]["changed_paths"],
         }
-        pipeline = get_application_services().repository_pipeline
-        if pipeline is not None:
-            knowledge = await pipeline.ingest(
-                IngestRepositoryCommand(
-                    event_id=state["request_id"],
-                    project_id=state["project_id"],
-                    repository_id=state["repository_id"],
-                    commit=registration.active_commit,
-                )
-            )
-            committed["knowledge"] = _knowledge_result(knowledge)
+        # TODO: reconcile repository-derived PCM knowledge after repository lifecycle changes.
     return {
         "status": "completed",
         "result": {"action": "code_change_synced", "sync": committed},

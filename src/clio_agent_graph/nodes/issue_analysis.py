@@ -7,6 +7,7 @@ from clio_agent_graph.services.application import get_application_services
 from clio_agent_graph.services.mock import mock_service
 from clio_agent_graph.services.pcm.models import KnowledgeSearchRequest, ProjectContextSnapshot
 from clio_agent_graph.state import ClioState
+from clio_agent_graph.tools.codebase_exploration import CodebaseExplorationToolFactory
 from clio_agent_graph.tools.pcm import PCMToolContext, PCMToolFactory
 from clio_agent_graph.tools.repository import RepositoryToolFactory
 
@@ -26,7 +27,8 @@ def _agent(state: ClioState) -> IssueAnalysisAgent:
         )
     )
     if services.repositories is not None:
-        tools.extend(RepositoryToolFactory(services.repositories).create_tools(snapshot))
+        repository_tools = RepositoryToolFactory(services.repositories)
+        tools.extend(CodebaseExplorationToolFactory(repository_tools).create_tools(snapshot))
     return IssueAnalysisAgent(tools)
 
 

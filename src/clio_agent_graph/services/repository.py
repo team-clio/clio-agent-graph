@@ -3,11 +3,13 @@
 import asyncio
 import os
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from tempfile import NamedTemporaryFile
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -113,6 +115,7 @@ class GitRepositoryService:
         branch: str,
         commit: str | None,
     ) -> RepositoryRegistration:
+        self._validate_https_source_uri(source_uri)
         mirror = self._mirror_path(project_id, repository_id)
         mirror.parent.mkdir(parents=True, exist_ok=True)
         if mirror.exists():
@@ -133,13 +136,24 @@ class GitRepositoryService:
         return registration
 
     async def remove(self, *, project_id: str, repository_id: str) -> bool:
-        """등록만 비활성화한다. mirror는 복구와 실행 중 snapshot을 위해 보존한다."""
+        """Idempotently delete this repository's server-managed mirror and manifest."""
 
+        return await asyncio.to_thread(self._remove, project_id, repository_id)
+
+    def _remove(self, project_id: str, repository_id: str) -> bool:
+        mirror = self._mirror_path(project_id, repository_id)
         manifest = self._manifest_path(project_id, repository_id)
-        if not manifest.exists():
-            return False
-        await asyncio.to_thread(manifest.unlink)
-        return True
+        removed = False
+        for path in (mirror, manifest):
+            if not path.exists() and not path.is_symlink():
+                continue
+            self._assert_managed_path(path, project_id, repository_id)
+            if path.is_symlink() or not path.is_dir():
+                path.unlink()
+            else:
+                shutil.rmtree(path)
+            removed = True
+        return removed
 
     async def activate_revision(
         self,
@@ -349,6 +363,36 @@ class GitRepositoryService:
                     return hits
         return hits
 
+    async def list_files(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+        repository_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, str]]:
+        """List eligible tracked files at the snapshot-bound commit."""
+
+        if not 1 <= limit <= 200:
+            raise RepositoryError("repository file list limit must be between 1 and 200")
+        files: list[dict[str, str]] = []
+        for target_id, commit in self._snapshot_targets(snapshot, repository_id):
+            output = await asyncio.to_thread(
+                self._git,
+                self._mirror_path(snapshot.project_id, target_id),
+                "ls-tree",
+                "-r",
+                "--name-only",
+                commit,
+            )
+            for path in output.splitlines():
+                normalized = self._safe_relative_path(path)
+                if self._denied_path(normalized):
+                    continue
+                files.append({"repository_id": target_id, "commit": commit, "path": normalized})
+                if len(files) >= limit:
+                    return files
+        return files
+
     async def read_file(
         self,
         *,
@@ -398,6 +442,22 @@ class GitRepositoryService:
             return snapshot.repository_revisions[repository_id]
         except KeyError as exc:
             raise RepositoryError("repository is not available in the bound snapshot") from exc
+
+    @staticmethod
+    def _validate_https_source_uri(source_uri: str) -> None:
+        parsed = urlparse(source_uri)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise RepositoryError("repository source_uri must be an HTTPS URL")
+        if parsed.username is not None or parsed.password is not None:
+            raise RepositoryError("repository source_uri must not embed credentials")
+
+    def _assert_managed_path(self, path: Path, project_id: str, repository_id: str) -> None:
+        expected = {
+            self._mirror_path(project_id, repository_id),
+            self._manifest_path(project_id, repository_id),
+        }
+        if path not in expected or self.root not in path.parents:
+            raise RepositoryError("refusing to delete a path outside the managed repository store")
 
     def _project_path(self, project_id: str) -> Path:
         return self.root / sha256(project_id.encode()).hexdigest()
