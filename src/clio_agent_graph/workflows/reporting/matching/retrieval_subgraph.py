@@ -180,6 +180,8 @@ def _build_callback_graph(retriever: IssueRetriever):
     """기존 Fake callback을 위한 작은 호환 graph를 만든다."""
 
     def retrieve_issue_candidates(state: IssueRetrievalState) -> dict[str, Any]:
+        """호환 callback을 한 번 재시도하고 공개 후보 계약으로 검증한다."""
+
         request = _request_from_state(state)
         last_error: Exception | None = None
         for _attempt in range(2):

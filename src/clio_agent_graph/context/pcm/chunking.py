@@ -22,6 +22,8 @@ class MarkdownKnowledgeChunker:
         self._max_characters = max_characters
 
     def chunk(self, document: KnowledgeDocument) -> tuple[KnowledgeChunk, ...]:
+        """Knowledge 본문을 검색 가능한 크기로 나누고 안정적인 chunk ID를 부여한다."""
+
         if document.is_tombstone or not document.body_markdown.strip():
             return ()
         chunks: list[KnowledgeChunk] = []
@@ -67,6 +69,8 @@ def _sections(markdown: str) -> Sequence[tuple[tuple[str, ...], str]]:
     fence_character = ""
 
     def flush() -> None:
+        """현재 heading 경로에 모인 본문을 하나의 section으로 확정한다."""
+
         content = "\n".join(lines).strip()
         if content:
             sections.append((tuple(headings), content))

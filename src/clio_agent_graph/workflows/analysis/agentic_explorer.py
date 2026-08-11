@@ -19,22 +19,36 @@ code_snapshot은 확인한 원문 1~10줄이어야 하며 path·symbol·line·ch
 
 
 class ExplorationAgent(Protocol):
-    @property
-    def last_tool_calls(self) -> list[ToolCallRecord]: ...
+    """실제 탐색 Agent와 테스트 대역이 공유하는 최소 실행 계약."""
 
-    def invoke(self, user_prompt: str) -> ExplorationResponse: ...
+    @property
+    def last_tool_calls(self) -> list[ToolCallRecord]:
+        """가장 최근 조사에서 실행한 Tool 호출 기록."""
+
+        ...
+
+    def invoke(self, user_prompt: str) -> ExplorationResponse:
+        """한 가지 분석 질문을 조사하고 구조화된 근거를 반환한다."""
+
+        ...
 
 
 class AgenticExplorationInput(TypedDict):
+    """탐색 subgraph가 호출자에게 요구하는 입력."""
+
     exploration_request: ExplorationRequest
 
 
 class AgenticExplorationState(AgenticExplorationInput, total=False):
+    """탐색 도중 생성되는 응답과 감사용 Tool 기록을 포함한 내부 상태."""
+
     exploration_response: ExplorationResponse
     exploration_tool_calls: list[ToolCallRecord]
 
 
 class AgenticExplorationOutput(TypedDict):
+    """IA 판단 단계로 전달하는 탐색 결과."""
+
     exploration_response: ExplorationResponse
     exploration_tool_calls: list[ToolCallRecord]
 
@@ -67,6 +81,8 @@ def build_agentic_code_exploration_graph(
         return actual_agent
 
     def explore(state: AgenticExplorationState) -> dict[str, Any]:
+        """분석 질문을 Agent 입력으로 직렬화하고 응답 계약을 다시 검증한다."""
+
         request = ExplorationRequest.model_validate(state["exploration_request"])
         exploration_agent = get_agent()
         response = ExplorationResponse.model_validate(

@@ -7,6 +7,8 @@ from clio_agent_graph.workflows.orchestration.state import ClioState
 
 
 def prepare_document_sync(state: ClioState) -> dict[str, object]:
+    """문서 삭제 경로가 후속 색인·commit 단계에서 사용할 상태를 준비한다."""
+
     # TODO: 원본 조회, 정규화, 메타데이터 추출 및 chunk 생성을 실제 서비스로 교체.
     return {
         "document_sync": {"document_id": state["document_id"], "revision": state["revision"]},
@@ -51,11 +53,15 @@ async def sync_document_knowledge(state: ClioState) -> dict[str, object]:
 
 
 def update_document_index(state: ClioState) -> dict[str, object]:
+    """문서 삭제에 따른 검색 인덱스 갱신 위치를 명시하는 임시 노드."""
+
     # TODO: 임베딩 생성과 Vector DB 추가·교체·비활성화 구현.
     return {"completed_nodes": {"update_document_index": True}}
 
 
 def commit_document_revision(state: ClioState) -> dict[str, object]:
+    """문서 삭제 동기화 결과를 외부에 공개할 완료 상태로 확정한다."""
+
     committed = mock_service.commit_sync(
         "document", state["project_id"], state["document_id"], state["revision"]
     )
@@ -107,6 +113,8 @@ async def build_repository_index(state: ClioState) -> dict[str, object]:
 
 
 def commit_repository_revision(state: ClioState) -> dict[str, object]:
+    """Repository 등록·제거 결과를 공통 응답 형식으로 확정한다."""
+
     if get_application_services().repositories is None:
         committed = mock_service.commit_sync(
             "repository", state["project_id"], state["repository_id"], state.get("revision")
@@ -155,11 +163,15 @@ async def calculate_code_changes(state: ClioState) -> dict[str, object]:
 
 
 def update_changed_code_index(state: ClioState) -> dict[str, object]:
+    """변경된 코드 경로만 재색인할 향후 구현 위치를 표시한다."""
+
     # TODO: 변경/삭제 chunk만 증분 반영.
     return {"completed_nodes": {"update_changed_code_index": True}}
 
 
 async def commit_code_revision(state: ClioState) -> dict[str, object]:
+    """검증된 branch head를 활성 revision으로 바꾸고 변경 목록을 반환한다."""
+
     service = get_application_services().repositories
     if service is None:
         committed = mock_service.commit_sync(

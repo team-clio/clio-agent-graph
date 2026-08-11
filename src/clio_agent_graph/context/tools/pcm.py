@@ -28,6 +28,8 @@ class PCMToolFactory:
         self._reader = reader
 
     def create_tools(self, context: PCMToolContext) -> list[BaseTool]:
+        """요청 범위를 closure에 고정한 검색·원문·출처 조회 Tool을 만든다."""
+
         reader = self._reader
 
         @tool

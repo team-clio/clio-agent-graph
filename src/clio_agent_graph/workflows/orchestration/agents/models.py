@@ -12,6 +12,8 @@ def _normalize_confidence(value: float | str) -> float | str:
 
 
 class MatchDecision(BaseModel):
+    """리포트를 기존 이슈에 연결할지 결정한 Agent의 최종 판단."""
+
     action: Literal["link_existing", "create_new", "needs_review"]
     issue_id: str | None = None
     confidence: float = Field(ge=0, le=1)
@@ -23,6 +25,8 @@ class MatchDecision(BaseModel):
 
 
 class RootCauseHypothesis(BaseModel):
+    """확신도와 근거를 함께 보존하는 원인 가설."""
+
     hypothesis: str = Field(min_length=1)
     confidence: float = Field(ge=0, le=1)
     evidence: list[str] = []
@@ -33,6 +37,8 @@ class RootCauseHypothesis(BaseModel):
 
 
 class VerifiedFact(BaseModel):
+    """분석 과정에서 검증 여부를 명시한 사실 후보."""
+
     fact: str = Field(
         min_length=1,
         validation_alias=AliasChoices("fact", "claim", "statement"),
@@ -54,6 +60,8 @@ class EvidenceCitation(BaseModel):
 
 
 class IssueAnalysisOutput(BaseModel):
+    """이슈 조사 Agent가 Quality Gate에 제출하는 구조화된 분석."""
+
     issue_id: str
     evidence_counts: dict[str, int]
     root_cause_hypotheses: list[str | RootCauseHypothesis]
@@ -67,17 +75,23 @@ class IssueAnalysisOutput(BaseModel):
 
 
 class ResolutionPlanStep(BaseModel):
+    """구현 순서와 상세 작업을 표현하는 해결 계획의 한 단계."""
+
     id: int | str | None = None
     action: str = Field(min_length=1)
     details: str | None = None
 
 
 class ResolutionRisk(BaseModel):
+    """해결 과정에서 예상되는 위험과 선택적 완화책."""
+
     risk: str = Field(min_length=1)
     mitigation: str | None = None
 
 
 class ResolutionPlan(BaseModel):
+    """검증 가능한 완료 조건과 위험을 포함한 이슈 해결 계획."""
+
     issue_id: str
     steps: list[str | ResolutionPlanStep]
     acceptance_criteria: list[str]

@@ -32,23 +32,35 @@ class RetrievalAgent(Protocol):
     """실제 runtime과 테스트 Fake가 공유하는 최소 실행 계약."""
 
     @property
-    def last_tool_calls(self) -> list[ToolCallRecord]: ...
+    def last_tool_calls(self) -> list[ToolCallRecord]:
+        """가장 최근 후보 조사에서 실행한 Tool 호출 기록."""
 
-    def invoke(self, user_prompt: str) -> IssueRetrievalResponse: ...
+        ...
+
+    def invoke(self, user_prompt: str) -> IssueRetrievalResponse:
+        """정규화된 Bug를 조사해 기존 Issue 후보를 반환한다."""
+
+        ...
 
 
 class AgenticRetrievalInput(TypedDict):
+    """후보 검색 subgraph가 호출자에게 요구하는 입력."""
+
     project_id: int
     bug_id: int
     normalized_report: NormalizedReport
 
 
 class AgenticRetrievalState(AgenticRetrievalInput, total=False):
+    """검색 중 생성되는 후보와 감사용 Tool 기록을 포함한 내부 상태."""
+
     issue_candidates: list[IssueCandidate]
     retrieval_tool_calls: list[ToolCallRecord]
 
 
 class AgenticRetrievalOutput(TypedDict):
+    """Report Matcher로 전달하는 후보 검색 결과."""
+
     issue_candidates: list[IssueCandidate]
     retrieval_tool_calls: list[ToolCallRecord]
 
@@ -81,6 +93,8 @@ def build_agentic_issue_retrieval_graph(
         return actual_agent
 
     def retrieve(state: AgenticRetrievalState) -> dict[str, Any]:
+        """그래프 상태를 Agent 요청으로 바꾸고 검색 응답 계약을 검증한다."""
+
         request = IssueRetrievalRequest(
             project_id=state["project_id"],
             bug_id=state["bug_id"],

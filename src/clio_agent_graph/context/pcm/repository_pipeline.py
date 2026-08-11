@@ -46,6 +46,9 @@ class RepositoryKnowledgePipeline(DocumentKnowledgePipeline):
         self._repositories = repositories
 
     async def ingest(self, command: IngestRepositoryCommand) -> KnowledgeCommitResult:
+        """활성 commit의 코드를 분석해 검증된 Knowledge 변경으로 commit한다."""
+
+        # 같은 이벤트를 다시 받아도 LLM과 저장소 작업을 반복하지 않는다.
         previous = await self._writer.find_commit_by_event(
             project_id=command.project_id,
             source_event_id=command.event_id,

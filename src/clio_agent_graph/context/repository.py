@@ -92,6 +92,8 @@ class GitRepositoryService:
 
     @classmethod
     def from_data_root(cls, data_root: Path) -> "GitRepositoryService":
+        """PCM 데이터 루트 아래의 서버 관리 Repository 영역을 사용한다."""
+
         return cls(root=data_root / "repositories")
 
     async def register(
@@ -103,6 +105,8 @@ class GitRepositoryService:
         branch: str,
         commit: str | None = None,
     ) -> RepositoryRegistration:
+        """원격 Repository를 mirror하고 분석에 사용할 branch commit을 활성화한다."""
+
         return await asyncio.to_thread(
             self._register, project_id, repository_id, source_uri, branch, commit
         )
@@ -163,6 +167,8 @@ class GitRepositoryService:
         branch: str,
         after_commit: str,
     ) -> RepositoryRegistration:
+        """원격 branch head를 확인한 뒤 활성 snapshot commit을 원자적으로 교체한다."""
+
         return await asyncio.to_thread(
             self._activate_revision, project_id, repository_id, branch, after_commit
         )
@@ -175,6 +181,8 @@ class GitRepositoryService:
         before_commit: str,
         after_commit: str,
     ) -> list[str]:
+        """두 commit 사이의 변경 파일 중 Agent가 읽어도 되는 경로만 반환한다."""
+
         if not _COMMIT_PATTERN.fullmatch(before_commit) or not _COMMIT_PATTERN.fullmatch(
             after_commit
         ):
@@ -211,6 +219,8 @@ class GitRepositoryService:
         return updated
 
     async def list_revisions(self, project_id: str) -> dict[str, str]:
+        """프로젝트에 등록된 Repository별 활성 commit을 조회한다."""
+
         return await asyncio.to_thread(self._list_revisions, project_id)
 
     def _list_revisions(self, project_id: str) -> dict[str, str]:
@@ -226,6 +236,8 @@ class GitRepositoryService:
     async def list_repositories(
         self, snapshot: ProjectContextSnapshot
     ) -> list[RepositoryRegistration]:
+        """현재 manifest 정보를 주어진 snapshot의 고정 commit과 결합한다."""
+
         registrations = []
         for repository_id, commit in snapshot.repository_revisions.items():
             registration = await asyncio.to_thread(
@@ -324,6 +336,8 @@ class GitRepositoryService:
         repository_id: str | None = None,
         limit: int = 20,
     ) -> list[RepositorySearchHit]:
+        """snapshot에 고정된 tracked source를 검색해 인용 가능한 행을 반환한다."""
+
         if not query.strip():
             raise RepositoryError("code search query must contain searchable text")
         if not 1 <= limit <= 50:
@@ -370,7 +384,7 @@ class GitRepositoryService:
         repository_id: str | None = None,
         limit: int = 100,
     ) -> list[dict[str, str]]:
-        """List eligible tracked files at the snapshot-bound commit."""
+        """snapshot commit에서 비밀 경로를 제외한 tracked 파일을 나열한다."""
 
         if not 1 <= limit <= 200:
             raise RepositoryError("repository file list limit must be between 1 and 200")
@@ -402,6 +416,8 @@ class GitRepositoryService:
         start_line: int = 1,
         end_line: int = 200,
     ) -> dict[str, object]:
+        """snapshot commit의 파일 일부를 행 번호와 함께 안전하게 읽는다."""
+
         commit = self._snapshot_commit(snapshot, repository_id)
         normalized = self._safe_relative_path(path)
         if self._denied_path(normalized):

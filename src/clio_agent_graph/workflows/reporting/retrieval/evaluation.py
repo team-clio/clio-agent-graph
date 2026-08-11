@@ -83,6 +83,8 @@ def main() -> int:
     graph = build_issue_retrieval_subgraph()
 
     def retrieve(request: IssueRetrievalRequest) -> IssueRetrievalResponse:
+        """평가 입력을 실제 retrieval graph에 전달하는 얇은 adapter."""
+
         result = graph.invoke(request.model_dump())
         return IssueRetrievalResponse(candidates=result["issue_candidates"])
 

@@ -36,6 +36,8 @@ class InMemoryPCM:
         self._locks: dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
     async def resolve_snapshot(self, project_id: str) -> ProjectContextSnapshot:
+        """현재 project revision을 이후 읽기에 고정할 snapshot으로 반환한다."""
+
         _require_text(project_id, "project_id")
         revision = self._project_revisions[project_id]
         return ProjectContextSnapshot(
@@ -50,6 +52,8 @@ class InMemoryPCM:
         project_id: str,
         source_event_id: str,
     ) -> KnowledgeCommitResult | None:
+        """이미 처리한 source event라면 멱등 재생으로 표시한 결과를 반환한다."""
+
         result = self._event_results.get((project_id, source_event_id))
         if result is None:
             return None
@@ -61,6 +65,8 @@ class InMemoryPCM:
         project_id: str,
         change_set: KnowledgeChangeSet,
     ) -> KnowledgeCommitResult:
+        """revision 충돌을 검사하고 Knowledge 변경 묶음을 원자적으로 적용한다."""
+
         _require_text(project_id, "project_id")
         event_key = (project_id, change_set.source_event_id)
         async with self._locks[project_id]:
@@ -111,6 +117,8 @@ class InMemoryPCM:
         snapshot: ProjectContextSnapshot,
         request: KnowledgeSearchRequest,
     ) -> KnowledgeSearchPage:
+        """고정 snapshot의 활성 Knowledge를 결정적인 token 겹침으로 검색한다."""
+
         self._validate_snapshot(snapshot)
         query_tokens = _tokens(request.query)
         if not query_tokens:
@@ -153,6 +161,8 @@ class InMemoryPCM:
         snapshot: ProjectContextSnapshot,
         knowledge_id: str,
     ) -> KnowledgeDocument:
+        """Knowledge 이력에서 snapshot 시점에 유효한 revision을 읽는다."""
+
         self._validate_snapshot(snapshot)
         history = self._histories.get((snapshot.project_id, knowledge_id), [])
         document = _document_at_revision(history, snapshot.pcm_revision)
@@ -169,6 +179,8 @@ class InMemoryPCM:
         snapshot: ProjectContextSnapshot,
         knowledge_id: str,
     ) -> tuple[SourceReference, ...]:
+        """snapshot에서 읽은 Knowledge가 인용하는 원본 위치를 반환한다."""
+
         return (await self.read_knowledge(snapshot=snapshot, knowledge_id=knowledge_id)).sources
 
     def _validate_snapshot(self, snapshot: ProjectContextSnapshot) -> None:

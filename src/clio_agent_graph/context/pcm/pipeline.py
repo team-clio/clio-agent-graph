@@ -52,6 +52,13 @@ class DocumentKnowledgePipeline:
         self._max_generation_attempts = max_generation_attempts
 
     async def ingest(self, command: IngestDocumentCommand) -> KnowledgeCommitResult:
+        """문서 원문을 분석해 신뢰 가능한 Knowledge 변경 하나로 commit한다.
+
+        처리 순서는 멱등성 확인 → 원문 보존 → snapshot 고정 → 주제 추출 → 기존 지식
+        조회 → 변경안 검증 → commit이다. LLM 출력은 마지막 commit 전에 항상 재검증한다.
+        """
+
+        # 같은 event의 재전송은 원문 저장과 LLM 호출까지 모두 생략한다.
         previous_result = await self._writer.find_commit_by_event(
             project_id=command.project_id,
             source_event_id=command.event_id,
@@ -93,6 +100,8 @@ class DocumentKnowledgePipeline:
         document_title: str,
         source_units: Sequence[DocumentSourceUnit],
     ) -> TopicExtractionResult:
+        """LLM 주제의 source ID를 검증하고 오류를 피드백해 제한 횟수만 재시도한다."""
+
         errors: tuple[str, ...] = ()
         for attempt in range(self._max_generation_attempts):
             try:
@@ -116,6 +125,8 @@ class DocumentKnowledgePipeline:
         snapshot: ProjectContextSnapshot,
         topics: Sequence[ExtractedTopic],
     ) -> dict[str, tuple[KnowledgeCandidate, ...]]:
+        """주제별 검색어를 합쳐 갱신·중복 판정에 필요한 기존 지식 원문을 모은다."""
+
         candidates: dict[str, tuple[KnowledgeCandidate, ...]] = {}
         for topic in topics:
             found: dict[str, KnowledgeCandidate] = {}
@@ -156,6 +167,8 @@ class DocumentKnowledgePipeline:
         source_units: Sequence[DocumentSourceUnit],
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
     ) -> KnowledgeChangeDraftSet:
+        """LLM 변경안이 현재 snapshot과 실제 검색 후보만 가리키도록 검증한다."""
+
         errors: tuple[str, ...] = ()
         for attempt in range(self._max_generation_attempts):
             try:

@@ -13,6 +13,8 @@ class RepositoryToolFactory:
         self._service = repository_service
 
     def create_tools(self, snapshot: ProjectContextSnapshot) -> list[BaseTool]:
+        """고정 snapshot 밖으로 벗어날 수 없는 Repository 읽기 Tool을 만든다."""
+
         service = self._service
 
         @tool

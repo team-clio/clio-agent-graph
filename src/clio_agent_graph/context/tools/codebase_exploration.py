@@ -1,4 +1,4 @@
-"""High-level, snapshot-bound codebase exploration tool for issue analysis agents."""
+"""이슈 분석 Agent에 snapshot-bound 코드 탐색을 제공하는 상위 Tool."""
 
 from __future__ import annotations
 
@@ -20,12 +20,14 @@ from clio_agent_graph.workflows.reporting.normalization.models import Normalized
 
 
 class CodebaseExplorationToolFactory:
-    """Expose autonomous evidence exploration without exposing filesystem primitives."""
+    """파일시스템 원시 기능을 숨기고 자율적인 근거 탐색만 노출한다."""
 
     def __init__(self, repository_tools: RepositoryToolFactory) -> None:
         self._repository_tools = repository_tools
 
     def create_tools(self, snapshot: ProjectContextSnapshot) -> list[BaseTool]:
+        """저수준 Repository Tool을 내부 탐색 Agent 하나로 감싸서 반환한다."""
+
         low_level_tools = self._repository_tools.create_tools(snapshot)
         exploration_graph = build_agentic_code_exploration_graph(tools=low_level_tools)
 
@@ -34,10 +36,10 @@ class CodebaseExplorationToolFactory:
             objective: str,
             exploration_context: str | None = None,
         ) -> dict[str, Any]:
-            """Autonomously explore snapshot-pinned code and return structured cited evidence.
+            """고정된 코드 snapshot을 자율 조사해 인용 가능한 구조화 근거를 반환한다.
 
-            Supply the investigation objective and optional prior context only. This tool chooses
-            repository listing, file listing, search, and bounded file reads internally.
+            호출자는 조사 목적과 선택적인 선행 맥락만 제공한다. Repository·파일 목록,
+            검색, 제한된 파일 읽기 중 어떤 기능을 쓸지는 내부 탐색 Agent가 결정한다.
             """
 
             request = ExplorationRequest(

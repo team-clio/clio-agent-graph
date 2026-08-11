@@ -21,15 +21,29 @@ QUERY_INSTRUCTION = (
 
 
 class EmbeddingProvider(Protocol):
-    @property
-    def model_id(self) -> str: ...
+    """검색 인덱스가 구현체와 무관하게 사용하는 embedding 계약."""
 
     @property
-    def dimensions(self) -> int: ...
+    def model_id(self) -> str:
+        """동일한 벡터 공간인지 식별하는 provider·model ID."""
 
-    async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]: ...
+        ...
 
-    async def embed_query(self, text: str) -> list[float]: ...
+    @property
+    def dimensions(self) -> int:
+        """저장소 vector column과 일치해야 하는 출력 차원."""
+
+        ...
+
+    async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        """색인할 여러 문서를 같은 벡터 공간으로 변환한다."""
+
+        ...
+
+    async def embed_query(self, text: str) -> list[float]:
+        """검색어 하나를 문서와 같은 벡터 공간으로 변환한다."""
+
+        ...
 
 
 class OllamaEmbeddingProvider:
@@ -75,22 +89,33 @@ class OllamaEmbeddingProvider:
 
     @property
     def model_id(self) -> str:
+        """알고리즘 버전과 차원을 함께 노출해 잘못된 인덱스 재사용을 막는다."""
+
         return f"ollama:{self._require_model_name()}:{self.dimensions}"
+
 
     @property
     def dimensions(self) -> int:
+        """생성되는 feature-hash vector의 고정 차원."""
+
         return self._dimensions
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        """네트워크 호출 없이 각 문서를 결정적인 단위 벡터로 변환한다."""
+
         inputs = list(texts)
         if not inputs:
             return []
         return await asyncio.to_thread(self._request_embeddings, inputs)
 
+
     async def embed_query(self, text: str) -> list[float]:
+        """문서와 동일한 feature hashing 규칙으로 검색어를 변환한다."""
+
         instructed_query = f"Instruct: {QUERY_INSTRUCTION}\nQuery: {text}"
         embeddings = await asyncio.to_thread(self._request_embeddings, [instructed_query])
         return embeddings[0]
+
 
     def _request_embeddings(self, texts: list[str]) -> list[list[float]]:
         request = Request(

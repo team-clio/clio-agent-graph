@@ -21,6 +21,8 @@ class MarkdownSourceParser:
         revision: str,
         markdown: str,
     ) -> tuple[DocumentSourceUnit, ...]:
+        """Markdown을 heading 문맥과 안정적인 ID를 가진 Source Unit으로 변환한다."""
+
         if not document_id.strip() or not revision.strip():
             raise PCMValidationError("document_id and revision must not be blank.")
         normalized = markdown.replace("\r\n", "\n").replace("\r", "\n").strip()
@@ -34,6 +36,8 @@ class MarkdownSourceParser:
         fence_character = ""
 
         def flush() -> None:
+            """현재 heading 아래에 모인 본문을 하나의 Source Unit 후보로 확정한다."""
+
             body = "\n".join(content).strip()
             if body:
                 sections.append((tuple(heading_stack), body))

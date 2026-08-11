@@ -62,14 +62,20 @@ class PostgresPCM:
         self._initialization_lock = asyncio.Lock()
 
     async def initialize(self) -> None:
+        """연결 pool과 필수 schema를 미리 준비해 시작 시 설정 오류를 드러낸다."""
+
         await self._ensure_pool()
 
     async def close(self) -> None:
+        """프로세스 종료 시 공유 연결 pool을 안전하게 닫는다."""
+
         if self._pool is not None:
             await self._pool.close()
             self._pool = None
 
     async def save_document_source(self, command: IngestDocumentCommand) -> str:
+        """문서 원문을 불변 저장하고 DB에 revision metadata를 멱등 등록한다."""
+
         storage_path = await self._markdown_store.save_document_source(command)
         pool = await self._ensure_pool()
         content_hash = f"sha256:{hashlib.sha256(command.markdown.strip().encode()).hexdigest()}"
@@ -97,6 +103,8 @@ class PostgresPCM:
         return storage_path
 
     async def resolve_snapshot(self, project_id: str) -> ProjectContextSnapshot:
+        """DB가 공개 중인 PCM과 검색 인덱스 revision을 하나의 snapshot으로 읽는다."""
+
         pool = await self._ensure_pool()
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
@@ -118,6 +126,8 @@ class PostgresPCM:
         project_id: str,
         source_event_id: str,
     ) -> KnowledgeCommitResult | None:
+        """완료된 source event 결과를 찾아 멱등 재생으로 반환한다."""
+
         pool = await self._ensure_pool()
         async with pool.acquire() as connection:
             value = await connection.fetchval(
@@ -140,6 +150,12 @@ class PostgresPCM:
         project_id: str,
         change_set: KnowledgeChangeSet,
     ) -> KnowledgeCommitResult:
+        """project row를 잠그고 검증된 변경 묶음을 하나의 transaction으로 commit한다.
+
+        canonical Knowledge commit과 검색 색인은 의도적으로 분리한다. DB commit이 성공한 뒤
+        색인이 실패해도 원본 revision은 보존되며, 조회 시 keyword fallback이 동작한다.
+        """
+
         pool = await self._ensure_pool()
         async with pool.acquire() as connection, connection.transaction():
             await connection.execute(
@@ -282,6 +298,8 @@ class PostgresPCM:
         snapshot: ProjectContextSnapshot,
         knowledge_id: str,
     ) -> KnowledgeDocument:
+        """snapshot 시점에 유효한 metadata와 불변 Markdown 본문을 함께 읽는다."""
+
         pool = await self._ensure_pool()
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
@@ -302,6 +320,8 @@ class PostgresPCM:
         snapshot: ProjectContextSnapshot,
         knowledge_id: str,
     ) -> tuple[SourceReference, ...]:
+        """Knowledge 원문에 저장된 검증된 provenance만 반환한다."""
+
         return (await self.read_knowledge(snapshot=snapshot, knowledge_id=knowledge_id)).sources
 
     async def search_knowledge(
@@ -310,6 +330,8 @@ class PostgresPCM:
         snapshot: ProjectContextSnapshot,
         request: KnowledgeSearchRequest,
     ) -> KnowledgeSearchPage:
+        """vector·keyword 결과를 융합하고 인덱스 지연 시 원문 검색으로 보완한다."""
+
         tokens = _tokens(request.query)
         if not tokens:
             raise PCMValidationError("Knowledge search query must contain searchable text.")

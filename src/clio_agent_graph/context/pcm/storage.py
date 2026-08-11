@@ -17,7 +17,12 @@ from clio_agent_graph.context.pcm.models import (
 
 
 class DocumentSourceStore(Protocol):
-    async def save_document_source(self, command: IngestDocumentCommand) -> str: ...
+    """Knowledge 생성에 사용한 정규화 원문을 보존하는 저장소 계약."""
+
+    async def save_document_source(self, command: IngestDocumentCommand) -> str:
+        """문서 원문을 저장하고 추후 추적 가능한 상대 경로를 반환한다."""
+
+        ...
 
 
 class MarkdownStore:
@@ -27,6 +32,8 @@ class MarkdownStore:
         self._root = root.resolve()
 
     async def save_document_source(self, command: IngestDocumentCommand) -> str:
+        """입력 식별자를 안전한 경로로 바꿔 문서 원문을 불변 저장한다."""
+
         content_hash = _content_hash(command.markdown)
         relative_path = Path(
             "projects",
@@ -41,6 +48,8 @@ class MarkdownStore:
         return relative_path.as_posix()
 
     async def save_knowledge(self, document: KnowledgeDocument) -> str:
+        """Knowledge revision과 provenance를 front matter가 있는 Markdown으로 저장한다."""
+
         relative_path = Path(
             "projects",
             _safe_id("project", document.project_id),
@@ -53,6 +62,8 @@ class MarkdownStore:
         return relative_path.as_posix()
 
     async def read(self, storage_path: str) -> str:
+        """저장 루트 내부의 상대 경로만 허용해 Markdown 원문을 읽는다."""
+
         path = self._resolve_relative(storage_path)
         try:
             return await asyncio.to_thread(path.read_text, encoding="utf-8")

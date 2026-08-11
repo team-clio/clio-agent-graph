@@ -19,6 +19,8 @@ from clio_agent_graph.workflows.orchestration.state import MemoryWorkflowState
 
 
 def _linear_graph(nodes: list[tuple[str, object]]):
+    """검증부터 commit까지 순서가 고정된 동기화 그래프를 조립한다."""
+
     builder = StateGraph(MemoryWorkflowState)
     for node_name, node in nodes:
         builder.add_node(node_name, node)
@@ -30,6 +32,8 @@ def _linear_graph(nodes: list[tuple[str, object]]):
 
 
 def build_document_sync_graph():
+    """문서 추가와 삭제를 각기 필요한 PCM 처리 경로로 분기한다."""
+
     builder = StateGraph(MemoryWorkflowState)
     builder.add_node("sync_document_knowledge", sync_document_knowledge)
     builder.add_node("prepare_document_sync", prepare_document_sync)
@@ -51,6 +55,8 @@ def build_document_sync_graph():
 
 
 def build_repository_sync_graph():
+    """Repository lifecycle 이벤트를 준비·색인·commit 순서로 처리한다."""
+
     return _linear_graph(
         [
             ("prepare_repository_sync", prepare_repository_sync),
@@ -61,6 +67,8 @@ def build_repository_sync_graph():
 
 
 def build_code_change_sync_graph():
+    """활성 commit 검증 후 변경 경로만 계산해 revision을 전진시킨다."""
+
     return _linear_graph(
         [
             ("validate_code_change", validate_code_change),

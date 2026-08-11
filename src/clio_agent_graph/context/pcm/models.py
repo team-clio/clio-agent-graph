@@ -118,6 +118,8 @@ class KnowledgeChange(PCMModel):
 
     @model_validator(mode="after")
     def validate_operation_contract(self) -> "KnowledgeChange":
+        """연산별 필수·금지 필드를 함께 검사해 모호한 변경을 차단한다."""
+
         if self.operation == "create":
             if self.target_knowledge_id is not None:
                 raise ValueError("create must not provide target_knowledge_id")
@@ -251,6 +253,8 @@ class KnowledgeChangeDraft(PCMModel):
 
     @model_validator(mode="after")
     def validate_operation_contract(self) -> "KnowledgeChangeDraft":
+        """LLM 변경안이 create/update/no-change 의미를 일관되게 표현하게 한다."""
+
         if self.operation == "create":
             if not self.logical_key or self.target_knowledge_id is not None:
                 raise ValueError("create requires only logical_key")

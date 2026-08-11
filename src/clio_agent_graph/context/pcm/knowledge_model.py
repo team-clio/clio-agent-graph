@@ -32,7 +32,10 @@ class KnowledgeModel(Protocol):
         document_title: str,
         source_units: Sequence[KnowledgeSourceUnit],
         validation_errors: Sequence[str] = (),
-    ) -> TopicExtractionResult: ...
+    ) -> TopicExtractionResult:
+        """원문 단위에서 장기간 재사용할 주제와 근거 ID를 추출한다."""
+
+        ...
 
     async def generate_change_set(
         self,
@@ -43,7 +46,10 @@ class KnowledgeModel(Protocol):
         source_units: Sequence[KnowledgeSourceUnit],
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
         validation_errors: Sequence[str] = (),
-    ) -> KnowledgeChangeDraftSet: ...
+    ) -> KnowledgeChangeDraftSet:
+        """추출 주제와 기존 후보를 비교해 create/update/no-change 변경안을 만든다."""
+
+        ...
 
 
 class LangChainKnowledgeModel:
@@ -56,6 +62,8 @@ class LangChainKnowledgeModel:
         source_units: Sequence[KnowledgeSourceUnit],
         validation_errors: Sequence[str] = (),
     ) -> TopicExtractionResult:
+        """Source Unit만 근거로 사용할 수 있는 주제 추출 요청을 실행한다."""
+
         payload = {
             "document_title": document_title,
             "source_units": [unit.model_dump(mode="json") for unit in source_units],
@@ -81,6 +89,8 @@ class LangChainKnowledgeModel:
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
         validation_errors: Sequence[str] = (),
     ) -> KnowledgeChangeDraftSet:
+        """현재 snapshot의 후보 안에서만 갱신 대상을 고르는 변경안을 생성한다."""
+
         payload = {
             "source_event_id": source_event_id,
             "base_pcm_revision": snapshot.pcm_revision,

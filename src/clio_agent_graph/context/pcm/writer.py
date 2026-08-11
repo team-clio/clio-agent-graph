@@ -13,11 +13,17 @@ class ProjectContextWriter(Protocol):
         *,
         project_id: str,
         source_event_id: str,
-    ) -> KnowledgeCommitResult | None: ...
+    ) -> KnowledgeCommitResult | None:
+        """source event가 이미 처리됐는지 확인해 중복 쓰기를 막는다."""
+
+        ...
 
     async def apply_knowledge_changes(
         self,
         *,
         project_id: str,
         change_set: KnowledgeChangeSet,
-    ) -> KnowledgeCommitResult: ...
+    ) -> KnowledgeCommitResult:
+        """base revision을 확인하고 변경 묶음을 하나의 PCM revision으로 적용한다."""
+
+        ...

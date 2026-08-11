@@ -117,6 +117,8 @@ class ToolCallingAgent:
         return self.response_model.model_validate(structured).model_dump()
 
     def invoke(self, prompt: str) -> dict[str, Any]:
+        """동기 호출부에서 Tool loop를 실행하고 검증된 결과만 반환한다."""
+
         result = self._create_agent().invoke({"messages": [{"role": "user", "content": prompt}]})
         return self._parse_result(result)
 

@@ -87,6 +87,8 @@ class AnalyzeIssueRequest(BaseModel):
 
 
 class DocumentAddedRequest(BaseModel):
+    """새 문서 revision을 PCM Knowledge로 반영하는 요청."""
+
     model_config = ConfigDict(extra="forbid")
 
     request_id: str = Field(min_length=1)
@@ -96,6 +98,8 @@ class DocumentAddedRequest(BaseModel):
 
 
 class DocumentDeletedRequest(BaseModel):
+    """문서 revision 삭제를 PCM과 검색 인덱스에 반영하는 요청."""
+
     model_config = ConfigDict(extra="forbid")
 
     request_id: str = Field(min_length=1)
@@ -105,6 +109,8 @@ class DocumentDeletedRequest(BaseModel):
 
 
 class RepositorySyncRequest(BaseModel):
+    """Repository 등록과 제거가 공유하는 lifecycle 요청."""
+
     model_config = ConfigDict(extra="forbid")
 
     request_id: str = Field(min_length=1)
@@ -114,12 +120,16 @@ class RepositorySyncRequest(BaseModel):
 
     @model_validator(mode="after")
     def require_source_for_registration(self) -> "RepositorySyncRequest":
+        """등록 요청에만 필요한 원격 주소를 판별 공용체 검증 단계에서 강제한다."""
+
         if self.request_type == "repository_added" and not self.payload.source_uri:
             raise ValueError("repository_added requires payload.source_uri")
         return self
 
 
 class CodeChangeRequest(BaseModel):
+    """활성 Repository revision을 새 commit으로 전진시키는 요청."""
+
     model_config = ConfigDict(extra="forbid")
 
     request_id: str = Field(min_length=1)
