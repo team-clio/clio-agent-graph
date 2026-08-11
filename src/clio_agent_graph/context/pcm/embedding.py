@@ -1,12 +1,23 @@
-"""외부 Embedding API를 연결하기 전 사용할 로컬 개발 provider."""
+"""PCM semantic search에 사용하는 Ollama embedding provider."""
 
-import hashlib
+import asyncio
+import json
 import math
-import re
+import os
 from collections.abc import Sequence
 from typing import Protocol
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
-_TOKEN_PATTERN = re.compile(r"[\w./:{}-]+", re.UNICODE)
+DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
+DEFAULT_OLLAMA_TIMEOUT_SECONDS = 120.0
+PCM_EMBEDDING_DIMENSIONS = 384
+MAX_RESPONSE_BYTES = 16 * 1024 * 1024
+QUERY_INSTRUCTION = (
+    "Given a project knowledge query, retrieve the most relevant project knowledge chunks. "
+    "Consider requirements, domain rules, architecture decisions, and source code context."
+)
 
 
 class EmbeddingProvider(Protocol):
@@ -21,46 +32,117 @@ class EmbeddingProvider(Protocol):
     async def embed_query(self, text: str) -> list[float]: ...
 
 
-class DeterministicLocalEmbedding:
-    """Feature hashing으로 배선만 검증하는 네트워크 없는 임시 embedding."""
+class OllamaEmbeddingProvider:
+    """Qwen3 embedding을 PCM의 384차원 pgvector schema에 연결한다."""
 
-    def __init__(self, dimensions: int = 384) -> None:
-        if dimensions < 32:
-            raise ValueError("Local embedding dimensions must be at least 32.")
+    def __init__(
+        self,
+        model_name: str | None = None,
+        *,
+        base_url: str | None = None,
+        timeout_seconds: float | None = None,
+        dimensions: int = PCM_EMBEDDING_DIMENSIONS,
+    ) -> None:
+        configured_model_name = (
+            model_name if model_name is not None else os.getenv("OLLAMA_EMBEDDING_MODEL", "")
+        )
+        self._model_name = configured_model_name.strip()
+        if dimensions != PCM_EMBEDDING_DIMENSIONS:
+            raise ValueError("The current PCM pgvector schema requires 384 dimensions.")
         self._dimensions = dimensions
+
+        self._base_url = (
+            (base_url or os.getenv("CLIO_OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL))
+            .strip()
+            .rstrip("/")
+        )
+        parsed_url = urlparse(self._base_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
+            raise ValueError("CLIO_OLLAMA_BASE_URL must be an HTTP URL.")
+
+        self._timeout_seconds = (
+            timeout_seconds
+            if timeout_seconds is not None
+            else float(
+                os.getenv(
+                    "CLIO_OLLAMA_TIMEOUT_SECONDS",
+                    str(DEFAULT_OLLAMA_TIMEOUT_SECONDS),
+                )
+            )
+        )
+        if self._timeout_seconds <= 0:
+            raise ValueError("CLIO_OLLAMA_TIMEOUT_SECONDS must be greater than zero.")
 
     @property
     def model_id(self) -> str:
-        return f"local-feature-hash-v1-{self.dimensions}"
+        return f"ollama:{self._require_model_name()}:{self.dimensions}"
 
     @property
     def dimensions(self) -> int:
         return self._dimensions
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
-        return [self._embed(text) for text in texts]
+        inputs = list(texts)
+        if not inputs:
+            return []
+        return await asyncio.to_thread(self._request_embeddings, inputs)
 
     async def embed_query(self, text: str) -> list[float]:
-        return self._embed(text)
+        instructed_query = f"Instruct: {QUERY_INSTRUCTION}\nQuery: {text}"
+        embeddings = await asyncio.to_thread(self._request_embeddings, [instructed_query])
+        return embeddings[0]
 
-    def _embed(self, text: str) -> list[float]:
-        features = _features(text)
-        vector = [0.0] * self.dimensions
-        for feature in features:
-            digest = hashlib.blake2b(feature.encode(), digest_size=8).digest()
-            value = int.from_bytes(digest)
-            index = value % self.dimensions
-            sign = 1.0 if value & 1 else -1.0
-            vector[index] += sign
-        norm = math.sqrt(sum(value * value for value in vector))
-        if norm == 0:
-            return vector
-        return [value / norm for value in vector]
+    def _request_embeddings(self, texts: list[str]) -> list[list[float]]:
+        request = Request(
+            f"{self._base_url}/api/embed",
+            data=json.dumps(
+                {
+                    "model": self._require_model_name(),
+                    "input": texts,
+                    "dimensions": self.dimensions,
+                },
+                ensure_ascii=False,
+            ).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self._timeout_seconds) as response:  # noqa: S310
+                raw_response = response.read(MAX_RESPONSE_BYTES + 1)
+        except HTTPError as error:
+            diagnostic = error.read(2_000).decode("utf-8", errors="replace").strip()
+            suffix = f": {diagnostic}" if diagnostic else ""
+            raise RuntimeError(f"Ollama embed returned HTTP {error.code}{suffix}") from error
+        except URLError as error:
+            raise RuntimeError(f"Ollama embed is unavailable at {self._base_url}.") from error
 
+        if len(raw_response) > MAX_RESPONSE_BYTES:
+            raise RuntimeError("Ollama embed response exceeded 16 MiB.")
+        try:
+            payload = json.loads(raw_response)
+            embeddings = payload["embeddings"]
+        except (json.JSONDecodeError, KeyError, TypeError) as error:
+            raise RuntimeError("Ollama embed response has an invalid shape.") from error
+        if not isinstance(embeddings, list) or len(embeddings) != len(texts):
+            raise RuntimeError("Ollama embed response count does not match the input count.")
 
-def _features(text: str) -> tuple[str, ...]:
-    tokens = tuple(token.casefold() for token in _TOKEN_PATTERN.findall(text))
-    if not tokens:
-        return ()
-    bigrams = tuple(f"{left}\x1f{right}" for left, right in zip(tokens, tokens[1:], strict=False))
-    return (*tokens, *bigrams)
+        vectors: list[list[float]] = []
+        for vector in embeddings:
+            if not isinstance(vector, list) or len(vector) != self.dimensions:
+                raise RuntimeError(
+                    f"Ollama embed must return {self.dimensions}-dimensional vectors."
+                )
+            if any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                for value in vector
+            ):
+                raise RuntimeError("Ollama embedding contains an invalid value.")
+            vectors.append([float(value) for value in vector])
+        return vectors
+
+    def _require_model_name(self) -> str:
+        if not self._model_name:
+            raise ValueError("OLLAMA_EMBEDDING_MODEL is not configured.")
+        return self._model_name

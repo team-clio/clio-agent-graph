@@ -1,6 +1,5 @@
 """LangChain embedding provider를 Retrieval Protocol에 연결하는 adapter."""
 
-import os
 from typing import Any
 
 from clio_agent_graph.workflows.reporting.retrieval.errors import RetrievalConfigurationError
@@ -16,11 +15,11 @@ class LangChainEmbeddingModel:
 
     @property
     def model_name(self) -> str:
-        """환경변수에도 모델이 없으면 가짜 기본값 대신 설정 오류를 낸다."""
+        """명시적인 모델이 없으면 가짜 기본값 대신 설정 오류를 낸다."""
 
-        value = self._configured_model_name or os.getenv("CLIO_EMBEDDING_MODEL")
+        value = self._configured_model_name
         if value is None or not value.strip():
-            raise RetrievalConfigurationError("CLIO_EMBEDDING_MODEL is not configured.")
+            raise RetrievalConfigurationError("LangChain embedding model is not configured.")
         return value.strip()
 
     def embed(self, text: str) -> list[float]:

@@ -71,11 +71,15 @@ def test_ollama_adapter_rejects_invalid_response(monkeypatch) -> None:
 
 
 def test_ollama_configuration_and_factory(monkeypatch) -> None:
-    with pytest.raises(RetrievalConfigurationError):
-        OllamaEmbeddingModel("")
-
-    monkeypatch.setenv("CLIO_EMBEDDING_MODEL", "ollama:qwen3-embedding:0.6b")
+    monkeypatch.setenv("OLLAMA_EMBEDDING_MODEL", "qwen3-embedding:0.6b")
     model = load_default_embedding_model()
 
     assert isinstance(model, OllamaEmbeddingModel)
     assert model.model_name == "ollama:qwen3-embedding:0.6b"
+
+
+def test_ollama_factory_requires_model_environment(monkeypatch) -> None:
+    monkeypatch.delenv("OLLAMA_EMBEDDING_MODEL", raising=False)
+
+    with pytest.raises(RetrievalConfigurationError, match="OLLAMA_EMBEDDING_MODEL"):
+        _ = load_default_embedding_model().model_name

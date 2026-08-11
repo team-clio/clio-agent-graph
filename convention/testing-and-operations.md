@@ -66,7 +66,9 @@ CLIO_TEST_POSTGRES_URL="$CLIO_PCM_DATABASE_URL" pytest -m postgres
 
 - `.env.example`을 설정의 기준 목록으로 유지하고 secret 값은 비워 둔다.
 - API key, LangSmith token, provider credential은 commit하지 않는다.
-- 새 환경 변수는 `CLIO_` prefix를 사용하고, 읽는 코드와 `.env.example` 및 관련 테스트를 함께 갱신한다.
+- 애플리케이션 설정은 `CLIO_` prefix를 사용한다. Ollama 컨테이너와 애플리케이션이 함께 읽는
+  모델명은 Ollama 표준에 맞춰 `OLLAMA_EMBEDDING_MODEL`을 사용한다. 읽는 코드와
+  `.env.example` 및 관련 테스트를 함께 갱신한다.
 - 설정 누락 시 개발용 fallback이 명시된 경우만 fallback한다. 운영 필수 설정은 구체적인 오류로 실패한다.
 - 일반 테스트는 환경 변수에 암묵적으로 의존하지 않도록 `monkeypatch.setenv/delenv`로 격리한다.
 
@@ -77,8 +79,8 @@ CLIO_TEST_POSTGRES_URL="$CLIO_PCM_DATABASE_URL" pytest -m postgres
 | 전역 LLM | `CLIO_MODEL`, `CLIO_MODEL_BASE_URL`, `CLIO_MODEL_API_KEY_ENV`, `CLIO_MODEL_EXTRA_BODY` |
 | Codex 탐색 | `CLIO_CODEX_COMMAND`, `CLIO_CODEX_MODEL`, `CLIO_CODEX_TIMEOUT_SECONDS`, `CLIO_CODE_EXPLORER`, `CLIO_CODEBASE_PATH` |
 | report/matching | `CLIO_MAX_RAW_PAYLOAD_BYTES`, `CLIO_RM_*` |
-| PCM | `CLIO_PCM_DATABASE_URL`, `CLIO_PCM_DATA_ROOT` |
-| retrieval | `CLIO_DATABASE_URL`, `CLIO_EMBEDDING_MODEL`, `CLIO_OLLAMA_*` |
+| PCM | `CLIO_PCM_DATABASE_URL`, `CLIO_PCM_DATA_ROOT`, `OLLAMA_EMBEDDING_MODEL`, `CLIO_OLLAMA_*` |
+| retrieval | `CLIO_DATABASE_URL`, `OLLAMA_EMBEDDING_MODEL`, `CLIO_OLLAMA_*` |
 
 ## 변경 완료 체크리스트
 
@@ -88,4 +90,3 @@ CLIO_TEST_POSTGRES_URL="$CLIO_PCM_DATABASE_URL" pytest -m postgres
 4. 관련 단위·graph·선택적 통합 테스트를 실행한다.
 5. `ruff check .`과 `ruff format --check .`을 통과시킨다.
 6. PR에 변경된 graph/API 동작, 실행한 검증, 필요한 sample request/response를 적는다.
-

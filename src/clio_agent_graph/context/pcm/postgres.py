@@ -14,8 +14,8 @@ import asyncpg
 
 from clio_agent_graph.context.pcm.chunking import MarkdownKnowledgeChunker
 from clio_agent_graph.context.pcm.embedding import (
-    DeterministicLocalEmbedding,
     EmbeddingProvider,
+    OllamaEmbeddingProvider,
 )
 from clio_agent_graph.context.pcm.errors import (
     KnowledgeNotFoundError,
@@ -54,7 +54,7 @@ class PostgresPCM:
     ) -> None:
         self._database_url = database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
         self._markdown_store = markdown_store
-        self._embedding_provider = embedding_provider or DeterministicLocalEmbedding()
+        self._embedding_provider = embedding_provider or OllamaEmbeddingProvider()
         if self._embedding_provider.dimensions != 384:
             raise ValueError("The current pgvector schema requires 384 embedding dimensions.")
         self._chunker = chunker or MarkdownKnowledgeChunker()

@@ -1,4 +1,27 @@
 services:
+  ollama:
+    image: ollama/ollama:0.32.3
+    environment:
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-qwen3-embedding:0.6b}
+      OLLAMA_HOST: 0.0.0.0:11434
+    entrypoint: ["/bin/sh", "/bootstrap.sh"]
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - clio_ollama:/root/.ollama
+      - ./docker/ollama/bootstrap.sh:/bootstrap.sh:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'OLLAMA_HOST=http://127.0.0.1:11434 ollama show "$${OLLAMA_EMBEDDING_MODEL}" >/dev/null 2>&1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 120
+      start_period: 10s
+    restart: unless-stopped
+
   pcm-postgres:
     image: pgvector/pgvector:pg16
     container_name: clio-pcm-postgres
@@ -18,4 +41,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  clio_ollama:
   clio_pcm_postgres:

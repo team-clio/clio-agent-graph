@@ -31,12 +31,12 @@ class OllamaEmbeddingModel:
         base_url: str | None = None,
         timeout_seconds: float | None = None,
     ) -> None:
-        configured_name = model_name or os.getenv("CLIO_EMBEDDING_MODEL", "")
+        configured_name = (
+            model_name if model_name is not None else os.getenv("OLLAMA_EMBEDDING_MODEL", "")
+        )
         if configured_name.startswith("ollama:"):
             configured_name = configured_name.removeprefix("ollama:")
         self._ollama_model = configured_name.strip()
-        if not self._ollama_model:
-            raise RetrievalConfigurationError("Ollama embedding model is not configured.")
 
         configured_url = base_url or os.getenv("CLIO_OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
         self._base_url = configured_url.strip().rstrip("/")
@@ -64,7 +64,7 @@ class OllamaEmbeddingModel:
     def model_name(self) -> str:
         """DB에서 다른 provider·tag와 섞이지 않는 모델 ID를 반환한다."""
 
-        return f"ollama:{self._ollama_model}"
+        return f"ollama:{self._require_model_name()}"
 
     def embed(self, text: str) -> list[float]:
         """기존 EmbeddingModel 호출과 호환되는 document embedding이다."""
@@ -88,7 +88,7 @@ class OllamaEmbeddingModel:
         request = Request(
             f"{self._base_url}/api/embed",
             data=json.dumps(
-                {"model": self._ollama_model, "input": text},
+                {"model": self._require_model_name(), "input": text},
                 ensure_ascii=False,
             ).encode("utf-8"),
             headers={"Content-Type": "application/json"},
@@ -119,3 +119,8 @@ class OllamaEmbeddingModel:
         if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in vector):
             raise RetrievalDataError("Ollama embedding contains a non-numeric value.")
         return [float(value) for value in vector]
+
+    def _require_model_name(self) -> str:
+        if not self._ollama_model:
+            raise RetrievalConfigurationError("OLLAMA_EMBEDDING_MODEL is not configured.")
+        return self._ollama_model

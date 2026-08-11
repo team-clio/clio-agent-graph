@@ -6,8 +6,7 @@ from clio_agent_graph.workflows.reporting.retrieval.langchain_embedding import (
 )
 
 
-def test_embedding_model_is_not_created_during_construction(monkeypatch) -> None:
-    monkeypatch.delenv("CLIO_EMBEDDING_MODEL", raising=False)
+def test_embedding_model_is_not_created_during_construction() -> None:
     adapter = LangChainEmbeddingModel()
 
     assert adapter._model is None

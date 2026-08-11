@@ -1,6 +1,6 @@
 """Project Context Memory의 도메인 계약과 기본 구현."""
 
-from clio_agent_graph.context.pcm.embedding import DeterministicLocalEmbedding, EmbeddingProvider
+from clio_agent_graph.context.pcm.embedding import EmbeddingProvider, OllamaEmbeddingProvider
 from clio_agent_graph.context.pcm.memory import InMemoryPCM
 from clio_agent_graph.context.pcm.models import (
     IngestDocumentCommand,
@@ -24,7 +24,6 @@ from clio_agent_graph.context.pcm.writer import ProjectContextWriter
 __all__ = [
     "InMemoryPCM",
     "DocumentKnowledgePipeline",
-    "DeterministicLocalEmbedding",
     "EmbeddingProvider",
     "IngestDocumentCommand",
     "IngestRepositoryCommand",
@@ -34,6 +33,7 @@ __all__ = [
     "KnowledgeDocument",
     "KnowledgeSearchRequest",
     "KnowledgeSearchResult",
+    "OllamaEmbeddingProvider",
     "ProjectContextReader",
     "ProjectContextSnapshot",
     "ProjectContextWriter",

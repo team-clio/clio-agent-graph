@@ -85,9 +85,9 @@ Issue 분석은 요청 시작 시 PCM snapshot을 고정하고, 같은 snapshot�
 Knowledge LLM으로 topic과 변경안을 생성한 뒤 PCM revision으로 commit합니다.
 `CLIO_PCM_DATABASE_URL`을 설정하면 PostgreSQL metadata와 immutable Markdown 파일에
 영속화하고, 설정하지 않으면 개발용 in-memory PCM을 사용합니다. Vector 의미 검색은
-로컬 feature-hash embedding과 pgvector를 사용하고, PostgreSQL FTS·trigram 결과를
-Reciprocal Rank Fusion으로 결합합니다. 로컬 embedding은 인프라 배선 검증용이며 실제
-의미 검색 품질용 모델은 아닙니다.
+Ollama의 `qwen3-embedding:0.6b`와 pgvector를 사용하고, PostgreSQL FTS·trigram 결과를
+Reciprocal Rank Fusion으로 결합합니다. PCM은 현재 pgvector schema에 맞게 Qwen3의
+사용자 지정 출력 차원을 384로 요청합니다.
 
 ```json
 {
@@ -103,7 +103,7 @@ Reciprocal Rank Fusion으로 결합합니다. 로컬 embedding은 인프라 배�
 }
 ```
 
-로컬 PostgreSQL과 pgvector는 Docker로 실행할 수 있습니다.
+로컬 PostgreSQL·pgvector와 Ollama embedding server는 Docker로 실행할 수 있습니다.
 
 ```bash
 docker compose -f compose.pcm.yaml up -d --wait
@@ -354,30 +354,31 @@ CLIO_CODEBASE_PATH=/absolute/path/to/clio-server
 사용합니다. `OPENAI_API_KEY`는 Codex 자식 프로세스에 전달하지 않습니다.
 
 Issue Retrieval Agent에는 PostgreSQL과 embedding 설정이 필요합니다. 로컬 기본 구성은
-`clio-server/compose.yaml`의 Ollama에서 Qwen3 Embedding 0.6B를 실행합니다.
+이 저장소의 `compose.pcm.yaml`에서 Ollama와 Qwen3 Embedding 0.6B를 실행합니다.
 
 ```text
 CLIO_DATABASE_URL=postgresql+psycopg://clio:clio@localhost:5432/clio
-CLIO_EMBEDDING_MODEL=ollama:qwen3-embedding:0.6b
+OLLAMA_EMBEDDING_MODEL=qwen3-embedding:0.6b
 CLIO_OLLAMA_BASE_URL=http://127.0.0.1:11434
 CLIO_OLLAMA_TIMEOUT_SECONDS=120
 ```
 
-`docker compose up -d ollama`을 처음 실행하면 image와 약 639MB 모델을 내려받으므로 시간이 걸릴 수 있습니다.
-모델은 `clio-ollama` volume에 보존됩니다. Qwen3 query에는 동일 원인의 과거 Bug를 찾으라는 영문 instruction을
+아래 명령으로 Ollama만 실행할 수 있습니다.
+
+```bash
+docker compose -f compose.pcm.yaml up -d --wait ollama
+```
+
+처음 실행하면 image와 약 639MB 모델을 내려받으므로 시간이 걸릴 수 있습니다.
+모델은 `clio_ollama` volume에 보존됩니다. Qwen3 query에는 검색 목적에 맞는 영문 instruction을
 추가하고, 색인 document에는 instruction을 넣지 않습니다.
 
 DB engine과 embedding provider는 최초 실제 호출 때만 생성됩니다. 설정이 없거나 Ollama가 준비되지 않으면
 hash 모델로 조용히 대체하지 않고 retrieval run이 실패합니다. embedding 모델을 변경하면 기존 active 문서도
 새 모델로 다시 색인해야 합니다.
 
-외부 embedding API 없이 로컬 흐름만 smoke test할 때는 아래 값을 명시할 수 있습니다.
-
-```text
-CLIO_EMBEDDING_MODEL=local:hash-v1
-```
-
-이 deterministic hash embedding은 연결 확인용이며 의미 검색 품질을 평가하거나 운영에 사용할 모델은 아닙니다.
+테스트에서는 graph factory에 deterministic fake embedding을 주입하며, 실제 기본 실행은
+`OLLAMA_EMBEDDING_MODEL`이 없거나 Ollama가 준비되지 않은 경우 구체적인 설정·연결 오류로 실패합니다.
 
 NM의 `raw_payload`는 민감 key를 가린 뒤 모델에 전달하며 기본 상한은 32 KiB입니다.
 `CLIO_MAX_RAW_PAYLOAD_BYTES`로 상한을 변경할 수 있습니다.

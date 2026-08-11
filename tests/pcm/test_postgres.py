@@ -17,6 +17,17 @@ from clio_agent_graph.context.pcm.storage import MarkdownStore
 pytestmark = pytest.mark.postgres
 
 
+class FakeEmbeddingProvider:
+    model_id = "fake-test-embedding"
+    dimensions = 384
+
+    async def embed_documents(self, texts: object) -> list[list[float]]:
+        return [[1.0, *([0.0] * 383)] for _ in texts]
+
+    async def embed_query(self, text: str) -> list[float]:
+        return [1.0, *([0.0] * 383)]
+
+
 class FailingEmbeddingProvider:
     model_id = "failing-test-embedding"
     dimensions = 384
@@ -105,6 +116,7 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
     first = PostgresPCM(
         database_url=postgres_url(),
         markdown_store=MarkdownStore(tmp_path),
+        embedding_provider=FakeEmbeddingProvider(),
     )
     result = await first.apply_knowledge_changes(
         project_id=project_id,
@@ -136,6 +148,7 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
     restored = PostgresPCM(
         database_url=postgres_url(),
         markdown_store=MarkdownStore(tmp_path),
+        embedding_provider=FakeEmbeddingProvider(),
     )
     snapshot = await restored.resolve_snapshot(project_id)
     document = await restored.read_knowledge(
@@ -214,6 +227,7 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
     backfilled = PostgresPCM(
         database_url=postgres_url(),
         markdown_store=MarkdownStore(tmp_path),
+        embedding_provider=FakeEmbeddingProvider(),
     )
     backfilled_snapshot = await backfilled.resolve_snapshot(project_id)
     backfilled_search = await backfilled.search_knowledge(
