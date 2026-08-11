@@ -46,9 +46,18 @@ def test_issue_analysis_exposes_high_level_exploration_only(
     )
 
     tool_names = {tool.name for tool in agent.analysis_agent.tools}
-    assert "explore_codebase" in tool_names
+    assert tool_names == {
+        "search_project_knowledge",
+        "read_project_knowledge",
+        "trace_knowledge_sources",
+        "explore_codebase",
+    }
     assert not tool_names.intersection(
         {
+            "resolve_project_snapshot",
+            "search_document_evidence",
+            "search_code_evidence",
+            "search_resolution_history",
             "list_project_repositories",
             "list_repository_files",
             "search_repository_code",
