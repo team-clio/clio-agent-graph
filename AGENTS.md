@@ -11,6 +11,14 @@ live under `context/`. Shared LLM and tool-calling support lives under
 `runtime/`. Tests are grouped by behavior under `tests/`. Runtime graph
 configuration is in `langgraph.json`.
 
+## Architecture & Convention References
+
+When a task involves architectural decisions, workflow design, package boundaries, Agent/Tool
+permissions, testing strategy, or runtime configuration, consult the relevant documents under
+`convention/` as needed. Start with `convention/README.md`, which links to the detailed architecture,
+LangGraph workflow, code, testing, and operations conventions. Keep these documents aligned with the
+implementation whenever a change introduces or revises a project-wide convention.
+
 ## Build, Test, and Development Commands
 
 Create an environment and install development plus LLM dependencies:

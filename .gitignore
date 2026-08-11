@@ -5,6 +5,7 @@
 .ruff_cache/
 .venv/
 .clio/
+.openclaude/worktrees/
 .DS_Store
 __pycache__/
 *.egg-info/
