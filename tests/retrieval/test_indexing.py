@@ -29,7 +29,7 @@ class FakeIndexRepository:
             (
                 72,
                 NormalizeReportInput(
-                    bug_report_id=72,
+                    bug_id=72,
                     title="결제 실패",
                     description="결제 버튼을 누르면 오류가 발생한다.",
                 ),
@@ -37,7 +37,7 @@ class FakeIndexRepository:
             (
                 73,
                 NormalizeReportInput(
-                    bug_report_id=73,
+                    bug_id=73,
                     title="주문 실패",
                     description="주문 생성이 실패한다.",
                 ),
@@ -90,7 +90,7 @@ class FakeNormalizationModel:
 
 def _normalized_report() -> NormalizedReport:
     return NormalizedReport(
-        bug_report_id=72,
+        bug_id=72,
         observed_behavior="결제 버튼 클릭 시 오류가 발생한다.",
     )
 

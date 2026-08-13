@@ -82,19 +82,18 @@ class FakeRepository:
                     StoredRepresentativeBug(
                         bug_id=101,
                         normalized_report=NormalizedReport(
-                            bug_report_id=401,
+                            bug_id=401,
                             observed_behavior="결제 승인 실패",
                             error_signals=ErrorSignals(
                                 error_type="PaymentException",
                                 error_codes=["PAY-500"],
                             ),
                         ),
-                        occurrence_count=5,
                     ),
                     StoredRepresentativeBug(
                         bug_id=102,
                         normalized_report=NormalizedReport(
-                            bug_report_id=402,
+                            bug_id=402,
                             observed_behavior="승인 과정 오류",
                         ),
                     ),
@@ -113,7 +112,7 @@ def test_hybrid_subgraph_runs_three_channels_and_aggregates_issue() -> None:
             "project_id": 3,
             "bug_id": 72,
             "normalized_report": NormalizedReport(
-                bug_report_id=351,
+                bug_id=351,
                 observed_behavior="결제 승인 시 오류",
                 error_signals=ErrorSignals(
                     error_type="PaymentException",

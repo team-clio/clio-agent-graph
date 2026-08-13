@@ -409,7 +409,7 @@ CLIO_RM_CANDIDATE_MARGIN=0.10
   "project_id": 3,
   "bug_id": 72,
   "bug_report": {
-    "bug_report_id": 351,
+    "bug_id": 351,
     "title": "결제 실패",
     "description": "결제 버튼을 누르면 500 오류가 발생합니다.",
     "error_type": "PaymentException",
@@ -427,7 +427,7 @@ CLIO_RM_CANDIDATE_MARGIN=0.10
 ```json
 {
   "normalized_report": {
-    "bug_report_id": 351,
+    "bug_id": 351,
     "observed_behavior": "결제 버튼 클릭 시 500 오류가 발생한다.",
     "expected_behavior": null,
     "reproduction": {
@@ -484,7 +484,7 @@ Issue 후보와 대표 Bug 원문은 내부 state에서만 사용하고 공개 �
   "project_id": 3,
   "bug_id": 72,
   "normalized_report": {
-    "bug_report_id": 351,
+    "bug_id": 351,
     "observed_behavior": "결제 버튼 클릭 시 500 오류가 발생한다.",
     "error_signals": {
       "error_type": "PaymentException",
@@ -526,7 +526,7 @@ Issue 후보와 대표 Bug 원문은 내부 state에서만 사용하고 공개 �
     {
       "bug_id": 72,
       "normalized_report": {
-        "bug_report_id": 351,
+        "bug_id": 351,
         "observed_behavior": "결제 완료 후 주문이 보이지 않는다."
       }
     }

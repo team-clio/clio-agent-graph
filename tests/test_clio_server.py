@@ -9,7 +9,7 @@ from clio_agent_graph.context.clio_server import ClioServerClient, ClioServerErr
 
 
 class FakeResponse:
-    def __init__(self, payload: dict[str, object]) -> None:
+    def __init__(self, payload: object) -> None:
         self.payload = json.dumps(payload).encode()
 
     def __enter__(self) -> "FakeResponse":
@@ -133,6 +133,33 @@ def test_loads_representative_bug_for_issue(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert captured["request"].full_url.endswith("/projects/3/issues/19/bugs/representative")
     assert result["bug_id"] == 72
+
+
+def test_loads_bug_batch_and_candidate_links(monkeypatch: pytest.MonkeyPatch) -> None:
+    requests = []
+    responses = iter(
+        [
+            FakeResponse([{"bug_id": 73, "project_id": 3}]),
+            FakeResponse([{"bug_id": 73, "issue_id": 19}]),
+        ]
+    )
+
+    def fake_urlopen(request, *, timeout):
+        requests.append(request)
+        return next(responses)
+
+    monkeypatch.setattr(clio_server, "urlopen", fake_urlopen)
+    client = ClioServerClient("http://localhost:8080")
+
+    bugs = client.list_bugs("3", after_bug_id=72, limit=20)
+    links = client.candidate_bug_links("3", [72, 73])
+
+    assert bugs == [{"bug_id": 73, "project_id": 3}]
+    assert "after_bug_id=72" in requests[0].full_url
+    assert "limit=20" in requests[0].full_url
+    assert requests[1].full_url.endswith("/projects/3/candidate-bug-links")
+    assert json.loads(requests[1].data) == {"bug_ids": [72, 73]}
+    assert links == [{"bug_id": 73, "issue_id": 19}]
 
 
 def test_http_error_preserves_server_message(monkeypatch: pytest.MonkeyPatch) -> None:

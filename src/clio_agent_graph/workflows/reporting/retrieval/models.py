@@ -129,8 +129,8 @@ class BugIndexInput(ContractModel):
     def require_normalized_bug_id(self) -> "BugIndexInput":
         """Bug-only persistence에서는 정규화 snapshot도 같은 Bug를 가리켜야 한다."""
 
-        if self.normalized_report.bug_report_id != self.bug_id:
-            raise ValueError("normalized_report.bug_report_id must equal bug_id")
+        if self.normalized_report.bug_id != self.bug_id:
+            raise ValueError("normalized_report.bug_id must equal bug_id")
         return self
 
 

@@ -58,7 +58,7 @@ class FakeIssueMatchModel:
         correction_feedback: str | None = None,
     ) -> MatchComparisonDraft:
         self.calls += 1
-        assert report.bug_report_id == 351
+        assert report.bug_id == 351
         assert correction_feedback is None
         return MatchComparisonDraft(
             comparisons=[
@@ -76,7 +76,7 @@ def _graph_input() -> dict[str, object]:
         "project_id": 3,
         "bug_id": 72,
         "bug_report": {
-            "bug_report_id": 351,
+            "bug_id": 351,
             "title": "결제 실패",
             "description": "결제 버튼을 누르면 500 오류가 발생합니다.",
         },
@@ -97,7 +97,7 @@ def _retrieval_with_one_candidate():
                         RepresentativeBug(
                             bug_id=41,
                             normalized_report=NormalizedReport(
-                                bug_report_id=201,
+                                bug_id=201,
                                 observed_behavior="결제 승인 요청이 실패한다.",
                                 affected_surface=AffectedSurface(feature="결제"),
                                 error_signals=ErrorSignals(
@@ -125,7 +125,7 @@ def test_graph_normalizes_and_auto_links_a_bug() -> None:
 
     normalized_report = result["normalized_report"]
     assert isinstance(normalized_report, NormalizedReport)
-    assert normalized_report.bug_report_id == 351
+    assert normalized_report.bug_id == 351
     assert result["match_decision"].action is MatchAction.AUTO_LINK
     assert result["match_decision"].matched_issue_id == 19
     assert set(result) == {"normalized_report", "match_decision"}

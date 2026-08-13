@@ -63,8 +63,6 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
-        sa.ForeignKeyConstraint(["project_id"], ["projects.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["bug_id"], ["bugs.id"], ondelete="CASCADE"),
         sa.UniqueConstraint("bug_id", "document_version", name="uk_bug_retrieval_doc_version"),
     )
     op.create_index(

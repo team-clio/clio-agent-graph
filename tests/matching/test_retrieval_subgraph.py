@@ -20,7 +20,7 @@ def _input() -> dict[str, object]:
         "project_id": 3,
         "bug_id": 72,
         "normalized_report": NormalizedReport(
-            bug_report_id=351,
+            bug_id=351,
             observed_behavior="결제 시 500 오류가 발생한다.",
         ),
     }

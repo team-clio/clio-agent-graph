@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 DEFAULT_SERVER_URL = "http://localhost:8080"
@@ -56,9 +56,13 @@ class ClioServer(Protocol):
 
     def load_bug(self, project_id: str, bug_id: str) -> dict[str, Any]: ...
 
-    def load_issue_representative_bug(
-        self, project_id: str, issue_id: str
-    ) -> dict[str, Any]: ...
+    def load_issue_representative_bug(self, project_id: str, issue_id: str) -> dict[str, Any]: ...
+
+    def list_bugs(
+        self, project_id: str, *, after_bug_id: int, limit: int
+    ) -> list[dict[str, Any]]: ...
+
+    def candidate_bug_links(self, project_id: str, bug_ids: list[int]) -> list[dict[str, Any]]: ...
 
     def create_issue(
         self,
@@ -192,6 +196,19 @@ class ClioServerClient:
             ),
         )
 
+    def list_bugs(self, project_id: str, *, after_bug_id: int, limit: int) -> list[dict[str, Any]]:
+        query = urlencode({"after_bug_id": after_bug_id, "limit": limit})
+        return self._request_list(
+            "GET", f"/internal-api/v1/projects/{int(project_id)}/bugs?{query}"
+        )
+
+    def candidate_bug_links(self, project_id: str, bug_ids: list[int]) -> list[dict[str, Any]]:
+        return self._request_list(
+            "POST",
+            f"/internal-api/v1/projects/{int(project_id)}/candidate-bug-links",
+            {"bug_ids": [int(bug_id) for bug_id in bug_ids]},
+        )
+
     def create_issue(
         self,
         project_id: str,
@@ -258,6 +275,22 @@ class ClioServerClient:
     def _request(
         self, method: str, path: str, payload: dict[str, object] | None = None
     ) -> dict[str, Any]:
+        decoded = self._request_json(method, path, payload)
+        if not isinstance(decoded, dict):
+            raise ClioServerError("Clio Server returned an unexpected response shape.")
+        return decoded
+
+    def _request_list(
+        self, method: str, path: str, payload: dict[str, object] | None = None
+    ) -> list[dict[str, Any]]:
+        decoded = self._request_json(method, path, payload)
+        if not isinstance(decoded, list) or any(not isinstance(item, dict) for item in decoded):
+            raise ClioServerError("Clio Server returned an unexpected response shape.")
+        return decoded
+
+    def _request_json(
+        self, method: str, path: str, payload: dict[str, object] | None = None
+    ) -> object:
         data = None
         headers = {"Accept": "application/json"}
         if payload is not None:
@@ -278,8 +311,6 @@ class ClioServerClient:
             decoded = json.loads(raw)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
             raise ClioServerError("Clio Server returned invalid JSON.") from error
-        if not isinstance(decoded, dict):
-            raise ClioServerError("Clio Server returned an unexpected response shape.")
         return decoded
 
 
