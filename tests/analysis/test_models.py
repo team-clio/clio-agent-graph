@@ -21,7 +21,7 @@ def _bug(bug_id: int = 72) -> AnalysisBug:
     return AnalysisBug(
         bug_id=bug_id,
         normalized_report=NormalizedReport(
-            bug_report_id=300 + bug_id,
+            bug_id=300 + bug_id,
             observed_behavior="결제 완료 후 주문이 보이지 않는다.",
         ),
     )
@@ -39,7 +39,7 @@ def _evidence(snapshot: str = "order.markPaid();") -> Evidence:
 def test_trigger_bug_must_be_in_context() -> None:
     with pytest.raises(ValidationError):
         InitialAnalysisInput(
-            analysis_job_id=1,
+            workflow_run_id=1,
             project_id=3,
             issue=AnalysisIssue(issue_id=19, title="결제 오류"),
             bugs=[_bug()],
@@ -62,7 +62,7 @@ def test_snapshot_rejects_eleven_lines() -> None:
 
 def test_completed_analysis_validates_reference_chain() -> None:
     analysis = IssueAnalysis(
-        analysis_job_id=501,
+        workflow_run_id=501,
         project_id=3,
         issue_id=19,
         status=AnalysisStatus.COMPLETED,
@@ -91,7 +91,7 @@ def test_completed_analysis_validates_reference_chain() -> None:
 def test_unknown_evidence_reference_is_rejected() -> None:
     with pytest.raises(ValidationError, match="Unknown finding evidence"):
         IssueAnalysis(
-            analysis_job_id=501,
+            workflow_run_id=501,
             project_id=3,
             issue_id=19,
             status=AnalysisStatus.COMPLETED,
@@ -118,7 +118,7 @@ def test_unknown_evidence_reference_is_rejected() -> None:
 def test_finding_cannot_reference_symbol_missing_from_its_evidence() -> None:
     with pytest.raises(ValidationError, match="Unknown finding symbol"):
         IssueAnalysis(
-            analysis_job_id=501,
+            workflow_run_id=501,
             project_id=3,
             issue_id=19,
             status=AnalysisStatus.COMPLETED,
@@ -145,7 +145,7 @@ def test_finding_cannot_reference_symbol_missing_from_its_evidence() -> None:
 
 def test_insufficient_result_contains_no_analysis_facts() -> None:
     result = IssueAnalysis(
-        analysis_job_id=501,
+        workflow_run_id=501,
         project_id=3,
         issue_id=19,
         status=AnalysisStatus.INSUFFICIENT_EVIDENCE,
@@ -156,18 +156,19 @@ def test_insufficient_result_contains_no_analysis_facts() -> None:
 
 def test_reanalysis_requires_a_new_job_id() -> None:
     previous = IssueAnalysis(
-        analysis_job_id=501,
+        workflow_run_id=501,
         project_id=3,
         issue_id=19,
         status=AnalysisStatus.INSUFFICIENT_EVIDENCE,
     )
 
-    with pytest.raises(ValidationError, match="new analysis_job_id"):
+    with pytest.raises(ValidationError, match="new workflow_run_id"):
         ReanalysisInput(
-            analysis_job_id=501,
+            workflow_run_id=501,
             project_id=3,
             issue=AnalysisIssue(issue_id=19, title="결제 오류"),
             bugs=[_bug()],
             trigger_bug_id=72,
+            previous_analysis_result_id=900,
             previous_analysis=previous,
         )

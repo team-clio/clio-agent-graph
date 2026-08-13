@@ -58,7 +58,7 @@ def test_agentic_explorer_returns_evidence_and_selected_tool_trace() -> None:
             AnalysisBug(
                 bug_id=72,
                 normalized_report=NormalizedReport(
-                    bug_report_id=351,
+                    bug_id=351,
                     observed_behavior="결제 승인 후 주문이 보이지 않는다.",
                 ),
             )

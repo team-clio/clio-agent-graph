@@ -78,7 +78,7 @@ class FakeRevisionJudgmentModel(FakeInitialJudgmentModel):
             findings=_draft().findings,
             hypotheses=_draft().hypotheses,
             revision_summary=RevisionSummary(
-                previous_analysis_job_id=context.previous_analysis.analysis_job_id,
+                previous_analysis_result_id=context.previous_analysis_result_id,
                 hypothesis_revisions=[
                     HypothesisRevision(
                         previous_hypothesis_id="H1",
@@ -111,7 +111,7 @@ class BrokenRevisionJudgmentModel(FakeRevisionJudgmentModel):
         return draft.model_copy(
             update={
                 "revision_summary": draft.revision_summary.model_copy(
-                    update={"previous_analysis_job_id": 999}
+                    update={"previous_analysis_result_id": 999}
                 )
             }
         )
@@ -162,7 +162,7 @@ class EvidenceAwareJudgmentModel(FakeInitialJudgmentModel):
 
 def _initial_input() -> dict[str, object]:
     return {
-        "analysis_job_id": 501,
+        "workflow_run_id": 501,
         "project_id": 3,
         "issue": {
             "issue_id": 19,
@@ -172,7 +172,7 @@ def _initial_input() -> dict[str, object]:
             {
                 "bug_id": 72,
                 "normalized_report": {
-                    "bug_report_id": 351,
+                    "bug_id": 351,
                     "observed_behavior": "결제 완료 후 주문이 보이지 않는다.",
                 },
             }
@@ -217,7 +217,7 @@ def _completed_previous_analysis() -> IssueAnalysis:
     from clio_agent_graph.workflows.analysis.models import Evidence
 
     return IssueAnalysis(
-        analysis_job_id=500,
+        workflow_run_id=500,
         project_id=3,
         issue_id=19,
         status=AnalysisStatus.COMPLETED,
@@ -275,7 +275,8 @@ def test_reanalysis_does_not_copy_unconfirmed_previous_evidence() -> None:
     )
     graph_input = {
         **_initial_input(),
-        "analysis_job_id": 502,
+        "workflow_run_id": 502,
+        "previous_analysis_result_id": 900,
         "previous_analysis": _completed_previous_analysis(),
     }
 
@@ -283,7 +284,7 @@ def test_reanalysis_does_not_copy_unconfirmed_previous_evidence() -> None:
 
     analysis = result["issue_analysis"]
     assert [item.code_snapshot for item in analysis.evidence] == ["currentCode();"]
-    assert analysis.revision_summary.previous_analysis_job_id == 500
+    assert analysis.revision_summary.previous_analysis_result_id == 900
 
 
 def test_reanalysis_rejects_wrong_previous_job_reference() -> None:
@@ -296,7 +297,8 @@ def test_reanalysis_rejects_wrong_previous_job_reference() -> None:
     )
     graph_input = {
         **_initial_input(),
-        "analysis_job_id": 502,
+        "workflow_run_id": 502,
+        "previous_analysis_result_id": 900,
         "previous_analysis": _completed_previous_analysis(),
     }
 

@@ -1,4 +1,4 @@
-"""BugReport 정규화 도메인."""
+"""Bug 정규화 도메인."""
 
 from clio_agent_graph.workflows.reporting.normalization.langchain_adapter import (
     LangChainNormalizationModel,

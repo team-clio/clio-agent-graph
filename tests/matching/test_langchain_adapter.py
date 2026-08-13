@@ -27,7 +27,7 @@ def test_model_is_created_lazily_on_first_comparison() -> None:
         build_chat_model.assert_not_called()
 
         result = adapter.compare(
-            NormalizedReport(bug_report_id=351, observed_behavior="오류가 발생한다."),
+            NormalizedReport(bug_id=351, observed_behavior="오류가 발생한다."),
             [IssueCandidate(issue_id=19, title="기존 오류", retrieval_score=0.8)],
         )
 
@@ -71,7 +71,7 @@ def test_matcher_uses_candidate_investigation_tools() -> None:
             tools=[read_issue_history],
         )
         result = adapter.compare(
-            NormalizedReport(bug_report_id=351, observed_behavior="오류가 발생한다."),
+            NormalizedReport(bug_id=351, observed_behavior="오류가 발생한다."),
             [IssueCandidate(issue_id=19, title="기존 오류", retrieval_score=0.8)],
         )
 

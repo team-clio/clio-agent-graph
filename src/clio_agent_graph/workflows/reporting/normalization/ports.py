@@ -6,7 +6,7 @@ from clio_agent_graph.workflows.reporting.normalization.models import Normalizat
 
 
 class NormalizationModel(Protocol):
-    """BugReport 텍스트에서 구조화된 사실을 추출하는 모델 인터페이스.
+    """Bug 텍스트에서 구조화된 사실을 추출하는 모델 인터페이스.
 
     Python의 Protocol은 Java의 interface처럼 구현 클래스가 지켜야 할 메서드 모양을 정의한다.
     클래스를 명시적으로 상속하지 않아도 같은 메서드를 제공하면 이 타입으로 사용할 수 있다.

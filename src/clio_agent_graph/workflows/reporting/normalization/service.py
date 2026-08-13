@@ -43,7 +43,7 @@ class ReportPayloadTooLargeError(ValueError):
 
 
 class ReportNormalizer:
-    """BugReport를 모델로 구조화하고 애플리케이션 규칙으로 최종 결과를 만든다."""
+    """Bug를 모델로 구조화하고 애플리케이션 규칙으로 최종 결과를 만든다."""
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class ReportNormalizer:
 
         structured_fields = report.model_dump(
             mode="json",
-            exclude={"bug_report_id", "raw_payload"},
+            exclude={"bug_id", "raw_payload"},
         )
         raw_payload = _sanitize_raw_payload(report.raw_payload)
         raw_payload_json = _serialize_json(raw_payload)
@@ -138,7 +138,7 @@ class ReportNormalizer:
             error_signals=error_signals,
         )
         return NormalizedReport(
-            bug_report_id=report.bug_report_id,
+            bug_id=report.bug_id,
             observed_behavior=draft.observed_behavior,
             expected_behavior=draft.expected_behavior,
             reproduction=draft.reproduction,

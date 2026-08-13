@@ -25,7 +25,7 @@ class ContractModel(BaseModel):
 
 
 class MissingField(StrEnum):
-    """원본 BugReport에서 확인할 수 없는 중요 정보."""
+    """원본 Bug에서 확인할 수 없는 중요 정보."""
 
     # StrEnum은 enum 값이 JSON으로 변환될 때 일반 문자열처럼 표현된다.
     OBSERVED_BEHAVIOR = "OBSERVED_BEHAVIOR"
@@ -41,9 +41,9 @@ class MissingField(StrEnum):
 
 
 class NormalizeReportInput(ContractModel):
-    """Clio Server가 NM에 전달하는 원본 BugReport."""
+    """Clio Server가 NM에 전달하는 원본 Bug."""
 
-    bug_report_id: int = Field(gt=0)
+    bug_id: int = Field(gt=0)
     # `타입 | None`은 값이 해당 타입이거나 없을 수 있다는 Python 3.10+ 표기다.
     title: NonEmptyText | None = None
     description: NonEmptyText | None = None
@@ -69,7 +69,7 @@ class NormalizeReportInput(ContractModel):
             self.raw_payload,
         )
         if not any(content):
-            raise ValueError("BugReport must contain at least one report content field.")
+            raise ValueError("Bug must contain at least one report content field.")
         return self
 
 
@@ -126,9 +126,9 @@ class NormalizationDraft(ContractModel):
 
 
 class NormalizedReport(ContractModel):
-    """소스 형식과 무관하게 RM이 소비하는 표준 BugReport 표현."""
+    """소스 형식과 무관하게 RM이 소비하는 표준 Bug 표현."""
 
-    bug_report_id: int = Field(gt=0)
+    bug_id: int = Field(gt=0)
     observed_behavior: NonEmptyText | None = None
     expected_behavior: NonEmptyText | None = None
     reproduction: Reproduction = Field(default_factory=Reproduction)

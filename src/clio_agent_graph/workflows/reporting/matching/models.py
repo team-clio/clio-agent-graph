@@ -16,7 +16,6 @@ class RepresentativeBug(ContractModel):
 
     bug_id: int = Field(gt=0)
     normalized_report: NormalizedReport
-    occurrence_count: int = Field(default=1, gt=0)
 
 
 class IssueCandidate(ContractModel):

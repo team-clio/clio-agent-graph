@@ -137,7 +137,7 @@ def test_adapter_uses_autonomous_agent_when_tools_are_provided(
             captured.update(kwargs)
 
         def invoke(self, prompt: str) -> NormalizationDraft:
-            assert "Normalize the following bug report" in prompt
+            assert "Normalize the following Bug" in prompt
             return NormalizationDraft(observed_behavior="첨부 로그에서 timeout을 확인했다.")
 
     monkeypatch.setattr(

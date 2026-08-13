@@ -38,7 +38,7 @@ class _FakeInvoker:
 
 def _normalized_report() -> NormalizedReport:
     return NormalizedReport(
-        bug_report_id=351,
+        bug_id=351,
         observed_behavior="결제 완료 후 주문이 보이지 않는다.",
     )
 
@@ -46,7 +46,7 @@ def _normalized_report() -> NormalizedReport:
 def _judgment_context() -> JudgmentContext:
     return JudgmentContext(
         mode=AnalysisMode.INITIAL,
-        analysis_job_id=501,
+        workflow_run_id=501,
         project_id=3,
         issue=AnalysisIssue(issue_id=19, title="결제 오류"),
         bugs=[AnalysisBug(bug_id=72, normalized_report=_normalized_report())],

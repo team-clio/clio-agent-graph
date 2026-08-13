@@ -49,7 +49,7 @@ def test_issue_candidate_accepts_at_most_three_representative_bugs() -> None:
         RepresentativeBug(
             bug_id=index,
             normalized_report=NormalizedReport(
-                bug_report_id=100 + index,
+                bug_id=100 + index,
                 observed_behavior=f"현상 {index}",
             ),
         )

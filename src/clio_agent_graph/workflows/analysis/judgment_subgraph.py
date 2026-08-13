@@ -152,7 +152,7 @@ def _validate_analysis_draft(
     """초안 참조와 재분석 변화 요약을 실제 입력에 맞춰 검증한다."""
 
     analysis = IssueAnalysis(
-        analysis_job_id=context.analysis_job_id,
+        workflow_run_id=context.workflow_run_id,
         project_id=context.project_id,
         issue_id=context.issue.issue_id,
         status=AnalysisStatus.COMPLETED,
@@ -171,8 +171,8 @@ def _validate_analysis_draft(
     revision = analysis.revision_summary
     if previous is None or revision is None:
         raise JudgmentOutputError("Revision analysis requires revision_summary.")
-    if revision.previous_analysis_job_id != previous.analysis_job_id:
-        raise JudgmentOutputError("Revision summary references the wrong previous job.")
+    if revision.previous_analysis_result_id != context.previous_analysis_result_id:
+        raise JudgmentOutputError("Revision summary references the wrong previous result.")
 
     previous_ids = {item.hypothesis_id for item in previous.hypotheses}
     revision_previous_ids = [item.previous_hypothesis_id for item in revision.hypothesis_revisions]
