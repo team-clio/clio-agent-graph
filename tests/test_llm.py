@@ -86,8 +86,11 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
     captured: dict[str, object] = {}
 
     class FakeAgent:
-        def invoke(self, request: dict[str, object]) -> dict[str, object]:
+        def invoke(
+            self, request: dict[str, object], *, config: dict[str, object]
+        ) -> dict[str, object]:
             captured["request"] = request
+            captured["config"] = config
             return {"structured_response": {"answer": "done"}}
 
     def fake_create_agent(**kwargs: object) -> FakeAgent:
@@ -106,6 +109,7 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
 
     assert result == {"answer": "done"}
     assert captured["kwargs"] is not None
+    assert captured["config"] == {"recursion_limit": 40}
 
 
 def test_json_object_extracts_json_after_model_preamble() -> None:

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Protocol
 
+from clio_agent_graph.context.clio_server import ClioServer, ClioServerClient
 from clio_agent_graph.context.pcm import DocumentKnowledgePipeline, InMemoryPCM
 from clio_agent_graph.context.pcm.knowledge_model import LangChainKnowledgeModel
 from clio_agent_graph.context.pcm.postgres import PostgresPCM
@@ -25,6 +26,7 @@ class ApplicationServices:
 
     pcm: PCMService
     document_pipeline: DocumentKnowledgePipeline
+    clio_server: ClioServer | None = None
     repositories: GitRepositoryService | None = None
     repository_pipeline: RepositoryKnowledgePipeline | None = None
 
@@ -54,6 +56,7 @@ def get_application_services() -> ApplicationServices:
             knowledge_model=knowledge_model,
             source_store=source_store,
         ),
+        clio_server=ClioServerClient.from_env(),
         repositories=repositories,
         repository_pipeline=RepositoryKnowledgePipeline(
             reader=pcm,

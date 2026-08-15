@@ -4,10 +4,12 @@ from langgraph.graph import END, START, StateGraph
 
 from clio_agent_graph.workflows.orchestration.nodes.issue_analysis import (
     analyze_issue,
+    assess_risk,
     mark_analysis_for_review,
     plan_resolution,
     prepare_analysis,
     quality_gate,
+    route_after_analysis,
     route_quality_result,
     save_analysis,
     search_code,
@@ -28,6 +30,7 @@ def build_issue_analysis_graph():
     builder.add_node("analyze_issue", analyze_issue)
     builder.add_node("plan_resolution", plan_resolution)
     builder.add_node("quality_gate", quality_gate)
+    builder.add_node("assess_risk", assess_risk)
     builder.add_node("save_analysis", save_analysis)
     builder.add_node("mark_analysis_for_review", mark_analysis_for_review)
 
@@ -40,17 +43,22 @@ def build_issue_analysis_graph():
         ["search_documents", "search_code", "search_history"],
         "analyze_issue",
     )
-    builder.add_edge("analyze_issue", "plan_resolution")
+    builder.add_conditional_edges(
+        "analyze_issue",
+        route_after_analysis,
+        {"plan_resolution": "plan_resolution", "needs_review": "mark_analysis_for_review"},
+    )
     builder.add_edge("plan_resolution", "quality_gate")
     builder.add_conditional_edges(
         "quality_gate",
         route_quality_result,
         {
-            "save_analysis": "save_analysis",
+            "save_analysis": "assess_risk",
             "retry_analysis": "analyze_issue",
             "needs_review": "mark_analysis_for_review",
         },
     )
+    builder.add_edge("assess_risk", "save_analysis")
     builder.add_edge("save_analysis", END)
     builder.add_edge("mark_analysis_for_review", END)
     return builder.compile()

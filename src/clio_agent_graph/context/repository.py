@@ -352,6 +352,7 @@ class GitRepositoryService:
                 "-n",
                 "-I",
                 "-i",
+                "-F",
                 "-e",
                 query,
                 commit,

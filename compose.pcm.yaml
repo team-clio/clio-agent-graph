@@ -22,24 +22,5 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  pcm-postgres:
-    image: pgvector/pgvector:pg16
-    container_name: clio-pcm-postgres
-    environment:
-      POSTGRES_DB: clio_pcm
-      POSTGRES_USER: clio
-      POSTGRES_PASSWORD: clio_dev_password
-    ports:
-      - "127.0.0.1:55432:5432"
-    volumes:
-      - clio_pcm_postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clio -d clio_pcm"]
-      interval: 2s
-      timeout: 3s
-      retries: 20
-    restart: unless-stopped
-
 volumes:
   clio_ollama:
-  clio_pcm_postgres:

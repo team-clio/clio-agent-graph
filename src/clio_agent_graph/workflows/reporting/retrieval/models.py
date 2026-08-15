@@ -125,13 +125,20 @@ class BugIndexInput(ContractModel):
     bug_id: int = Field(gt=0)
     normalized_report: NormalizedReport
 
+    @model_validator(mode="after")
+    def require_normalized_bug_id(self) -> "BugIndexInput":
+        """Bug-only persistence에서는 정규화 snapshot도 같은 Bug를 가리켜야 한다."""
+
+        if self.normalized_report.bug_report_id != self.bug_id:
+            raise ValueError("normalized_report.bug_report_id must equal bug_id")
+        return self
+
 
 class BugIndexResult(ContractModel):
     """색인된 snapshot과 embedding을 추적하는 공개 결과."""
 
     project_id: int = Field(gt=0)
     bug_id: int = Field(gt=0)
-    bug_report_id: int = Field(gt=0)
     document_id: int = Field(gt=0)
     document_version: int = Field(gt=0)
     document_hash: NonEmptyText

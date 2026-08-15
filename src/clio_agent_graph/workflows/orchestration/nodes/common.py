@@ -27,7 +27,7 @@ def validate_request(state: ClioState) -> dict[str, object]:
         "error": None,
     }
     if isinstance(request, ProcessReportRequest):
-        update["report_id"] = request.payload.report_id
+        update["bug_id"] = request.payload.bug_id
     elif isinstance(request, AnalyzeIssueRequest):
         update["issue_id"] = request.payload.issue_id
     elif isinstance(request, DocumentAddedRequest):

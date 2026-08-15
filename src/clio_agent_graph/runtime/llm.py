@@ -6,10 +6,15 @@ from dataclasses import dataclass
 from typing import Any, TypeVar
 
 from langchain.agents import create_agent
+from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
+from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
+from langchain.agents.middleware.tool_call_limit import ToolCallLimitExceededError
 from langchain.chat_models import init_chat_model
 from langchain_core.tools import BaseTool
+from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel
 
+from clio_agent_graph.runtime.agent_runtime import AgentExecutionLimitError, AgentLimits
 from clio_agent_graph.runtime.structured_output import tool_strategy
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
@@ -90,11 +95,13 @@ class ToolCallingAgent:
         system_prompt: str,
         tools: list[BaseTool],
         response_model: type[StructuredOutput],
+        limits: AgentLimits | None = None,
     ) -> None:
         self.name = name
         self.system_prompt = system_prompt
         self.tools = tools
         self.response_model = response_model
+        self.limits = limits or AgentLimits()
 
     def _create_agent(self):
         return create_agent(
@@ -107,6 +114,16 @@ class ToolCallingAgent:
                 f"{json.dumps(self.response_model.model_json_schema())}"
             ),
             response_format=tool_strategy(self.response_model),
+            middleware=(
+                ToolCallLimitMiddleware(
+                    run_limit=self.limits.max_tool_calls,
+                    exit_behavior="error",
+                ),
+                ModelCallLimitMiddleware(
+                    run_limit=self.limits.max_model_calls,
+                    exit_behavior="error",
+                ),
+            ),
             name=self.name,
         )
 
@@ -119,15 +136,33 @@ class ToolCallingAgent:
     def invoke(self, prompt: str) -> dict[str, Any]:
         """동기 호출부에서 Tool loop를 실행하고 검증된 결과만 반환한다."""
 
-        result = self._create_agent().invoke({"messages": [{"role": "user", "content": prompt}]})
+        try:
+            result = self._create_agent().invoke(
+                {"messages": [{"role": "user", "content": prompt}]},
+                config={"recursion_limit": self.limits.recursion_limit},
+            )
+        except GraphRecursionError as error:
+            raise AgentExecutionLimitError("recursion") from error
+        except ModelCallLimitExceededError as error:
+            raise AgentExecutionLimitError("model_calls") from error
+        except ToolCallLimitExceededError as error:
+            raise AgentExecutionLimitError("tool_calls") from error
         return self._parse_result(result)
 
     async def ainvoke(self, prompt: str) -> dict[str, Any]:
         """비동기 Graph Node에서 tool-calling loop를 실행한다."""
 
-        result = await self._create_agent().ainvoke(
-            {"messages": [{"role": "user", "content": prompt}]}
-        )
+        try:
+            result = await self._create_agent().ainvoke(
+                {"messages": [{"role": "user", "content": prompt}]},
+                config={"recursion_limit": self.limits.recursion_limit},
+            )
+        except GraphRecursionError as error:
+            raise AgentExecutionLimitError("recursion") from error
+        except ModelCallLimitExceededError as error:
+            raise AgentExecutionLimitError("model_calls") from error
+        except ToolCallLimitExceededError as error:
+            raise AgentExecutionLimitError("tool_calls") from error
         return self._parse_result(result)
 
 

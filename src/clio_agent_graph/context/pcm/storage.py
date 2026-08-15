@@ -29,7 +29,9 @@ class MarkdownStore:
     """외부 식별자를 경로로 직접 사용하지 않는 immutable Markdown 저장소."""
 
     def __init__(self, root: Path) -> None:
-        self._root = root.resolve()
+        # Service construction runs from async graph nodes; defer filesystem resolution
+        # until an actual read or write is dispatched to a worker thread.
+        self._root = root
 
     async def save_document_source(self, command: IngestDocumentCommand) -> str:
         """입력 식별자를 안전한 경로로 바꿔 문서 원문을 불변 저장한다."""
@@ -64,11 +66,13 @@ class MarkdownStore:
     async def read(self, storage_path: str) -> str:
         """저장 루트 내부의 상대 경로만 허용해 Markdown 원문을 읽는다."""
 
-        path = self._resolve_relative(storage_path)
         try:
-            return await asyncio.to_thread(path.read_text, encoding="utf-8")
+            return await asyncio.to_thread(self._read, storage_path)
         except FileNotFoundError as exc:
             raise PCMValidationError(f"PCM Markdown is missing: {storage_path}") from exc
+
+    def _read(self, storage_path: str) -> str:
+        return self._resolve_relative(storage_path).read_text(encoding="utf-8")
 
     def _write_immutable(self, relative_path: Path, content: str) -> None:
         destination = self._resolve_relative(relative_path.as_posix())
@@ -99,8 +103,9 @@ class MarkdownStore:
         relative = Path(storage_path)
         if relative.is_absolute() or ".." in relative.parts:
             raise PCMValidationError("PCM storage path must be relative and contained.")
-        resolved = (self._root / relative).resolve()
-        if not resolved.is_relative_to(self._root):
+        root = self._root.resolve()
+        resolved = (root / relative).resolve()
+        if not resolved.is_relative_to(root):
             raise PCMValidationError("PCM storage path escapes the configured root.")
         return resolved
 

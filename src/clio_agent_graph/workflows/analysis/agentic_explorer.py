@@ -1,5 +1,6 @@
 """LLM이 제공된 코드·PCM·이력 Tool을 선택하는 IA Exploration subgraph."""
 
+import asyncio
 import json
 from collections.abc import Sequence
 from typing import Any, Protocol, TypedDict
@@ -15,7 +16,10 @@ SYSTEM_PROMPT = """당신은 Issue Analyzer의 읽기 전용 Evidence Explorer�
 현재 질문에 답하기 위해 제공된 코드·프로젝트 지식·변경 이력 Tool 중 필요한 것을 직접 선택하세요.
 검색 결과의 후보를 좁힌 뒤 원문을 읽어 확인하고, 실제 Tool observation에 존재하는 근거만 반환하세요.
 code_snapshot은 확인한 원문 1~10줄이어야 하며 path·symbol·line·change metadata를 만들지 마세요.
-추측은 Evidence로 반환하지 말고, 충분히 조사했는데 근거가 없을 때만 빈 결과를 반환하세요."""
+추측은 Evidence로 반환하지 말고, 충분히 조사했는데 근거가 없을 때만 빈 결과를 반환하세요.
+이미 제공된 근거가 있으면 이를 우선 사용하고, 같은 검색어 또는 같은 파일 범위를 다시
+호출하지 마세요.
+최대 두 번의 검색과 세 번의 파일 읽기 뒤에는 추가 탐색 대신 최종 구조화 결과를 반환하세요."""
 
 
 class ExplorationAgent(Protocol):
@@ -76,7 +80,7 @@ def build_agentic_code_exploration_graph(
                 system_prompt=SYSTEM_PROMPT,
                 response_model=ExplorationResponse,
                 name="issue_evidence_explorer",
-                limits=agent_limits or AgentLimits(max_tool_calls=20, max_model_calls=24),
+            limits=agent_limits or AgentLimits(max_tool_calls=8, max_model_calls=10),
             )
         return actual_agent
 
@@ -86,9 +90,13 @@ def build_agentic_code_exploration_graph(
         request = ExplorationRequest.model_validate(state["exploration_request"])
         exploration_agent = get_agent()
         response = ExplorationResponse.model_validate(
-            exploration_agent.invoke(
-                "다음 분석 질문의 근거를 조사하세요.\n"
-                + json.dumps(request.model_dump(mode="json"), ensure_ascii=False, sort_keys=True)
+            asyncio.run(
+                exploration_agent.ainvoke(
+                    "다음 분석 질문의 근거를 조사하세요.\n"
+                    + json.dumps(
+                        request.model_dump(mode="json"), ensure_ascii=False, sort_keys=True
+                    )
+                )
             )
         )
         return {

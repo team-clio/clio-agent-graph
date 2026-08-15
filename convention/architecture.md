@@ -28,6 +28,8 @@ START → validate_request → route_request
 
 요청은 `workflows/orchestration/requests.py`의 Pydantic 판별 공용체가 검증한다.
 지원하지 않는 타입과 선언되지 않은 필드는 routing 전에 거부한다.
+`process_report`는 Clio Server의 Bug 식별자인 `payload.bug_id`를 사용하며, 오케스트레이션
+상태와 최종 결과에서도 같은 이름을 유지한다.
 
 ### 독립 실행 그래프
 
@@ -86,15 +88,20 @@ entrypoint → workflow graph/node → service → port/model
 ### Report Processing
 
 ```text
-load_and_normalize_report
+start_workflow
+  → load_and_normalize_report
   → search_issue_candidates
   → match_report
   → apply_match_decision
-      ├─ link_existing | needs_review → END
-      └─ create_new → 공통 Issue Analysis Graph → END
+      ├─ link_existing | needs_review → complete_workflow → END
+      └─ create_new → 공통 Issue Analysis Graph → complete_workflow → END
 ```
 
 신규 이슈 경로는 직접 `analyze_issue` 요청과 같은 분석 subgraph를 재사용한다.
+`process_report`는 Clio Server에 workflow를 등록해 `RUNNING`으로 전이한 뒤 모든 쓰기에
+같은 run ID를 사용한다. 사람 검토가 필요한 업무 결과도 Server workflow는 `COMPLETED`로
+저장한다. 완료된 request replay는 저장된 결과를 반환하며 Agent를 다시 실행하지 않고,
+실행 중 예외는 원래 오류를 전파하기 전에 Server workflow를 `FAILED`로 전이한다.
 
 ### Issue Analysis
 
@@ -120,4 +127,3 @@ commit을 snapshot으로 고정하며, quality gate는 citation이 그 snapshot�
 - knowledge 검색은 vector, PostgreSQL FTS, trigram 결과를 RRF로 합친다. 색인 실패 시
   canonical Markdown commit은 유지하고 keyword-only 검색으로 degrade한다.
 - repository lifecycle과 repository-derived PCM knowledge reconciliation은 현재 별도 책임이다.
-

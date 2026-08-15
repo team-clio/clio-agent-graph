@@ -90,4 +90,4 @@ class BugIndexRepository(Protocol):
     def load_backfill_batch(
         self, project_id: int, *, after_bug_id: int, limit: int
     ) -> tuple[list[tuple[int, NormalizeReportInput]], bool]:
-        """최신 occurrence를 포함한 과거 Bug batch와 다음 페이지 여부를 반환한다."""
+        """정규화에 필요한 과거 Bug batch와 다음 페이지 여부를 반환한다."""

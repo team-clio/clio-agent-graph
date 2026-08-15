@@ -1,5 +1,6 @@
 from typing import Any
 
+import pytest
 from langchain.agents.structured_output import ToolStrategy
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
@@ -36,6 +37,9 @@ class FakeCompiledAgent:
             ],
             "structured_response": {"answer": "found"},
         }
+
+    async def ainvoke(self, value: dict[str, Any], *, config: dict[str, Any]) -> dict[str, Any]:
+        return self.invoke(value, config=config)
 
 
 def test_structured_agent_records_llm_selected_tools(monkeypatch) -> None:
@@ -74,4 +78,26 @@ def test_structured_agent_records_llm_selected_tools(monkeypatch) -> None:
     assert captured["tools"] == [lookup_context]
     assert isinstance(captured["response_format"], ToolStrategy)
     assert "Decide which of the provided tools" in captured["system_prompt"]
+    assert compiled.configs == [{"recursion_limit": 40}]
+
+
+@pytest.mark.asyncio
+async def test_structured_agent_awaits_async_tool_execution(monkeypatch) -> None:
+    @tool
+    async def lookup_context(query: str) -> dict[str, str]:
+        """Lookup project context."""
+
+        return {"query": query}
+
+    compiled = FakeCompiledAgent()
+    monkeypatch.setattr("clio_agent_graph.runtime.agent_runtime.create_agent", lambda **_: compiled)
+    agent = StructuredToolAgent(
+        model=object(),
+        tools=[lookup_context],
+        system_prompt="Investigate the issue.",
+        response_model=AgentResult,
+        name="test_agent",
+    )
+
+    assert await agent.ainvoke("Find the relevant context") == AgentResult(answer="found")
     assert compiled.configs == [{"recursion_limit": 40}]

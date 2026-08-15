@@ -2,7 +2,8 @@
 
 Clio의 요청을 `request.request_type`으로 결정적으로 라우팅하는 Python LangGraph
 Agent Server입니다. 상위 그래프 흐름과 PCM, Vector DB, commit-addressed Git mirror가
-구현되어 있으며 아직 연결되지 않은 외부 API Server 쓰기 경계는 Mock으로 분리되어 있습니다.
+구현되어 있으며 `process_report`의 원문 조회, Issue 반영, 분석 저장은 Clio Server
+internal API에 연결되어 있습니다. Memory sync의 revision commit 경계는 아직 Mock입니다.
 
 별도 공개 그래프는 다음 버그 분석 워크플로를 제공합니다.
 
@@ -54,13 +55,16 @@ prepare_analysis
 
 ## 요청 형식
 
+로컬 Agent는 기본적으로 `http://localhost:8080`의 Clio Server internal API를 호출합니다.
+다른 주소를 사용할 때는 `CLIO_SERVER_URL`을 설정합니다.
+
 ```json
 {
   "request_id": "REQ-001",
   "request_type": "process_report",
   "project_id": "PROJECT-1",
   "payload": {
-    "report_id": "REPORT-1"
+    "bug_id": "72"
   }
 }
 ```
@@ -103,14 +107,16 @@ Reciprocal Rank Fusion으로 결합합니다. PCM은 현재 pgvector schema에 �
 }
 ```
 
-로컬 PostgreSQL·pgvector와 Ollama embedding server는 Docker로 실행할 수 있습니다.
+Ollama embedding server는 Docker로 실행할 수 있습니다. PostgreSQL은 `clio-server`의 `compose.yaml`이
+제공하는 **단일 인스턴스**에 `clio`(비즈니스)와 `clio_pcm`(PCM) 두 DB로 존재하며, PCM 스키마는
+에이전트 최초 연결 시 자동 생성됩니다.
 
 ```bash
 docker compose -f compose.pcm.yaml up -d --wait
 ```
 
 ```dotenv
-CLIO_PCM_DATABASE_URL=postgresql://clio:clio_dev_password@127.0.0.1:55432/clio_pcm
+CLIO_PCM_DATABASE_URL=postgresql://clio:clio@127.0.0.1:5432/clio_pcm
 CLIO_PCM_DATA_ROOT=.clio/pcm-data
 ```
 
@@ -266,12 +272,15 @@ NormalizedReport
   → RM
 ```
 
-`bugs`, `issues`, `issue_bugs`, `bug_occurrences`는 읽기 전용이며 Python이
+`bugs`, `issues`, `issue_bugs`는 읽기 전용이며 Python이
 `bug_retrieval_documents`, `bug_embeddings`를 소유합니다. 모든 Issue 상태를 검색하고 현재 Bug 및 이미 연결된
 Issue는 제외합니다. 대상 Bug의 compatible active index coverage가 100%가 아니면 불완전 검색을 후보 없음으로
 숨기지 않고 실패합니다.
 
-새 snapshot은 `bug_retrieval_indexer`, 기존 데이터는 cursor 방식 `bug_retrieval_backfill` graph로 색인합니다.
+`process_report`는 Issue 생성·연결 전에 해당 Bug snapshot을 `bug_retrieval_indexer`로
+색인합니다. 기존 데이터는 cursor 방식 `bug_retrieval_backfill` graph로 색인합니다.
+기존 occurrence 기반 retrieval schema를 Bug-only schema로 올리면 이전 corpus는 안전하게
+폐기되므로, Agent가 새 요청을 받기 전에 backfill을 완료해야 합니다.
 테스트에서는 repository와 embedding model 또는 기존 callback Fake를 주입할 수 있습니다.
 
 ## Codebase Exploration Agent
@@ -567,7 +576,7 @@ python -m clio_agent_graph.workflows.reporting.retrieval.evaluation evals/issue_
 ## 다음 구현 지점
 
 1. 실제 저장소·심볼·호출 관계·최근 변경을 조사하는 Codebase Exploration Agent
-2. Clio Server 이벤트·색인 작업 큐·결과 저장 계약
+2. Agent retrieval 후보 검색과 root `process_report` 흐름 통합
 3. 운영 환경용 영속 체크포인터와 인증 정책
 
 `langgraph dev`는 로컬 개발용 Agent Server입니다. 배포 이미지는 LangGraph CLI의

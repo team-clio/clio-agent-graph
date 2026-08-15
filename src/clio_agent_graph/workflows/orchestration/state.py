@@ -23,7 +23,9 @@ class RequestState(TypedDict, total=False):
     request_id: str
     request_type: RequestType
     project_id: str
-    report_id: str
+    bug_id: str
+    workflow_run_id: int
+    workflow_replayed: bool
     issue_id: str
     document_id: str
     document_title: str
@@ -55,8 +57,11 @@ class IssueAnalysisState(TypedDict, total=False):
     document_evidence: list[dict[str, Any]]
     code_evidence: list[dict[str, Any]]
     history_evidence: list[dict[str, Any]]
+    bug_context: dict[str, Any]
     issue_analysis: dict[str, Any]
+    analysis_error: str
     resolution_plan: dict[str, Any]
+    risk_assessment: dict[str, Any] | None
     quality_result: dict[str, Any]
     quality_attempt: int
 

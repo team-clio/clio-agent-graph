@@ -2,7 +2,15 @@
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
+
+MAX_LONG_ID = 9_223_372_036_854_775_807
+
+
+def _validate_long_id(value: str) -> str:
+    if int(value) > MAX_LONG_ID:
+        raise ValueError("ID exceeds the signed 64-bit range")
+    return value
 
 
 class ProcessReportPayload(BaseModel):
@@ -10,7 +18,9 @@ class ProcessReportPayload(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    report_id: str = Field(min_length=1)
+    bug_id: str = Field(pattern=r"^[1-9]\d*$")
+
+    _validate_bug_id = field_validator("bug_id")(_validate_long_id)
 
 
 class AnalyzeIssuePayload(BaseModel):
@@ -18,7 +28,9 @@ class AnalyzeIssuePayload(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    issue_id: str = Field(min_length=1)
+    issue_id: str = Field(pattern=r"^[1-9]\d*$")
+
+    _validate_issue_id = field_validator("issue_id")(_validate_long_id)
 
 
 class DocumentUpsertPayload(BaseModel):
@@ -71,8 +83,10 @@ class ProcessReportRequest(BaseModel):
 
     request_id: str = Field(min_length=1)
     request_type: Literal["process_report"]
-    project_id: str = Field(min_length=1)
+    project_id: str = Field(pattern=r"^[1-9]\d*$")
     payload: ProcessReportPayload
+
+    _validate_project_id = field_validator("project_id")(_validate_long_id)
 
 
 class AnalyzeIssueRequest(BaseModel):
@@ -82,8 +96,10 @@ class AnalyzeIssueRequest(BaseModel):
 
     request_id: str = Field(min_length=1)
     request_type: Literal["analyze_issue"]
-    project_id: str = Field(min_length=1)
+    project_id: str = Field(pattern=r"^[1-9]\d*$")
     payload: AnalyzeIssuePayload
+
+    _validate_project_id = field_validator("project_id")(_validate_long_id)
 
 
 class DocumentAddedRequest(BaseModel):

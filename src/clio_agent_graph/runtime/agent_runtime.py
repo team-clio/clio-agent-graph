@@ -1,7 +1,7 @@
 """제공된 읽기 Tool 안에서 자율적으로 조사하는 bounded structured agent runtime."""
 
 from dataclasses import dataclass
-from typing import Any, Generic, TypedDict, TypeVar
+from typing import Any, Generic, Literal, TypedDict, TypeVar
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
@@ -60,6 +60,10 @@ class StructuredAgentOutputError(ValueError):
 class AgentExecutionLimitError(RuntimeError):
     """agent가 설정된 모델·Tool·재귀 호출 상한을 넘긴 경우."""
 
+    def __init__(self, limit: Literal["tool_calls", "model_calls", "recursion"]) -> None:
+        self.limit = limit
+        super().__init__(f"Autonomous agent exceeded its {limit} limit.")
+
 
 class StructuredToolAgent(Generic[StructuredResult]):
     """LLM이 Tool을 선택하고 Pydantic 결과로 종료하는 재사용 실행기."""
@@ -112,14 +116,37 @@ class StructuredToolAgent(Generic[StructuredResult]):
                 {"messages": [{"role": "user", "content": user_prompt}]},
                 config={"recursion_limit": self._limits.recursion_limit},
             )
-        except (
-            GraphRecursionError,
-            ModelCallLimitExceededError,
-            ToolCallLimitExceededError,
-        ) as error:
-            raise AgentExecutionLimitError(
-                "Autonomous agent exceeded its execution limit."
-            ) from error
+        except GraphRecursionError as error:
+            raise AgentExecutionLimitError("recursion") from error
+        except ModelCallLimitExceededError as error:
+            raise AgentExecutionLimitError("model_calls") from error
+        except ToolCallLimitExceededError as error:
+            raise AgentExecutionLimitError("tool_calls") from error
+
+        self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
+        structured = result.get("structured_response")
+        if structured is None:
+            raise StructuredAgentOutputError("Agent did not return a structured response.")
+        try:
+            return self._response_model.model_validate(structured)
+        except ValidationError as error:
+            raise StructuredAgentOutputError(str(error)) from error
+
+    async def ainvoke(self, user_prompt: str) -> StructuredResult:
+        """비동기 Tool을 가진 실행 경로에서 bounded tool loop를 실행한다."""
+
+        self._last_tool_calls = []
+        try:
+            result = await self._agent.ainvoke(
+                {"messages": [{"role": "user", "content": user_prompt}]},
+                config={"recursion_limit": self._limits.recursion_limit},
+            )
+        except GraphRecursionError as error:
+            raise AgentExecutionLimitError("recursion") from error
+        except ModelCallLimitExceededError as error:
+            raise AgentExecutionLimitError("model_calls") from error
+        except ToolCallLimitExceededError as error:
+            raise AgentExecutionLimitError("tool_calls") from error
 
         self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
         structured = result.get("structured_response")

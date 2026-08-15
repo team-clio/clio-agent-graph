@@ -1,8 +1,14 @@
 """문서·레포지토리·코드 변경 메모리 동기화 노드."""
 
+import asyncio
+
 from clio_agent_graph.context.application import get_application_services
 from clio_agent_graph.context.mock import mock_service
-from clio_agent_graph.context.pcm import IngestDocumentCommand, KnowledgeCommitResult
+from clio_agent_graph.context.pcm import (
+    IngestDocumentCommand,
+    IngestRepositoryCommand,
+    KnowledgeCommitResult,
+)
 from clio_agent_graph.workflows.orchestration.state import ClioState
 
 
@@ -88,7 +94,8 @@ def prepare_repository_sync(state: ClioState) -> dict[str, object]:
 async def build_repository_index(state: ClioState) -> dict[str, object]:
     """bare Git mirror를 생성·갱신하고 선택한 commit을 활성화한다."""
 
-    service = get_application_services().repositories
+    services = await asyncio.to_thread(get_application_services)
+    service = services.repositories
     if service is None:
         return {"completed_nodes": {"build_repository_index": True}}
     if state["request_type"] == "repository_removed":
@@ -105,7 +112,16 @@ async def build_repository_index(state: ClioState) -> dict[str, object]:
             commit=state.get("revision"),
         )
         sync = registration.model_dump(mode="json")
-        # TODO: reconcile repository-derived PCM knowledge after repository lifecycle changes.
+        if services.repository_pipeline is not None:
+            knowledge = await services.repository_pipeline.ingest(
+                IngestRepositoryCommand(
+                    event_id=state["request_id"],
+                    project_id=state["project_id"],
+                    repository_id=state["repository_id"],
+                    commit=registration.active_commit,
+                )
+            )
+            sync["knowledge"] = _knowledge_result(knowledge)
     return {
         "repository_sync": sync,
         "completed_nodes": {"build_repository_index": True},

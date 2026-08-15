@@ -126,8 +126,7 @@ class PostgresRetrievalRepository:
         rows = self._execute_search(
             """
             WITH eligible AS (
-                SELECT DISTINCT d.id, d.bug_id, b.occurrence_count,
-                       d.error_type, d.error_codes, d.stack_frames
+                SELECT DISTINCT d.id, d.bug_id, d.error_type, d.error_codes, d.stack_frames
                 FROM bug_retrieval_documents d
                 JOIN bugs b ON b.id = d.bug_id
                 JOIN issue_bugs ib ON ib.bug_id = d.bug_id
@@ -147,13 +146,13 @@ class PostgresRetrievalRepository:
                     (stack_frames && CAST(:stack_frames AS text[])) AS frame_match
                 FROM eligible
             )
-            SELECT bug_id, occurrence_count, type_match, code_match, frame_match,
+            SELECT bug_id, type_match, code_match, frame_match,
                    ((CASE WHEN type_match THEN 1 ELSE 0 END) +
                     (CASE WHEN code_match THEN 3 ELSE 0 END) +
                     (CASE WHEN frame_match THEN 2 ELSE 0 END)) AS exact_score
             FROM scored
             WHERE type_match OR code_match OR frame_match
-            ORDER BY exact_score DESC, occurrence_count DESC, bug_id ASC
+            ORDER BY exact_score DESC, bug_id ASC
             LIMIT :limit
             """,
             query,
@@ -201,7 +200,7 @@ class PostgresRetrievalRepository:
         rows = self._execute_search(
             """
             WITH eligible AS (
-                SELECT DISTINCT d.id, d.bug_id, d.search_text, b.occurrence_count
+                SELECT DISTINCT d.id, d.bug_id, d.search_text
                 FROM bug_retrieval_documents d
                 JOIN bugs b ON b.id = d.bug_id
                 JOIN issue_bugs ib ON ib.bug_id = d.bug_id
@@ -213,7 +212,7 @@ class PostgresRetrievalRepository:
                   AND d.bug_id <> :bug_id
                   AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
             ), scored AS (
-                SELECT bug_id, occurrence_count,
+                SELECT bug_id,
                        GREATEST(
                            similarity(search_text, :search_text),
                            word_similarity(:search_text, search_text)
@@ -223,7 +222,7 @@ class PostgresRetrievalRepository:
             SELECT bug_id, lexical_score
             FROM scored
             WHERE lexical_score >= :threshold
-            ORDER BY lexical_score DESC, occurrence_count DESC, bug_id ASC
+            ORDER BY lexical_score DESC, bug_id ASC
             LIMIT :limit
             """,
             query,
@@ -255,7 +254,7 @@ class PostgresRetrievalRepository:
         rows = self._execute_search(
             """
             WITH eligible AS (
-                SELECT DISTINCT d.id, d.bug_id, b.occurrence_count, e.embedding
+                SELECT DISTINCT d.id, d.bug_id, e.embedding
                 FROM bug_retrieval_documents d
                 JOIN bug_embeddings e ON e.retrieval_document_id = d.id
                 JOIN bugs b ON b.id = d.bug_id
@@ -275,7 +274,7 @@ class PostgresRetrievalRepository:
                        1.0 - (embedding <=> CAST(:embedding AS vector))
                    )) AS vector_score
             FROM eligible
-            ORDER BY embedding <=> CAST(:embedding AS vector), occurrence_count DESC, bug_id ASC
+            ORDER BY embedding <=> CAST(:embedding AS vector), bug_id ASC
             LIMIT :limit
             """,
             query,
@@ -336,8 +335,12 @@ class PostgresRetrievalRepository:
                         ORDER BY best_rank, ib.issue_id
                         LIMIT :issue_limit
                     )
-                    SELECT ci.best_rank, i.id AS issue_id, i.title, i.summary, i.status,
-                           b.id AS bug_id, b.occurrence_count, d.normalized_report
+                    SELECT ci.best_rank, i.id AS issue_id, i.title,
+                           CASE WHEN pg_typeof(i.summary)::text = 'oid'
+                                THEN convert_from(lo_get(i.summary::oid), 'UTF8')
+                                ELSE i.summary::text END AS summary,
+                           i.status,
+                            b.id AS bug_id, d.normalized_report
                     FROM candidate_issues ci
                     JOIN issues i ON i.id = ci.issue_id
                     JOIN issue_bugs ib ON ib.issue_id = i.id
@@ -374,7 +377,7 @@ class PostgresRetrievalRepository:
                 StoredRepresentativeBug(
                     bug_id=int(row["bug_id"]),
                     normalized_report=NormalizedReport.model_validate(row["normalized_report"]),
-                    occurrence_count=int(row["occurrence_count"]),
+                    occurrence_count=1,
                 )
             )
         return list(by_issue.values())
@@ -400,25 +403,18 @@ class PostgresRetrievalRepository:
                 text(
                     """
                     SELECT EXISTS (
-                        SELECT 1
-                        FROM bugs b
-                        JOIN bug_occurrences bo ON bo.bug_id = b.id
-                        WHERE b.id = :bug_id
-                          AND b.project_id = :project_id
-                          AND bo.id = :bug_report_id
+                        SELECT 1 FROM bugs b
+                        WHERE b.id = :bug_id AND b.project_id = :project_id
                     )
                     """
                 ),
                 {
                     "bug_id": request.bug_id,
                     "project_id": request.project_id,
-                    "bug_report_id": request.normalized_report.bug_report_id,
                 },
             ).scalar_one()
             if not valid:
-                raise RetrievalDataError(
-                    "project_id, bug_id and normalized_report.bug_report_id are not linked."
-                )
+                raise RetrievalDataError("bug_id does not belong to project_id.")
 
             active = (
                 connection.execute(
@@ -487,11 +483,11 @@ class PostgresRetrievalRepository:
                         text(
                             """
                         INSERT INTO bug_retrieval_documents (
-                            project_id, bug_id, bug_report_id, document_version,
+                            project_id, bug_id, document_version,
                             document_hash, normalized_report, search_text,
                             error_type, error_codes, stack_frames, active
                         ) VALUES (
-                            :project_id, :bug_id, :bug_report_id, :document_version,
+                            :project_id, :bug_id, :document_version,
                             :document_hash, CAST(:normalized_report AS jsonb), :search_text,
                             :error_type, CAST(:error_codes AS text[]),
                             CAST(:stack_frames AS text[]), true
@@ -502,7 +498,6 @@ class PostgresRetrievalRepository:
                         {
                             "project_id": request.project_id,
                             "bug_id": request.bug_id,
-                            "bug_report_id": request.normalized_report.bug_report_id,
                             "document_version": int(next_version),
                             "document_hash": document_hash,
                             "normalized_report": json.dumps(
@@ -549,25 +544,23 @@ class PostgresRetrievalRepository:
     def load_backfill_batch(
         self, project_id: int, *, after_bug_id: int, limit: int
     ) -> tuple[list[tuple[int, NormalizeReportInput]], bool]:
-        """Bug ID cursor 뒤의 최신 occurrence를 limit+1개 읽어 다음 page 여부를 계산한다."""
+        """Bug ID cursor 뒤의 Bug를 limit+1개 읽어 다음 page 여부를 계산한다."""
 
         with self._get_engine().connect() as connection:
             rows = (
                 connection.execute(
                     text(
                         """
-                    SELECT b.id AS bug_id, b.title, b.description, b.source,
-                           b.error_type, b.normalized_message, b.top_application_frame,
-                           occurrence.id AS bug_report_id, occurrence.raw_payload,
-                           occurrence.occurred_at
+                    SELECT b.id AS bug_id, b.title, b.source,
+                           b.error_type,
+                           CASE WHEN pg_typeof(b.message)::text = 'oid'
+                                THEN convert_from(lo_get(b.message::oid), 'UTF8')
+                                ELSE b.message::text END AS message,
+                           CASE WHEN pg_typeof(b.description)::text = 'oid'
+                                THEN convert_from(lo_get(b.description::oid), 'UTF8')
+                                ELSE b.description::text END AS description,
+                           b.stack_trace, b.raw_payload, b.occurred_at
                     FROM bugs b
-                    JOIN LATERAL (
-                        SELECT bo.id, bo.raw_payload, bo.occurred_at
-                        FROM bug_occurrences bo
-                        WHERE bo.bug_id = b.id
-                        ORDER BY bo.occurred_at DESC, bo.id DESC
-                        LIMIT 1
-                    ) occurrence ON true
                     WHERE b.project_id = :project_id
                       AND b.id > :after_bug_id
                     ORDER BY b.id
@@ -586,17 +579,17 @@ class PostgresRetrievalRepository:
         has_more = len(rows) > limit
         result: list[tuple[int, NormalizeReportInput]] = []
         for row in rows[:limit]:
-            stack_trace = [row["top_application_frame"]] if row["top_application_frame"] else []
+            stack_trace = row["stack_trace"] or []
             result.append(
                 (
                     int(row["bug_id"]),
                     NormalizeReportInput(
-                        bug_report_id=int(row["bug_report_id"]),
+                        bug_report_id=int(row["bug_id"]),
                         title=row["title"],
                         description=row["description"],
                         source=row["source"],
                         error_type=row["error_type"],
-                        message=row["normalized_message"],
+                        message=row["message"],
                         stack_trace=stack_trace,
                         occurred_at=row["occurred_at"],
                         raw_payload=row["raw_payload"] or {},
@@ -690,7 +683,6 @@ def _index_result(
     return BugIndexResult(
         project_id=request.project_id,
         bug_id=request.bug_id,
-        bug_report_id=request.normalized_report.bug_report_id,
         document_id=int(document["id"]),
         document_version=int(document["document_version"]),
         document_hash=document_hash,

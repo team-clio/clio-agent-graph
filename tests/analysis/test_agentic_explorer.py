@@ -45,6 +45,9 @@ class FakeExplorationAgent:
             ]
         )
 
+    async def ainvoke(self, user_prompt: str) -> ExplorationResponse:
+        return self.invoke(user_prompt)
+
 
 def test_agentic_explorer_returns_evidence_and_selected_tool_trace() -> None:
     graph = build_agentic_code_exploration_graph(agent=FakeExplorationAgent())

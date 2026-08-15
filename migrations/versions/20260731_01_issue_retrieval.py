@@ -39,7 +39,6 @@ def upgrade() -> None:
         sa.Column("id", sa.BigInteger(), sa.Identity(), primary_key=True),
         sa.Column("project_id", sa.BigInteger(), nullable=False),
         sa.Column("bug_id", sa.BigInteger(), nullable=False),
-        sa.Column("bug_report_id", sa.BigInteger(), nullable=False),
         sa.Column("document_version", sa.Integer(), nullable=False),
         sa.Column("document_hash", sa.String(length=64), nullable=False),
         sa.Column("normalized_report", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
@@ -66,7 +65,6 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(["project_id"], ["projects.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["bug_id"], ["bugs.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["bug_report_id"], ["bug_occurrences.id"], ondelete="RESTRICT"),
         sa.UniqueConstraint("bug_id", "document_version", name="uk_bug_retrieval_doc_version"),
     )
     op.create_index(

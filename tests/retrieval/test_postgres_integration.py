@@ -44,13 +44,8 @@ def migrated_database(postgres_url, monkeypatch_module):
                     description text,
                     source varchar(50) NOT NULL,
                     error_type varchar(255),
-                    normalized_message text,
-                    top_application_frame varchar(1000),
-                    occurrence_count integer NOT NULL
-                );
-                CREATE TABLE bug_occurrences (
-                    id bigint PRIMARY KEY,
-                    bug_id bigint NOT NULL REFERENCES bugs(id),
+                    message text,
+                    stack_trace jsonb NOT NULL DEFAULT '[]',
                     raw_payload jsonb,
                     occurred_at timestamptz NOT NULL
                 );
@@ -118,25 +113,18 @@ def test_migration_preserves_legacy_table_and_runs_hybrid_sql(migrated_database,
             text(
                 """
                 INSERT INTO bugs(
-                    id, project_id, title, source, occurrence_count,
-                    error_type, normalized_message, top_application_frame
+                    id, project_id, title, source, error_type, message,
+                    stack_trace, raw_payload, occurred_at
                 ) VALUES
-                    (72, 3, '현재 결제 오류', 'API', 1,
-                     'PaymentException', 'PAY-500', 'PaymentService.approve'),
-                    (101, 3, '결제 승인 실패', 'API', 5,
-                     'PaymentException', 'PAY-500', 'PaymentService.approve'),
-                    (102, 3, '결제 처리 오류', 'API', 2,
-                     'PaymentException', 'PAY-501', 'PaymentService.approve')
-                """
-            )
-        )
-        connection.execute(
-            text(
-                """
-                INSERT INTO bug_occurrences(id, bug_id, raw_payload, occurred_at) VALUES
-                    (351, 72, '{}', CURRENT_TIMESTAMP),
-                    (401, 101, '{}', CURRENT_TIMESTAMP),
-                    (402, 102, '{}', CURRENT_TIMESTAMP)
+                    (72, 3, '현재 결제 오류', 'API',
+                     'PaymentException', 'PAY-500', '["PaymentService.approve"]', '{}',
+                     CURRENT_TIMESTAMP),
+                    (101, 3, '결제 승인 실패', 'API',
+                     'PaymentException', 'PAY-500', '["PaymentService.approve"]', '{}',
+                     CURRENT_TIMESTAMP),
+                    (102, 3, '결제 처리 오류', 'API',
+                     'PaymentException', 'PAY-501', '["PaymentService.approve"]', '{}',
+                     CURRENT_TIMESTAMP)
                 """
             )
         )
@@ -157,8 +145,8 @@ def test_migration_preserves_legacy_table_and_runs_hybrid_sql(migrated_database,
         )
 
     repository = PostgresRetrievalRepository(postgres_url)
-    first_report = _report(401, "결제 승인 시 PAY-500 오류가 발생한다.", "PAY-500")
-    second_report = _report(402, "결제 처리 과정에서 PAY-501 오류가 발생한다.", "PAY-501")
+    first_report = _report(101, "결제 승인 시 PAY-500 오류가 발생한다.", "PAY-500")
+    second_report = _report(102, "결제 처리 과정에서 PAY-501 오류가 발생한다.", "PAY-501")
     for bug_id, report, embedding in (
         (101, first_report, [1.0, 0.0]),
         (102, second_report, [0.0, 1.0]),
@@ -173,7 +161,7 @@ def test_migration_preserves_legacy_table_and_runs_hybrid_sql(migrated_database,
         )
         assert result.status is IndexStatus.CREATED
 
-    current_report = _report(351, "결제 승인 시 PAY-500 오류가 발생한다.", "PAY-500")
+    current_report = _report(72, "결제 승인 시 PAY-500 오류가 발생한다.", "PAY-500")
     request = IssueRetrievalRequest(
         project_id=3,
         bug_id=72,

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sandbox Order Service - Clio E2E 관측 보고서</title>
+  <style>
+    :root { --ink:#182235; --muted:#657086; --paper:#f4f6fb; --panel:#fff; --line:#e5e8f0; --navy:#172a55; --blue:#315fda; --sky:#dce8ff; --mint:#dff7ee; --amber:#fff1cb; --red:#a43b4f; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:15px/1.65 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    header { color:#fff; padding:72px max(24px, calc((100vw - 1120px)/2)); background:radial-gradient(circle at 78% 8%, #4478ff 0, transparent 28%), linear-gradient(120deg, #101b37, #203d82); }
+    .hero { display:grid; grid-template-columns:1fr 250px; align-items:end; gap:28px; }
+    .eyebrow { margin:0 0 12px; color:#b7cdfd; font-size:12px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:780px; margin:0; font-size:clamp(32px, 5vw, 56px); line-height:1.09; letter-spacing:-.045em; }
+    header p { max-width:720px; margin:22px 0 0; color:#dbe5ff; font-size:18px; }
+    .score { display:grid; place-items:center; width:220px; aspect-ratio:1; justify-self:end; border-radius:50%; background:conic-gradient(#77f1c7 0 100%, rgba(255,255,255,.14) 0); box-shadow:inset 0 0 0 12px rgba(16,27,55,.42); }
+    .score div { display:grid; place-items:center; width:166px; aspect-ratio:1; border-radius:50%; background:#172a55; text-align:center; } .score b { font-size:42px; line-height:1; letter-spacing:-.06em; } .score small { margin-top:4px; color:#c6d9ff; font-weight:700; }
+    main { width:min(1120px, calc(100% - 40px)); margin:0 auto; padding:34px 0 72px; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin:-20px 0 32px; }
+    .meta span { padding:7px 12px; border:1px solid #d6def0; border-radius:999px; background:#fff; color:#3f506e; font-size:12px; font-weight:700; }
+    .metrics { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin:24px 0 42px; }
+    .metric, section, .case { border:1px solid var(--line); border-radius:16px; background:var(--panel); box-shadow:0 8px 22px rgba(24,34,53,.035); }
+    .metric { padding:18px; }
+    .metric b { display:block; color:var(--navy); font-size:28px; line-height:1.1; letter-spacing:-.04em; }
+    .metric span { color:var(--muted); font-size:12px; font-weight:700; }
+    section { margin-top:22px; padding:28px; }
+    h2 { margin:0 0 14px; color:var(--navy); font-size:22px; letter-spacing:-.025em; }
+    h3 { margin:0 0 8px; font-size:16px; }
+    p { margin:0 0 12px; } .quiet { color:var(--muted); }
+    table { width:100%; border-collapse:collapse; font-size:13px; } th, td { padding:12px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; } th { color:var(--muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; } tr:last-child td { border:0; }
+    .ok { display:inline-block; padding:3px 8px; border-radius:999px; background:var(--mint); color:#16654c; font-size:11px; font-weight:800; } code { padding:2px 5px; border-radius:5px; background:#f0f3fa; color:#2a4e9f; font:12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .cases { display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; } .case { padding:20px; } .case p { font-size:13px; } .label { display:inline-block; margin-bottom:9px; color:#536dba; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .note { padding:16px 18px; border-left:4px solid #efbd44; border-radius:8px; background:var(--amber); } .success { border-left-color:#37a87f; background:var(--mint); }
+    .flow { display:grid; grid-template-columns:repeat(5, 1fr); gap:0; margin-top:20px; overflow:hidden; border:1px solid var(--line); border-radius:12px; } .flow div { position:relative; min-height:104px; padding:16px; background:#fff; } .flow div + div { border-left:1px solid var(--line); } .flow div + div::before { position:absolute; z-index:1; top:42px; left:-9px; width:16px; height:16px; border-top:2px solid #9cb7fa; border-right:2px solid #9cb7fa; background:#fff; content:""; transform:rotate(45deg); } .flow b { display:block; color:var(--blue); font-size:12px; letter-spacing:.06em; } .flow span { display:block; margin-top:6px; font-weight:800; line-height:1.25; }
+    .visuals { display:grid; grid-template-columns:.86fr 1.14fr; gap:18px; margin-top:22px; } .visual { padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--panel); } .visual h3 { color:var(--navy); } .visual p { color:var(--muted); font-size:13px; }
+    .completion { display:flex; align-items:center; gap:22px; margin-top:18px; } .completion .ring { display:grid; place-items:center; flex:0 0 142px; width:142px; aspect-ratio:1; border-radius:50%; background:conic-gradient(#31b486 0 100%, #edf1f8 0); } .ring b { display:grid; place-items:center; width:108px; aspect-ratio:1; border-radius:50%; background:#fff; font-size:28px; letter-spacing:-.05em; } .completion strong { display:block; font-size:22px; letter-spacing:-.04em; }
+    .bars { display:grid; gap:13px; margin-top:18px; } .bar { display:grid; grid-template-columns:92px 1fr 36px; gap:10px; align-items:center; font-size:12px; font-weight:750; } .track { height:10px; overflow:hidden; border-radius:99px; background:#edf1f8; } .fill { height:100%; border-radius:99px; background:linear-gradient(90deg, #315fda, #77a0ff); } .fill.low { background:linear-gradient(90deg, #d89b38, #f0ca77); }
+    .evidence-map { display:grid; grid-template-columns:repeat(5, 1fr); gap:9px; margin-top:18px; } .evidence { min-height:104px; padding:13px 10px; border-radius:10px; background:#edf4ff; text-align:center; } .evidence.weak { background:#fff3d8; } .evidence b { display:block; margin:6px 0 2px; font-size:21px; letter-spacing:-.05em; } .evidence small { color:var(--muted); font-size:10px; font-weight:800; }
+    ul { margin:8px 0; padding-left:20px; } li { margin:5px 0; }
+    footer { color:var(--muted); font-size:12px; text-align:center; }
+    @media (max-width:760px) { .hero, .visuals { grid-template-columns:1fr; } .score { justify-self:start; } .metrics, .cases { grid-template-columns:1fr 1fr; } .flow { grid-template-columns:1fr; } .flow div + div { border-left:0; border-top:1px solid var(--line); } .flow div + div::before { top:-9px; left:42px; transform:rotate(-45deg); } section { padding:20px; } table { display:block; overflow-x:auto; white-space:nowrap; } }
+    @media (max-width:460px) { .metrics, .cases { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div><p class="eyebrow">Clio End-to-End Observation / 2026-08-15</p><h1>의도적으로 망가뜨린 주문 서비스, Clio가 어떻게 읽었나</h1><p>독립 project와 private Git repository에서 5개의 서로 다른 결함을 제보하고, Bug 수집부터 Issue 생성, commit-bound citation, 한국어 분석 및 해결 계획 저장까지 실제 runtime을 관측한 결과입니다.</p></div>
+      <div class="score"><div><b>5/5</b><small>ANALYSIS COMPLETED</small></div></div>
+    </div>
+  </header>
+  <main>
+    <div class="meta"><span>Project 1 · Sandbox Order Service E2E</span><span>Repository 1 · private GitHub mirror</span><span>Commit d0221f4fe44bde7d5b390cccc50809ec0e11f21a</span></div>
+    <div class="metrics">
+      <div class="metric"><b>5 / 5</b><span>workflow completed</span></div>
+      <div class="metric"><b>5 / 5</b><span>analysis COMPLETED</span></div>
+      <div class="metric"><b>24</b><span>stored citations</span></div>
+      <div class="metric"><b>0.88</b><span>mean confidence</span></div>
+    </div>
+
+    <section>
+      <p class="eyebrow" style="color:#536dba">One-pass execution map</p>
+      <h2>한 번의 Bug 제보가 지나간 경로</h2>
+      <div class="flow"><div><b>01</b><span>Bug 수집</span><small>External API</small></div><div><b>02</b><span>Issue 생성</span><small>5개 분리 Issue</small></div><div><b>03</b><span>Commit 고정</span><small>Git mirror</small></div><div><b>04</b><span>근거 탐색</span><small>24 citations</small></div><div><b>05</b><span>한국어 분석 저장</span><small>5 COMPLETED</small></div></div>
+    </section>
+
+    <div class="visuals">
+      <section class="visual" style="margin-top:0"><h3>실행 완결성</h3><p>workflow와 analysis가 모두 종료됐고, 사람이 개입해 결과를 보정하지 않았습니다.</p><div class="completion"><div class="ring"><b>100%</b></div><div><strong>5개 모두 완료</strong><span class="quiet">workflow 1-5<br>analysis result 1-5</span></div></div></section>
+      <section class="visual" style="margin-top:0"><h3>사례별 분석 confidence</h3><p>가설 확신도는 source snippet 관련도에 따라 차이가 났습니다.</p><div class="bars"><div class="bar"><span>Coupon</span><div class="track"><div class="fill" style="width:99%"></div></div><b>0.99</b></div><div class="bar"><span>Pagination</span><div class="track"><div class="fill" style="width:95%"></div></div><b>0.95</b></div><div class="bar"><span>Inventory</span><div class="track"><div class="fill" style="width:90%"></div></div><b>0.90</b></div><div class="bar"><span>Session</span><div class="track"><div class="fill" style="width:82%"></div></div><b>0.82</b></div><div class="bar"><span>Webhook</span><div class="track"><div class="fill low" style="width:75%"></div></div><b>0.75</b></div></div></section>
+    </div>
+
+    <section>
+      <p class="eyebrow" style="color:#536dba">Evidence density</p>
+      <h2>Citation은 충분했나, 정확했나</h2>
+      <p class="quiet">모든 결과가 citation을 가졌지만, citation 수는 source path 적합성을 보장하지 않습니다. 파란 카드는 repository citation이 stack symbol의 source file에 직접 맞물린 사례, 노란 카드는 knowledge(PCM) citation이 범용 문서로 빠진 사례입니다.</p>
+      <div class="evidence-map"><div class="evidence"><small>PAGINATION</small><b>5</b><small>direct repo + 1 mixed</small></div><div class="evidence"><small>COUPON</small><b>3</b><small>direct repo</small></div><div class="evidence weak"><small>INVENTORY</small><b>5</b><small>direct repo, thin knowledge</small></div><div class="evidence"><small>SESSION</small><b>5</b><small>direct repo</small></div><div class="evidence weak"><small>WEBHOOK</small><b>6</b><small>broad knowledge</small></div></div>
+    </section>
+
+    <section>
+      <h2>실행 범위</h2>
+      <p>새 private repository <code>cmh1448/clio-sandbox-order-service</code>를 만들고, coupon, inventory, session, webhook, pagination의 작은 Python domain service를 구현했습니다. 각 결함은 source에 남긴 뒤 실제 Bug context에 error code, description, stack symbol을 넣어 External Bug API로 전송했습니다.</p>
+      <div class="note success">최종 repository sync는 성공했습니다. Agent는 fixed commit mirror(<code>d0221f4fe44bde7d5b390cccc50809ec0e11f21a</code>, file_count 10)를 기준으로 분석했으며, 이후 생성된 모든 workflow는 <code>COMPLETED</code>로 종료됐습니다.</div>
+    </section>
+
+    <section>
+      <h2>시스템 반응 요약</h2>
+      <table>
+        <thead><tr><th>Bug / Issue</th><th>신호</th><th>분석 결과</th><th>근거</th><th>신뢰도</th></tr></thead>
+        <tbody>
+          <tr><td>1 / 1<br>Pagination</td><td><code>PAGINATION-OFFSET-001</code><br><code>PaginationService.page_slice</code></td><td><span class="ok">COMPLETED</span> 첫 페이지 offset이 <code>page * size</code>라는 원인을 정확히 지목, <code>(page-1)*size</code> 수정 제시</td><td>5 citations<br><code>pagination_service.py</code></td><td>0.95</td></tr>
+          <tr><td>2 / 2<br>Coupon</td><td><code>COUPON-DECIMAL-001</code><br><code>CouponService.apply_discount</code></td><td><span class="ok">COMPLETED</span> percent를 100이 아닌 10으로 나누는 scale 오류를 지목, <code>-50.00 vs 85.00</code> 산출까지 재현</td><td>3 citations<br><code>coupon_service.py</code></td><td>0.99</td></tr>
+          <tr><td>3 / 3<br>Inventory</td><td><code>INVENTORY-RACE-001</code><br><code>InventoryService.reserve</code></td><td><span class="ok">COMPLETED</span> check-then-act 경쟁 조건과 atomic 처리 필요성을 지목</td><td>5 citations<br><code>inventory_service.py</code></td><td>0.90</td></tr>
+          <tr><td>4 / 4<br>Session</td><td><code>SESSION-TZ-001</code><br><code>SessionService.require_active</code></td><td><span class="ok">COMPLETED</span> naive / aware datetime 비교 원인을 지목</td><td>5 citations<br><code>session_service.py</code></td><td>0.82</td></tr>
+          <tr><td>5 / 5<br>Webhook</td><td><code>WEBHOOK-SEC-001</code><br><code>WebhookService.verify_signature</code></td><td><span class="ok">COMPLETED</span> constant-time 비교(<code>hmac.compare_digest</code>) 필요성을 지목했으나, 이미 교정된 snippet에 근거한 오탐 가능성이라는 경쟁 가설이 함께 제기됨</td><td>6 citations</td><td>0.75</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>사례별 관측</h2>
+      <div class="cases">
+        <article class="case"><span class="label">Issue 1 · strongest</span><h3>Pagination offset</h3><p><b>의도한 결함:</b> <code>offset = page * size</code>로 1-based page 1에서 첫 두 항목을 건너뜁니다.</p><p><b>Agent 가설:</b> 정상식 <code>(page - 1) * size</code>가 필요하다고 한국어로 설명하고, boundary condition을 포함한 수정·회귀 test plan을 만들었습니다.</p></article>
+        <article class="case"><span class="label">Issue 2 · highest confidence</span><h3>Coupon percentage scale</h3><p><b>의도한 결함:</b> percent를 100이 아닌 10으로 나눠 <code>100 × 15%</code>가 <code>-50</code>이 됩니다.</p><p><b>Agent 반응:</b> <code>Decimal("10")</code> → <code>Decimal("100")</code>으로 나눠야 한다고 정확히 지목하고, 85.00 기대값까지 수치로 검증했습니다.</p></article>
+        <article class="case"><span class="label">Issue 3 · concurrency</span><h3>Inventory reservation race</h3><p><b>의도한 결함:</b> 재고 확인과 감소가 분리되어 병렬 요청이 재고를 음수로 만듭니다.</p><p><b>Agent 가설:</b> check-then-act race condition과 원자적 reserve 또는 lock/transaction 필요성을 제시했습니다.</p></article>
+        <article class="case"><span class="label">Issue 4 · time handling</span><h3>UTC session expiry</h3><p><b>의도한 결함:</b> aware <code>expires_at</code>를 naive <code>datetime.now()</code>와 비교합니다.</p><p><b>Agent 가설:</b> timezone-aware now 사용으로 통일하라는 정확한 해결 방향을 한국어로 생성했습니다.</p></article>
+        <article class="case"><span class="label">Issue 5 · security</span><h3>Webhook timing leak</h3><p><b>의도한 결함:</b> HMAC digest를 직접 <code>==</code> 비교합니다.</p><p><b>Agent 반응:</b> <code>hmac.compare_digest</code>로 constant-time 비교를 수행해야 한다고 지적했지만, 동시에 "소스가 이미 교정된 게 아닌가"라는 오탐 가능성 가설도 함께 제기해 confidence가 가장 낮습니다.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>코드 수준 재현</h2>
+      <p>가상 repository에서 <code>pytest</code>를 실행한 결과, coupon, session, webhook, pagination regression 4건이 실제로 실패했습니다. inventory는 동시성 interleaving이 필요한 결함이라 이 실행에서는 Bug report와 code-path 분석으로 검증했습니다.</p>
+      <ul>
+        <li>Coupon: <code>Decimal('-50.000')</code> vs expected <code>Decimal('85.00')</code></li>
+        <li>Session: offset-naive / offset-aware datetime 비교 <code>TypeError</code></li>
+        <li>Webhook: <code>compare_digest</code>를 호출하지 않아 invalid signature path에서 즉시 예외</li>
+        <li>Pagination: page 1, size 2가 <code>['c']</code>를 반환</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>관찰된 개선점</h2>
+      <div class="note"><b>Citation precision:</b> repository citation은 대부분 stack symbol의 source file을 정확히 짚었지만, 일부 실행은 README, pyproject 또는 다른 source file을 knowledge citation으로 포함했습니다. 특히 webhook, inventory는 stack symbol에 해당하는 함수 본문 주변을 먼저 읽고, source path와 symbol 일치도를 quality gate에 반영해야 합니다.</div>
+      <ul>
+        <li>초기 source search hit를 한 줄이 아니라 함수/클래스 문맥으로 확장</li>
+        <li>stack symbol과 citation path의 일치 점수를 저장 및 quality gate에 반영</li>
+        <li>security case에는 교정본 snippet과 원본 snippet을 구분해 오탐 가설을 억제</li>
+        <li>concurrency case에는 재현 가능한 parallel test를 resolution plan의 필수 acceptance criterion으로 유지</li>
+      </ul>
+    </section>
+    <footer>Generated from live Clio Server and LangGraph execution data. Analysis results: 1-5; workflows: 1-5.</footer>
+  </main>
+</body>
+</html>

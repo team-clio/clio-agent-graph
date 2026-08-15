@@ -636,6 +636,12 @@ class PostgresPCM:
 
     async def _apply_migrations(self, pool: asyncpg.Pool) -> None:
         migration_root = Path(__file__).with_name("migrations")
+        migrations = await asyncio.to_thread(
+            lambda: [
+                (migration.name, migration.read_text(encoding="utf-8"))
+                for migration in sorted(migration_root.glob("*.sql"))
+            ]
+        )
         async with pool.acquire() as connection:
             await connection.execute(
                 """
@@ -647,18 +653,18 @@ class PostgresPCM:
             )
             await connection.execute("SELECT pg_advisory_lock(hashtext('clio_pcm_migrations'))")
             try:
-                for migration in sorted(migration_root.glob("*.sql")):
+                for version, contents in migrations:
                     applied = await connection.fetchval(
                         "SELECT 1 FROM pcm_schema_migrations WHERE version = $1",
-                        migration.name,
+                        version,
                     )
                     if applied:
                         continue
                     async with connection.transaction():
-                        await connection.execute(migration.read_text(encoding="utf-8"))
+                        await connection.execute(contents)
                         await connection.execute(
                             "INSERT INTO pcm_schema_migrations (version) VALUES ($1)",
-                            migration.name,
+                            version,
                         )
             finally:
                 await connection.execute(
