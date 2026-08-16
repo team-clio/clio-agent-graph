@@ -324,6 +324,22 @@ class PostgresPCM:
 
         return (await self.read_knowledge(snapshot=snapshot, knowledge_id=knowledge_id)).sources
 
+    async def list_knowledge(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+    ) -> tuple[KnowledgeDocument, ...]:
+        """snapshot 시점에 유효한 Knowledge를 모두 읽는다."""
+
+        pool = await self._ensure_pool()
+        async with pool.acquire() as connection:
+            rows = await connection.fetch(
+                _SNAPSHOT_DOCUMENT_SQL + " AND kr.is_tombstone = FALSE",
+                snapshot.project_id,
+                snapshot.pcm_revision,
+            )
+        return tuple(await self._document_from_row(row) for row in rows)
+
     async def search_knowledge(
         self,
         *,
