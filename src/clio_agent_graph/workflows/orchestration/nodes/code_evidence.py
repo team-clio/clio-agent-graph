@@ -15,7 +15,12 @@ async def read_code_evidence(state: ClioState) -> dict[str, object]:
 
     citations = state["code_evidence_citations"]
     revisions = {item["repository_id"]: item["commit"] for item in citations}
-    snapshot = ProjectContextSnapshot(project_id=state["project_id"], repository_revisions=revisions)
+    snapshot = ProjectContextSnapshot(
+        project_id=state["project_id"],
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions=revisions,
+    )
     repositories = get_application_services().repositories
     if repositories is None:
         raise RepositoryError("repository service is not configured")
