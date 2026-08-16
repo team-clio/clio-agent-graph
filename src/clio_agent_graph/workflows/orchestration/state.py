@@ -6,6 +6,7 @@ from typing import Annotated, Any, Literal, TypedDict
 RequestType = Literal[
     "process_report",
     "analyze_issue",
+    "read_code_evidence",
     "document_added",
     "document_deleted",
     "repository_added",
@@ -27,6 +28,7 @@ class RequestState(TypedDict, total=False):
     workflow_run_id: int
     workflow_replayed: bool
     issue_id: str
+    code_evidence_citations: list[dict[str, Any]]
     document_id: str
     document_title: str
     document_markdown: str

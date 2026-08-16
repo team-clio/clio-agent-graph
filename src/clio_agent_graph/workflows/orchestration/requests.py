@@ -33,6 +33,47 @@ class AnalyzeIssuePayload(BaseModel):
     _validate_issue_id = field_validator("issue_id")(_validate_long_id)
 
 
+class CodeEvidenceCitationPayload(BaseModel):
+    """IDE 코드 뷰가 표시할 검증된 코드 근거 위치."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str = Field(min_length=1)
+    repository_id: str = Field(min_length=1)
+    commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    file_path: str = Field(min_length=1)
+    start_line: int = Field(ge=1)
+    end_line: int = Field(ge=1)
+    observation: str | None = None
+
+    @model_validator(mode="after")
+    def validate_range(self) -> "CodeEvidenceCitationPayload":
+        if self.end_line < self.start_line:
+            raise ValueError("end_line must not precede start_line")
+        return self
+
+
+class ReadCodeEvidencePayload(BaseModel):
+    """고정 commit의 citation 주변 코드 발췌를 읽는 입력."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    citations: list[CodeEvidenceCitationPayload] = Field(min_length=1, max_length=50)
+
+
+class ReadCodeEvidenceRequest(BaseModel):
+    """분석 snapshot에 저장된 코드 근거를 읽기 전용으로 조회한다."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str = Field(min_length=1)
+    request_type: Literal["read_code_evidence"]
+    project_id: str = Field(pattern=r"^[1-9]\d*$")
+    payload: ReadCodeEvidencePayload
+
+    _validate_project_id = field_validator("project_id")(_validate_long_id)
+
+
 class DocumentUpsertPayload(BaseModel):
     """정규화 Markdown 문서를 PCM에 등록하는 입력."""
 
@@ -157,6 +198,7 @@ class CodeChangeRequest(BaseModel):
 GraphRequest = Annotated[
     ProcessReportRequest
     | AnalyzeIssueRequest
+    | ReadCodeEvidenceRequest
     | DocumentAddedRequest
     | DocumentDeletedRequest
     | RepositorySyncRequest

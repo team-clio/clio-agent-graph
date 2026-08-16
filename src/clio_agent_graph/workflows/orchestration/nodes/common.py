@@ -8,6 +8,7 @@ from clio_agent_graph.workflows.orchestration.requests import (
     DocumentAddedRequest,
     DocumentDeletedRequest,
     ProcessReportRequest,
+    ReadCodeEvidenceRequest,
     RepositorySyncRequest,
     graph_request_adapter,
 )
@@ -30,6 +31,10 @@ def validate_request(state: ClioState) -> dict[str, object]:
         update["bug_id"] = request.payload.bug_id
     elif isinstance(request, AnalyzeIssueRequest):
         update["issue_id"] = request.payload.issue_id
+    elif isinstance(request, ReadCodeEvidenceRequest):
+        update["code_evidence_citations"] = [
+            citation.model_dump() for citation in request.payload.citations
+        ]
     elif isinstance(request, DocumentAddedRequest):
         update.update(
             {
@@ -76,6 +81,7 @@ def select_subgraph(
 ) -> Literal[
     "report_processing",
     "issue_analysis",
+    "code_evidence",
     "document_sync",
     "repository_sync",
     "code_change_sync",
@@ -85,6 +91,7 @@ def select_subgraph(
     routes = {
         "process_report": "report_processing",
         "analyze_issue": "issue_analysis",
+        "read_code_evidence": "code_evidence",
         "document_added": "document_sync",
         "document_deleted": "document_sync",
         "repository_added": "repository_sync",

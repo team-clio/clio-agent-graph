@@ -8,12 +8,14 @@ from clio_agent_graph.workflows.orchestration.graphs.memory_sync import (
     build_document_sync_graph,
     build_repository_sync_graph,
 )
+from clio_agent_graph.workflows.orchestration.graphs.code_evidence import build_code_evidence_graph
 from clio_agent_graph.workflows.orchestration.graphs.report_processing import (
     build_report_processing_graph,
 )
 
 __all__ = [
     "build_code_change_sync_graph",
+    "build_code_evidence_graph",
     "build_document_sync_graph",
     "build_issue_analysis_graph",
     "build_report_processing_graph",

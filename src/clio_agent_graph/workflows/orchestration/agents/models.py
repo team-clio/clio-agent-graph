@@ -99,9 +99,19 @@ class EvidenceCitation(BaseModel):
     knowledge_revision: int | None = Field(default=None, ge=1)
     repository_id: str | None = None
     commit: str | None = None
+    evidence_id: str | None = None
+    file_path: str | None = None
+    start_line: int | None = Field(default=None, ge=1)
+    end_line: int | None = Field(default=None, ge=1)
     location: str | None = None
     snippet: str | None = None
     observation: str | None = None
+
+    @model_validator(mode="after")
+    def validate_code_location(self) -> "EvidenceCitation":
+        if self.end_line is not None and self.start_line is not None and self.end_line < self.start_line:
+            raise ValueError("end_line must not precede start_line")
+        return self
 
 
 class IssueAnalysisOutput(BaseModel):

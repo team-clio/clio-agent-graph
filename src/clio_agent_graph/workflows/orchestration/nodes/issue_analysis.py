@@ -215,6 +215,8 @@ async def quality_gate(state: ClioState) -> dict[str, object]:
                 reasons.append("Repository citation is not available in the bound snapshot.")
             elif commit != expected:
                 reasons.append(f"Repository citation commit does not match: {repository_id}.")
+            elif not _has_structured_code_location(citation):
+                warnings.append("Dropped a repository citation without a structured code location.")
             else:
                 valid_citations.append(citation)
             continue
@@ -252,6 +254,22 @@ async def quality_gate(state: ClioState) -> dict[str, object]:
         "quality_attempt": attempt + 1,
         "completed_nodes": {"quality_gate": True},
     }
+
+
+def _has_structured_code_location(citation: dict[str, Any]) -> bool:
+    """IDE가 추측 없이 하이라이트할 수 있는 위치 계약을 확인한다."""
+
+    path = citation.get("file_path")
+    start = citation.get("start_line")
+    end = citation.get("end_line")
+    return (
+        isinstance(path, str)
+        and bool(path)
+        and isinstance(start, int)
+        and start >= 1
+        and isinstance(end, int)
+        and end >= start
+    )
 
 
 def route_quality_result(
