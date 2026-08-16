@@ -41,7 +41,7 @@ def test_agentic_retrieval_returns_candidates_and_tool_trace() -> None:
             "project_id": 3,
             "bug_id": 72,
             "normalized_report": NormalizedReport(
-                bug_report_id=351,
+                bug_id=351,
                 observed_behavior="결제 승인 요청이 실패한다.",
             ),
         }

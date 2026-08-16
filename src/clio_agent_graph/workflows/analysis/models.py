@@ -21,6 +21,7 @@ class AnalysisStatus(StrEnum):
 
     COMPLETED = "COMPLETED"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+    NEEDS_REVIEW = "NEEDS_REVIEW"
 
 
 class EvidenceKind(StrEnum):
@@ -80,7 +81,7 @@ class AnalysisBug(ContractModel):
 class InitialAnalysisInput(ContractModel):
     """최초 Issue 분석 공개 그래프의 입력."""
 
-    analysis_job_id: int = Field(gt=0)
+    workflow_run_id: int = Field(gt=0)
     project_id: int = Field(gt=0)
     issue: AnalysisIssue
     bugs: list[AnalysisBug] = Field(min_length=1, max_length=5)
@@ -213,7 +214,7 @@ class HypothesisRevision(ContractModel):
 class RevisionSummary(ContractModel):
     """이전 분석과 새 전체 snapshot 사이의 가설 변화."""
 
-    previous_analysis_job_id: int = Field(gt=0)
+    previous_analysis_result_id: int = Field(gt=0)
     hypothesis_revisions: list[HypothesisRevision] = Field(default_factory=list, max_length=3)
     new_hypothesis_ids: list[HypothesisId] = Field(default_factory=list, max_length=3)
 
@@ -221,7 +222,7 @@ class RevisionSummary(ContractModel):
 class IssueAnalysis(ContractModel):
     """Supervisor가 저장할 IA의 완전한 분석 snapshot."""
 
-    analysis_job_id: int = Field(gt=0)
+    workflow_run_id: int = Field(gt=0)
     project_id: int = Field(gt=0)
     issue_id: int = Field(gt=0)
     status: AnalysisStatus
@@ -297,11 +298,12 @@ class IssueAnalysis(ContractModel):
 class ReanalysisInput(ContractModel):
     """기존 분석을 새 Bug 기준으로 갱신하는 공개 그래프 입력."""
 
-    analysis_job_id: int = Field(gt=0)
+    workflow_run_id: int = Field(gt=0)
     project_id: int = Field(gt=0)
     issue: AnalysisIssue
     bugs: list[AnalysisBug] = Field(min_length=1, max_length=5)
     trigger_bug_id: int = Field(gt=0)
+    previous_analysis_result_id: int = Field(gt=0)
     previous_analysis: IssueAnalysis
 
     @model_validator(mode="after")
@@ -309,8 +311,8 @@ class ReanalysisInput(ContractModel):
         """이전 결과와 새 요청이 같은 Issue의 다른 분석 작업인지 확인한다."""
 
         _validate_bug_ids(self.bugs, self.trigger_bug_id)
-        if self.analysis_job_id == self.previous_analysis.analysis_job_id:
-            raise ValueError("Reanalysis requires a new analysis_job_id.")
+        if self.workflow_run_id == self.previous_analysis.workflow_run_id:
+            raise ValueError("Reanalysis requires a new workflow_run_id.")
         if self.project_id != self.previous_analysis.project_id:
             raise ValueError("Reanalysis project_id must match the previous analysis.")
         if self.issue.issue_id != self.previous_analysis.issue_id:
@@ -322,11 +324,12 @@ class JudgmentContext(ContractModel):
     """Initial·Revision Judgment Subagent가 공유하는 분석 문맥."""
 
     mode: AnalysisMode
-    analysis_job_id: int = Field(gt=0)
+    workflow_run_id: int = Field(gt=0)
     project_id: int = Field(gt=0)
     issue: AnalysisIssue
     bugs: list[AnalysisBug] = Field(min_length=1, max_length=5)
     trigger_bug_id: int = Field(gt=0)
+    previous_analysis_result_id: int | None = Field(default=None, gt=0)
     previous_analysis: IssueAnalysis | None = None
 
     @model_validator(mode="after")
@@ -336,8 +339,12 @@ class JudgmentContext(ContractModel):
         _validate_bug_ids(self.bugs, self.trigger_bug_id)
         if self.mode is AnalysisMode.INITIAL and self.previous_analysis is not None:
             raise ValueError("Initial analysis must not contain previous_analysis.")
+        if self.mode is AnalysisMode.INITIAL and self.previous_analysis_result_id is not None:
+            raise ValueError("Initial analysis must not contain previous_analysis_result_id.")
         if self.mode is AnalysisMode.REVISION and self.previous_analysis is None:
             raise ValueError("Revision analysis requires previous_analysis.")
+        if self.mode is AnalysisMode.REVISION and self.previous_analysis_result_id is None:
+            raise ValueError("Revision analysis requires previous_analysis_result_id.")
         return self
 
 

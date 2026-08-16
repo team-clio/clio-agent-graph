@@ -133,7 +133,7 @@ def _normalization_input(state: ClioState, report: dict[str, object]) -> Normali
 
     return NormalizeReportInput.model_validate(
         {
-            "bug_report_id": int(state["bug_id"]),
+            "bug_id": int(state["bug_id"]),
             "title": report.get("title"),
             "description": report.get("description"),
             "source": report.get("source"),

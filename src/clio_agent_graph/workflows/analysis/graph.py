@@ -48,7 +48,7 @@ MAX_RELATIONS = 30
 class InitialGraphInput(TypedDict):
     """`issue_analyzer` 공개 그래프의 JSON 입력."""
 
-    analysis_job_id: int
+    workflow_run_id: int
     project_id: int
     issue: AnalysisIssue
     bugs: list[AnalysisBug]
@@ -58,18 +58,20 @@ class InitialGraphInput(TypedDict):
 class ReanalysisGraphInput(InitialGraphInput):
     """`issue_reanalyzer`가 추가로 요구하는 이전 분석."""
 
+    previous_analysis_result_id: int
     previous_analysis: IssueAnalysis
 
 
 class AnalysisGraphState(TypedDict, total=False):
     """공통 IA가 탐색 round와 subagent 결과를 운반하는 내부 state."""
 
-    analysis_job_id: int
+    workflow_run_id: int
     project_id: int
     issue: AnalysisIssue
     bugs: list[AnalysisBug]
     trigger_bug_id: int
     previous_analysis: IssueAnalysis
+    previous_analysis_result_id: int
     judgment_context: JudgmentContext
     judgment_phase: JudgmentPhase
     evidence: list[Evidence]
@@ -161,16 +163,19 @@ def _build_analysis_graph(
         if mode is AnalysisMode.INITIAL:
             parsed = InitialAnalysisInput.model_validate(state)
             previous = None
+            previous_result_id = None
         else:
             parsed = ReanalysisInput.model_validate(state)
             previous = parsed.previous_analysis
+            previous_result_id = parsed.previous_analysis_result_id
         context = JudgmentContext(
             mode=mode,
-            analysis_job_id=parsed.analysis_job_id,
+            workflow_run_id=parsed.workflow_run_id,
             project_id=parsed.project_id,
             issue=parsed.issue,
             bugs=parsed.bugs,
             trigger_bug_id=parsed.trigger_bug_id,
+            previous_analysis_result_id=previous_result_id,
             previous_analysis=previous,
         )
         return {
@@ -279,7 +284,7 @@ def _build_analysis_graph(
         context = JudgmentContext.model_validate(state["judgment_context"])
         draft = AnalysisDraft.model_validate(state["analysis_draft"])
         result = IssueAnalysis(
-            analysis_job_id=context.analysis_job_id,
+            workflow_run_id=context.workflow_run_id,
             project_id=context.project_id,
             issue_id=context.issue.issue_id,
             status=AnalysisStatus.COMPLETED,
@@ -299,11 +304,11 @@ def _build_analysis_graph(
         revision_summary = None
         if context.previous_analysis is not None:
             revision_summary = RevisionSummary(
-                previous_analysis_job_id=context.previous_analysis.analysis_job_id
+                previous_analysis_result_id=context.previous_analysis_result_id
             )
         return {
             "issue_analysis": IssueAnalysis(
-                analysis_job_id=context.analysis_job_id,
+                workflow_run_id=context.workflow_run_id,
                 project_id=context.project_id,
                 issue_id=context.issue.issue_id,
                 status=AnalysisStatus.INSUFFICIENT_EVIDENCE,

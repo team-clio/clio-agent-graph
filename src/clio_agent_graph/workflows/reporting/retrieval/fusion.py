@@ -66,7 +66,6 @@ def aggregate_issue_candidates(
             key=lambda bug: (
                 -hit_by_bug_id[bug.bug_id].score,
                 -hit_by_bug_id[bug.bug_id].exact_signal_count,
-                -bug.occurrence_count,
                 bug.bug_id,
             )
         )
@@ -96,7 +95,6 @@ def aggregate_issue_candidates(
                     RepresentativeBug(
                         bug_id=bug.bug_id,
                         normalized_report=bug.normalized_report,
-                        occurrence_count=bug.occurrence_count,
                     )
                     for bug in chosen
                 ],

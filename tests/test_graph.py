@@ -135,7 +135,7 @@ class FakeReportNormalizer:
     def normalize(self, report) -> NormalizedReport:
         assert report.description == "Submitting the form returns HTTP 500."
         return NormalizedReport(
-            bug_report_id=report.bug_report_id,
+            bug_id=report.bug_id,
             observed_behavior="Saving a search returns HTTP 500.",
             error_signals=ErrorSignals(
                 error_type=report.error_type,
@@ -575,7 +575,7 @@ def test_retrieval_candidates_are_used_for_existing_issue_match(
     }
     assert retrieval.requests[0]["project_id"] == 1
     assert retrieval.requests[0]["bug_id"] == 2
-    assert retrieval.requests[0]["normalized_report"].bug_report_id == 2
+    assert retrieval.requests[0]["normalized_report"].bug_id == 2
     assert retrieval.requests[0]["normalized_report"].observed_behavior == (
         "Saving a search returns HTTP 500."
     )

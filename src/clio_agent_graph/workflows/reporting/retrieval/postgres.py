@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy import Engine, create_engine, text
 
+from clio_agent_graph.context.clio_server import ClioServer, ClioServerClient
 from clio_agent_graph.workflows.reporting.matching.models import IssueRetrievalRequest
 from clio_agent_graph.workflows.reporting.normalization.models import (
     NormalizedReport,
@@ -37,10 +38,12 @@ class PostgresRetrievalRepository:
         *,
         connect_timeout_seconds: int = 5,
         statement_timeout_seconds: int = 5,
+        clio_server: ClioServer | None = None,
     ) -> None:
         self._database_url = database_url
         self._connect_timeout_seconds = connect_timeout_seconds
         self._statement_timeout_seconds = statement_timeout_seconds
+        self._clio_server = clio_server or ClioServerClient.from_env()
         self._engine: Engine | None = None
 
     def load_scope(
@@ -50,7 +53,7 @@ class PostgresRetrievalRepository:
         embedding_model: str,
         embedding_dimension: int,
     ) -> RetrievalScope:
-        """제외 Issue와 eligible corpus의 compatible index coverage를 계산한다."""
+        """Agent 소유 corpus의 compatible index coverage를 계산한다."""
 
         params = {
             "project_id": request.project_id,
@@ -59,36 +62,16 @@ class PostgresRetrievalRepository:
             "embedding_dimension": embedding_dimension,
         }
         with self._get_engine().connect() as connection:
-            excluded = (
-                connection.execute(
-                    text(
-                        """
-                    SELECT ib.issue_id
-                    FROM issue_bugs ib
-                    JOIN issues i ON i.id = ib.issue_id
-                    WHERE ib.bug_id = :bug_id
-                      AND i.project_id = :project_id
-                    ORDER BY ib.issue_id
-                    """
-                    ),
-                    params,
-                )
-                .scalars()
-                .all()
-            )
             counts = (
                 connection.execute(
                     text(
                         """
                     WITH eligible AS (
-                        SELECT DISTINCT ib.bug_id
-                        FROM issue_bugs ib
-                        JOIN issues i ON i.id = ib.issue_id
-                        JOIN bugs b ON b.id = ib.bug_id
-                        WHERE i.project_id = :project_id
-                          AND b.project_id = :project_id
-                          AND ib.bug_id <> :bug_id
-                          AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
+                        SELECT DISTINCT d.bug_id
+                        FROM bug_retrieval_documents d
+                        WHERE d.project_id = :project_id
+                          AND d.bug_id <> :bug_id
+                          AND d.active
                     )
                     SELECT
                         COUNT(*) AS eligible_bug_count,
@@ -107,13 +90,13 @@ class PostgresRetrievalRepository:
                     FROM eligible
                     """
                     ),
-                    {**params, "excluded_issue_ids": list(excluded)},
+                    params,
                 )
                 .mappings()
                 .one()
             )
         return RetrievalScope(
-            excluded_issue_ids=list(excluded),
+            excluded_issue_ids=[],
             eligible_bug_count=int(counts["eligible_bug_count"]),
             indexed_bug_count=int(counts["indexed_bug_count"]),
         )
@@ -128,15 +111,9 @@ class PostgresRetrievalRepository:
             WITH eligible AS (
                 SELECT DISTINCT d.id, d.bug_id, d.error_type, d.error_codes, d.stack_frames
                 FROM bug_retrieval_documents d
-                JOIN bugs b ON b.id = d.bug_id
-                JOIN issue_bugs ib ON ib.bug_id = d.bug_id
-                JOIN issues i ON i.id = ib.issue_id
                 WHERE d.project_id = :project_id
-                  AND b.project_id = :project_id
-                  AND i.project_id = :project_id
                   AND d.active
                   AND d.bug_id <> :bug_id
-                  AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
             ), scored AS (
                 SELECT *,
                     (CAST(:error_type AS text) IS NOT NULL
@@ -202,15 +179,9 @@ class PostgresRetrievalRepository:
             WITH eligible AS (
                 SELECT DISTINCT d.id, d.bug_id, d.search_text
                 FROM bug_retrieval_documents d
-                JOIN bugs b ON b.id = d.bug_id
-                JOIN issue_bugs ib ON ib.bug_id = d.bug_id
-                JOIN issues i ON i.id = ib.issue_id
                 WHERE d.project_id = :project_id
-                  AND b.project_id = :project_id
-                  AND i.project_id = :project_id
                   AND d.active
                   AND d.bug_id <> :bug_id
-                  AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
             ), scored AS (
                 SELECT bug_id,
                        GREATEST(
@@ -257,15 +228,9 @@ class PostgresRetrievalRepository:
                 SELECT DISTINCT d.id, d.bug_id, e.embedding
                 FROM bug_retrieval_documents d
                 JOIN bug_embeddings e ON e.retrieval_document_id = d.id
-                JOIN bugs b ON b.id = d.bug_id
-                JOIN issue_bugs ib ON ib.bug_id = d.bug_id
-                JOIN issues i ON i.id = ib.issue_id
                 WHERE d.project_id = :project_id
-                  AND b.project_id = :project_id
-                  AND i.project_id = :project_id
                   AND d.active
                   AND d.bug_id <> :bug_id
-                  AND NOT (ib.issue_id = ANY(CAST(:excluded_issue_ids AS bigint[])))
                   AND e.embedding_model = :embedding_model
                   AND e.embedding_dimension = :embedding_dimension
             )
@@ -304,58 +269,41 @@ class PostgresRetrievalRepository:
         *,
         issue_limit: int,
     ) -> list[HydratedIssue]:
-        """검색 순위가 높은 Bug가 속한 Issue와 active snapshot을 복원한다."""
+        """Spring에서 lifecycle 연결을 읽고 Agent snapshot과 결합한다."""
 
         if not bug_ids:
+            return []
+        links = self._clio_server.candidate_bug_links(
+            request.project_id, [request.bug_id, *bug_ids]
+        )
+        current_issue_ids = {
+            int(link["issue_id"]) for link in links if int(link["bug_id"]) == request.bug_id
+        }
+        links_by_bug = {
+            int(link["bug_id"]): link
+            for link in links
+            if int(link["bug_id"]) != request.bug_id
+            and int(link["issue_id"]) not in current_issue_ids
+        }
+        linked_bug_ids = [bug_id for bug_id in bug_ids if bug_id in links_by_bug]
+        if not linked_bug_ids:
             return []
         with self._get_engine().connect() as connection:
             rows = (
                 connection.execute(
                     text(
                         """
-                    WITH excluded AS (
-                        SELECT ib.issue_id
-                        FROM issue_bugs ib
-                        JOIN issues i ON i.id = ib.issue_id
-                        WHERE ib.bug_id = :current_bug_id
-                          AND i.project_id = :project_id
-                    ), candidate_issues AS (
-                        SELECT ib.issue_id,
-                               MIN(array_position(
-                                   CAST(:bug_ids AS bigint[]), ib.bug_id
-                               )) AS best_rank
-                        FROM issue_bugs ib
-                        JOIN issues i ON i.id = ib.issue_id
-                        JOIN bugs b ON b.id = ib.bug_id
-                        WHERE i.project_id = :project_id
-                          AND b.project_id = :project_id
-                          AND ib.bug_id = ANY(CAST(:bug_ids AS bigint[]))
-                          AND ib.issue_id NOT IN (SELECT issue_id FROM excluded)
-                        GROUP BY ib.issue_id
-                        ORDER BY best_rank, ib.issue_id
-                        LIMIT :issue_limit
-                    )
-                    SELECT ci.best_rank, i.id AS issue_id, i.title,
-                           CASE WHEN pg_typeof(i.summary)::text = 'oid'
-                                THEN convert_from(lo_get(i.summary::oid), 'UTF8')
-                                ELSE i.summary::text END AS summary,
-                           i.status,
-                            b.id AS bug_id, d.normalized_report
-                    FROM candidate_issues ci
-                    JOIN issues i ON i.id = ci.issue_id
-                    JOIN issue_bugs ib ON ib.issue_id = i.id
-                    JOIN bugs b ON b.id = ib.bug_id
-                    JOIN bug_retrieval_documents d ON d.bug_id = b.id AND d.active
-                    WHERE b.id = ANY(CAST(:bug_ids AS bigint[]))
-                    ORDER BY ci.best_rank, i.id,
-                             array_position(CAST(:bug_ids AS bigint[]), b.id), b.id
+                    SELECT d.bug_id, d.normalized_report
+                    FROM bug_retrieval_documents d
+                    WHERE d.project_id = :project_id
+                      AND d.active
+                      AND d.bug_id = ANY(CAST(:bug_ids AS bigint[]))
+                    ORDER BY array_position(CAST(:bug_ids AS bigint[]), d.bug_id), d.bug_id
                     """
                     ),
                     {
                         "project_id": request.project_id,
-                        "current_bug_id": request.bug_id,
-                        "bug_ids": bug_ids,
-                        "issue_limit": issue_limit,
+                        "bug_ids": linked_bug_ids,
                     },
                 )
                 .mappings()
@@ -363,14 +311,17 @@ class PostgresRetrievalRepository:
             )
         by_issue: dict[int, HydratedIssue] = {}
         for row in rows:
-            issue_id = int(row["issue_id"])
+            link = links_by_bug[int(row["bug_id"])]
+            issue_id = int(link["issue_id"])
             issue = by_issue.get(issue_id)
             if issue is None:
+                if len(by_issue) == issue_limit:
+                    continue
                 issue = HydratedIssue(
                     issue_id=issue_id,
-                    title=row["title"],
-                    summary=row["summary"],
-                    status=row["status"],
+                    title=link.get("issue_title"),
+                    summary=link.get("issue_summary"),
+                    status=link.get("issue_status"),
                 )
                 by_issue[issue_id] = issue
             issue.bugs.append(
@@ -394,28 +345,16 @@ class PostgresRetrievalRepository:
         """같은 snapshot은 재사용하고 새 snapshot은 active 상태를 원자적으로 전환한다."""
 
         signals = request.normalized_report.error_signals
+        if request.normalized_report.bug_id != request.bug_id:
+            raise RetrievalDataError("normalized_report.bug_id must match bug_id.")
+        source_bug = self._clio_server.load_bug(str(request.project_id), str(request.bug_id))
+        if int(source_bug["bug_id"]) != request.bug_id:
+            raise RetrievalDataError("Spring returned a different Bug identifier.")
         with self._get_engine().begin() as connection:
             # 같은 Bug의 동시 indexing 두 건이 version과 active 제약을 경합하지 않게 한다.
             connection.execute(
                 text("SELECT pg_advisory_xact_lock(:bug_id)"), {"bug_id": request.bug_id}
             )
-            valid = connection.execute(
-                text(
-                    """
-                    SELECT EXISTS (
-                        SELECT 1 FROM bugs b
-                        WHERE b.id = :bug_id AND b.project_id = :project_id
-                    )
-                    """
-                ),
-                {
-                    "bug_id": request.bug_id,
-                    "project_id": request.project_id,
-                },
-            ).scalar_one()
-            if not valid:
-                raise RetrievalDataError("bug_id does not belong to project_id.")
-
             active = (
                 connection.execute(
                     text(
@@ -544,53 +483,25 @@ class PostgresRetrievalRepository:
     def load_backfill_batch(
         self, project_id: int, *, after_bug_id: int, limit: int
     ) -> tuple[list[tuple[int, NormalizeReportInput]], bool]:
-        """Bug ID cursor 뒤의 Bug를 limit+1개 읽어 다음 page 여부를 계산한다."""
+        """Spring internal API에서 Bug 원문 batch를 읽는다."""
 
-        with self._get_engine().connect() as connection:
-            rows = (
-                connection.execute(
-                    text(
-                        """
-                    SELECT b.id AS bug_id, b.title, b.source,
-                           b.error_type,
-                           CASE WHEN pg_typeof(b.message)::text = 'oid'
-                                THEN convert_from(lo_get(b.message::oid), 'UTF8')
-                                ELSE b.message::text END AS message,
-                           CASE WHEN pg_typeof(b.description)::text = 'oid'
-                                THEN convert_from(lo_get(b.description::oid), 'UTF8')
-                                ELSE b.description::text END AS description,
-                           b.stack_trace, b.raw_payload, b.occurred_at
-                    FROM bugs b
-                    WHERE b.project_id = :project_id
-                      AND b.id > :after_bug_id
-                    ORDER BY b.id
-                    LIMIT :fetch_limit
-                    """
-                    ),
-                    {
-                        "project_id": project_id,
-                        "after_bug_id": after_bug_id,
-                        "fetch_limit": limit + 1,
-                    },
-                )
-                .mappings()
-                .all()
-            )
+        rows = self._clio_server.list_bugs(
+            str(project_id), after_bug_id=after_bug_id, limit=limit + 1
+        )
         has_more = len(rows) > limit
         result: list[tuple[int, NormalizeReportInput]] = []
         for row in rows[:limit]:
-            stack_trace = row["stack_trace"] or []
             result.append(
                 (
                     int(row["bug_id"]),
                     NormalizeReportInput(
-                        bug_report_id=int(row["bug_id"]),
+                        bug_id=int(row["bug_id"]),
                         title=row["title"],
                         description=row["description"],
                         source=row["source"],
                         error_type=row["error_type"],
                         message=row["message"],
-                        stack_trace=stack_trace,
+                        stack_trace=row.get("stack_trace", []),
                         occurred_at=row["occurred_at"],
                         raw_payload=row["raw_payload"] or {},
                     ),

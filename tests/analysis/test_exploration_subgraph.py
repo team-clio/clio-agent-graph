@@ -26,7 +26,7 @@ def _request() -> ExplorationRequest:
             AnalysisBug(
                 bug_id=72,
                 normalized_report=NormalizedReport(
-                    bug_report_id=351,
+                    bug_id=351,
                     observed_behavior="결제 완료 후 주문이 보이지 않는다.",
                 ),
             )

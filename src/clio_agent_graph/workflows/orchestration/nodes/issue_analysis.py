@@ -62,7 +62,7 @@ async def prepare_analysis(state: ClioState) -> dict[str, object]:
     )
     normalization_input = NormalizeReportInput.model_validate(
         {
-            "bug_report_id": bug_context["bug_id"],
+            "bug_id": bug_context["bug_id"],
             "title": bug_context.get("title"),
             "description": bug_context.get("description"),
             "source": bug_context.get("source"),

@@ -31,15 +31,14 @@ def _hit(
     )
 
 
-def _bug(bug_id: int, occurrence_count: int = 1) -> StoredRepresentativeBug:
+def _bug(bug_id: int) -> StoredRepresentativeBug:
     return StoredRepresentativeBug(
         bug_id=bug_id,
         normalized_report=NormalizedReport(
-            bug_report_id=bug_id + 100,
+            bug_id=bug_id + 100,
             observed_behavior=f"현상 {bug_id}",
             error_signals=ErrorSignals(error_type="PaymentException"),
         ),
-        occurrence_count=occurrence_count,
     )
 
 

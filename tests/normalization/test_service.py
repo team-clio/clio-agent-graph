@@ -54,7 +54,7 @@ def test_structured_error_signals_take_precedence_over_model_draft() -> None:
         ]
     )
     report = NormalizeReportInput(
-        bug_report_id=351,
+        bug_id=351,
         description="결제 요청이 실패합니다.",
         error_type="NullPointerException",
         message="payment must not be null",
@@ -63,7 +63,7 @@ def test_structured_error_signals_take_precedence_over_model_draft() -> None:
 
     result = ReportNormalizer(model).normalize(report)
 
-    assert result.bug_report_id == 351
+    assert result.bug_id == 351
     assert result.error_signals.error_type == "NullPointerException"
     assert result.error_signals.message == "payment must not be null"
     assert result.error_signals.stack_frames == ["PaymentService.pay"]
@@ -82,7 +82,7 @@ def test_missing_fields_are_calculated_from_the_merged_result() -> None:
         ]
     )
     report = NormalizeReportInput(
-        bug_report_id=351,
+        bug_id=351,
         description="결제 버튼을 클릭하면 실패합니다.",
         message="Internal Server Error",
     )
@@ -105,7 +105,7 @@ def test_invalid_output_is_corrected_only_once() -> None:
             NormalizationDraft(observed_behavior="로그인에 실패한다."),
         ]
     )
-    report = NormalizeReportInput(bug_report_id=1, description="로그인에 실패합니다.")
+    report = NormalizeReportInput(bug_id=1, description="로그인에 실패합니다.")
 
     result = ReportNormalizer(model).normalize(report)
 
@@ -122,7 +122,7 @@ def test_second_invalid_output_fails_without_partial_result() -> None:
             NormalizationOutputError("second invalid output"),
         ]
     )
-    report = NormalizeReportInput(bug_report_id=1, description="로그인에 실패합니다.")
+    report = NormalizeReportInput(bug_id=1, description="로그인에 실패합니다.")
 
     with pytest.raises(NormalizationOutputError, match="after one correction"):
         ReportNormalizer(model).normalize(report)
@@ -132,7 +132,7 @@ def test_second_invalid_output_fails_without_partial_result() -> None:
 
 def test_provider_error_is_not_treated_as_a_correctable_output_error() -> None:
     model = FakeNormalizationModel([RuntimeError("provider unavailable")])
-    report = NormalizeReportInput(bug_report_id=1, description="로그인에 실패합니다.")
+    report = NormalizeReportInput(bug_id=1, description="로그인에 실패합니다.")
 
     with pytest.raises(RuntimeError, match="provider unavailable"):
         ReportNormalizer(model).normalize(report)
@@ -149,7 +149,7 @@ def test_sensitive_raw_payload_values_are_redacted_without_mutating_input() -> N
     original_payload = deepcopy(raw_payload)
     model = FakeNormalizationModel([NormalizationDraft(observed_behavior="요청이 실패한다.")])
     report = NormalizeReportInput(
-        bug_report_id=1,
+        bug_id=1,
         description="요청이 실패합니다.",
         raw_payload=raw_payload,
     )
@@ -170,7 +170,7 @@ def test_raw_payload_limit_accepts_boundary_and_rejects_one_byte_less() -> None:
     raw_payload = {"data": "가나다"}
     serialized_size = len('{"data":"가나다"}'.encode())
     report = NormalizeReportInput(
-        bug_report_id=1,
+        bug_id=1,
         description="오류가 발생합니다.",
         raw_payload=raw_payload,
     )

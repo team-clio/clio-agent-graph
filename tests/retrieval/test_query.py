@@ -15,7 +15,7 @@ from clio_agent_graph.workflows.reporting.retrieval.query import (
 
 def _report() -> NormalizedReport:
     return NormalizedReport(
-        bug_report_id=351,
+        bug_id=351,
         observed_behavior="결제 버튼을 누르면 500 오류가 발생한다.",
         reproduction=Reproduction(steps=["결제 버튼 클릭"]),
         environment=Environment(app_version="3.14.1", additional={"region": "kr"}),

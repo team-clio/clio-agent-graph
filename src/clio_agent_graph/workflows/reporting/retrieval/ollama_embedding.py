@@ -15,7 +15,7 @@ DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_TIMEOUT_SECONDS = 120.0
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 QUERY_INSTRUCTION = (
-    "Given a software bug report, retrieve previous bug reports caused by the same "
+    "Given a software Bug, retrieve previous Bugs caused by the same "
     "underlying issue. Consider observed behavior, affected feature, error codes, "
     "error messages, and stack frames."
 )

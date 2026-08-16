@@ -28,7 +28,7 @@ def build_search_text(report: NormalizedReport) -> str:
     _append(rows, "error_message", report.error_signals.message)
     _extend(rows, "error_code", report.error_signals.error_codes)
     _extend(rows, "stack_frame", report.error_signals.stack_frames)
-    # bug_report_id만 있는 빈 문서는 NM 계약상 가능하므로 식별 가능한 안전한 문구를 사용한다.
+    # bug_id만 있는 빈 문서는 NM 계약상 가능하므로 식별 가능한 안전한 문구를 사용한다.
     return "\n".join(rows) or "reported bug"
 
 

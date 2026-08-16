@@ -5,7 +5,7 @@
       "project_id": 3,
       "bug_id": 72,
       "normalized_report": {
-        "bug_report_id": 351,
+        "bug_id": 351,
         "observed_behavior": "결제 승인 시 500 오류가 발생한다.",
         "affected_surface": {
           "feature": "결제",
@@ -27,7 +27,7 @@
       "project_id": 3,
       "bug_id": 73,
       "normalized_report": {
-        "bug_report_id": 352,
+        "bug_id": 352,
         "observed_behavior": "카드 승인이 완료되지 않고 서버 오류 화면이 표시된다.",
         "affected_surface": {
           "feature": "결제"

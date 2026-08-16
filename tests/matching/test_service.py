@@ -45,7 +45,7 @@ class FakeMatchModel:
 
 def _report(*, with_surface: bool = True) -> NormalizedReport:
     return NormalizedReport(
-        bug_report_id=351,
+        bug_id=351,
         observed_behavior="결제 승인 요청 시 500 오류가 발생한다.",
         affected_surface=AffectedSurface(feature="결제") if with_surface else {},
         error_signals=ErrorSignals(
@@ -74,7 +74,7 @@ def _candidate(issue_id: int, *, same_signal: bool = True) -> IssueCandidate:
             RepresentativeBug(
                 bug_id=100 + issue_id,
                 normalized_report=NormalizedReport(
-                    bug_report_id=200 + issue_id,
+                    bug_id=200 + issue_id,
                     observed_behavior="결제 승인 요청이 실패한다.",
                     affected_surface=AffectedSurface(feature="결제"),
                     error_signals=signals,

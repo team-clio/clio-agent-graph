@@ -49,7 +49,7 @@ class CodebaseExplorationToolFactory:
                     AnalysisBug(
                         bug_id=1,
                         normalized_report=NormalizedReport(
-                            bug_report_id=1,
+                            bug_id=1,
                             observed_behavior=objective,
                         ),
                     )
