@@ -347,14 +347,16 @@ PCM 지식과 스냅샷을 읽기 전용으로 노출하는 standalone FastAPI �
 Spring 중계 API(`clio-server`)와 admin 화면이 이 서버를 호출합니다.
 
 ```bash
-uvicorn clio_agent_graph.context.pcm.inspect_api:app --port 2025
+uvicorn --env-file .env clio_agent_graph.context.pcm.inspect_api:app --port 2025
 ```
 
 - API 문서: `http://127.0.0.1:2025/docs`
 - 엔드포인트: `GET /pcm/projects/{project_id}/snapshot`,
   `GET /pcm/projects/{project_id}/knowledge`,
   `GET /pcm/projects/{project_id}/knowledge/{knowledge_id}`
-- `CLIO_PCM_DATABASE_URL`이 없으면 개발용 in-memory PCM으로 동작합니다.
+- `uvicorn`은 `langgraph dev`와 달리 `.env`를 자동으로 읽지 않으므로 `--env-file .env`
+  로 로컬 설정을 로드합니다. `CLIO_PCM_DATABASE_URL`이 없으면 개발용 in-memory PCM으로
+  동작해 기존 영속 데이터가 보이지 않습니다.
 
 `CLIO_MODEL`은 루트 Tool-calling Agent, NM, Retrieval Agent, RM, IA와 PCM Knowledge 생성까지 모든 chat
 LLM 사용 지점이 공유하는 유일한 모델 식별자입니다. 값을 변경하고 서버를 재시작하면 전체 실행이 새
