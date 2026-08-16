@@ -163,6 +163,7 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
         snapshot=snapshot,
         request=KnowledgeSearchRequest(query="saved search owner permission"),
     )
+    listed = await restored.list_knowledge(snapshot=snapshot)
 
     assert snapshot.pcm_revision == 1
     assert snapshot.knowledge_index_revision == 1
@@ -173,6 +174,8 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
     assert search.keyword_search_used is True
     assert search.vector_index_stale is False
     assert search.results[0].knowledge_id == document.knowledge_id
+    assert len(listed) == 1
+    assert listed[0].knowledge_id == document.knowledge_id
     assert len(list(tmp_path.rglob("*.md"))) == 1
 
     old_snapshot = snapshot
@@ -292,3 +295,132 @@ async def test_persists_snapshot_markdown_and_event_across_adapter_restart(
     assert stale_search.results[0].knowledge_revision == 3
     await degraded.close()
     await cleanup_project(project_id)
+
+
+@pytest.mark.asyncio
+async def test_lists_snapshot_valid_knowledge_scoped_to_project(tmp_path: Path) -> None:
+    project_id = f"TEST-LIST-{uuid4()}"
+    other_project_id = f"TEST-LIST-{uuid4()}"
+    pcm = PostgresPCM(
+        database_url=postgres_url(),
+        markdown_store=MarkdownStore(tmp_path),
+        embedding_provider=FakeEmbeddingProvider(),
+    )
+    try:
+        created = await pcm.apply_knowledge_changes(
+            project_id=project_id,
+            change_set=KnowledgeChangeSet(
+                source_event_id=f"EVENT-{uuid4()}",
+                base_pcm_revision=0,
+                changes=(
+                    KnowledgeChange(
+                        operation="create",
+                        logical_key="saved-search-permissions",
+                        knowledge_type="domain_rule",
+                        title="Saved Search permissions",
+                        body_markdown="Only owners can edit a saved search.",
+                        sources=(
+                            SourceReference(
+                                source_type="document",
+                                source_id="requirements",
+                                source_revision="1",
+                                locator={"heading_path": ["Permissions"]},
+                            ),
+                        ),
+                        reason="The document defines edit permissions.",
+                    ),
+                ),
+            ),
+        )
+        await pcm.apply_knowledge_changes(
+            project_id=other_project_id,
+            change_set=KnowledgeChangeSet(
+                source_event_id=f"EVENT-{uuid4()}",
+                base_pcm_revision=0,
+                changes=(
+                    KnowledgeChange(
+                        operation="create",
+                        logical_key="other-project-rule",
+                        knowledge_type="domain_rule",
+                        title="Other project rule",
+                        body_markdown="This knowledge belongs to another project.",
+                        sources=(
+                            SourceReference(
+                                source_type="document",
+                                source_id="other-requirements",
+                                source_revision="1",
+                                locator={"heading_path": ["Other"]},
+                            ),
+                        ),
+                        reason="The source defines another project rule.",
+                    ),
+                ),
+            ),
+        )
+
+        snapshot = await pcm.resolve_snapshot(project_id)
+        documents = await pcm.list_knowledge(snapshot=snapshot)
+
+        assert len(documents) == 1
+        assert documents[0].knowledge_id == created.created_knowledge_ids[0]
+        assert documents[0].knowledge_revision == 1
+        assert documents[0].body_markdown == "Only owners can edit a saved search."
+
+        await pcm.apply_knowledge_changes(
+            project_id=project_id,
+            change_set=KnowledgeChangeSet(
+                source_event_id=f"EVENT-{uuid4()}",
+                base_pcm_revision=1,
+                changes=(
+                    KnowledgeChange(
+                        operation="update",
+                        target_knowledge_id=created.created_knowledge_ids[0],
+                        knowledge_type="domain_rule",
+                        title="Saved Search permissions",
+                        body_markdown="Owners and administrators can edit a saved search.",
+                        sources=(
+                            SourceReference(
+                                source_type="document",
+                                source_id="requirements",
+                                source_revision="2",
+                                locator={"heading_path": ["Permissions"]},
+                            ),
+                        ),
+                        reason="Revision 2 expands edit permissions.",
+                    ),
+                ),
+            ),
+        )
+
+        old_documents = await pcm.list_knowledge(snapshot=snapshot)
+        new_snapshot = await pcm.resolve_snapshot(project_id)
+        new_documents = await pcm.list_knowledge(snapshot=new_snapshot)
+
+        assert old_documents[0].knowledge_revision == 1
+        assert old_documents[0].body_markdown == "Only owners can edit a saved search."
+        assert new_documents[0].knowledge_revision == 2
+        assert (
+            new_documents[0].body_markdown == "Owners and administrators can edit a saved search."
+        )
+
+        await pcm.apply_knowledge_changes(
+            project_id=project_id,
+            change_set=KnowledgeChangeSet(
+                source_event_id=f"EVENT-{uuid4()}",
+                base_pcm_revision=2,
+                changes=(
+                    KnowledgeChange(
+                        operation="tombstone",
+                        target_knowledge_id=created.created_knowledge_ids[0],
+                        reason="No active source supports the knowledge.",
+                    ),
+                ),
+            ),
+        )
+        tombstone_snapshot = await pcm.resolve_snapshot(project_id)
+
+        assert await pcm.list_knowledge(snapshot=tombstone_snapshot) == ()
+    finally:
+        await pcm.close()
+        await cleanup_project(project_id)
+        await cleanup_project(other_project_id)
