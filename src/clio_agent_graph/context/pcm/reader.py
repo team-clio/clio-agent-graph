@@ -39,6 +39,15 @@ class ProjectContextReader(Protocol):
 
         ...
 
+    async def list_knowledge(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+    ) -> tuple[KnowledgeDocument, ...]:
+        """snapshot 시점에 유효한 Knowledge 전체를 나열한다."""
+
+        ...
+
     async def trace_knowledge_sources(
         self,
         *,

@@ -183,6 +183,24 @@ class InMemoryPCM:
 
         return (await self.read_knowledge(snapshot=snapshot, knowledge_id=knowledge_id)).sources
 
+    async def list_knowledge(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+    ) -> tuple[KnowledgeDocument, ...]:
+        """snapshot 시점에 유효한 Knowledge를 모두 나열한다."""
+
+        self._validate_snapshot(snapshot)
+        documents = [
+            document
+            for (project_id, _knowledge_id), history in self._histories.items()
+            if project_id == snapshot.project_id
+            if (document := _document_at_revision(history, snapshot.pcm_revision)) is not None
+            if not document.is_tombstone
+        ]
+        documents.sort(key=lambda document: document.logical_key)
+        return tuple(documents)
+
     def _validate_snapshot(self, snapshot: ProjectContextSnapshot) -> None:
         current = self._project_revisions[snapshot.project_id]
         if snapshot.pcm_revision > current:
