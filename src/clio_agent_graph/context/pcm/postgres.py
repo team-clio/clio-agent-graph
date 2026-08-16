@@ -338,7 +338,8 @@ class PostgresPCM:
                 snapshot.project_id,
                 snapshot.pcm_revision,
             )
-        return tuple(await self._document_from_row(row) for row in rows)
+        documents = [await self._document_from_row(row) for row in rows]
+        return tuple(documents)
 
     async def search_knowledge(
         self,
