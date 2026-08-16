@@ -331,8 +331,13 @@ source .venv/bin/activate
 pip install -e ".[dev,llm]"
 cp .env.example .env
 alembic upgrade head
-langgraph dev
+make dev
 ```
+
+`make dev`는 PCM inspect 서버(`:2025`)를 백그라운드로 시작한 뒤
+`langgraph dev`(`:2024`)를 실행하고, 종료 시 inspect 서버도 함께 정리합니다.
+inspect 서버만 실행하려면 `make inspect`, Ollama를 시작하려면 `make infra`를
+사용합니다. 모든 명령은 저장소 루트에서 실행합니다.
 
 서버가 시작되면 다음 주소를 사용할 수 있습니다.
 
