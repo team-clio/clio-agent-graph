@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+LANGGRAPH_DEV_ARGS="${LANGGRAPH_DEV_ARGS:---no-reload}"
+if [[ $# -gt 0 ]]; then
+	LANGGRAPH_DEV_ARGS="$*"
+fi
+
 if [[ ! -f .env ]]; then
 	echo "error: .env 파일이 없습니다. cp .env.example .env 후 실행하세요." >&2
 	exit 1
@@ -12,6 +17,10 @@ fi
 set -a
 source .env
 set +a
+
+# Retrieval index tables are owned by the Agent, not by Spring's JPA schema.
+# Apply every Alembic branch before accepting runs so a fresh Clio database is usable.
+.venv/bin/alembic upgrade heads
 
 INSPECT_PORT="${CLIO_PCM_INSPECT_PORT:-2025}"
 INSPECT_LOG="${TMPDIR:-/tmp}/clio-pcm-inspect.log"
@@ -35,4 +44,4 @@ for _ in $(seq 1 60); do
 	sleep 0.5
 done
 
-.venv/bin/langgraph dev
+.venv/bin/langgraph dev ${LANGGRAPH_DEV_ARGS}

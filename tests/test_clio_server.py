@@ -76,6 +76,26 @@ def test_completed_workflow_replay_returns_snapshot_without_patch(
     assert len(requests) == 1
 
 
+def test_repository_sync_status_callbacks_use_internal_paths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests = []
+
+    def fake_urlopen(request, *, timeout):
+        requests.append(request)
+        return FakeResponse({})
+
+    monkeypatch.setattr(clio_server, "urlopen", fake_urlopen)
+    client = ClioServerClient("http://localhost:8080")
+
+    client.complete_repository_sync("3", "19")
+    client.fail_repository_sync("3", "19")
+
+    assert [request.method for request in requests] == ["PATCH", "PATCH"]
+    assert requests[0].full_url.endswith("/projects/3/repositories/19/sync/completed")
+    assert requests[1].full_url.endswith("/projects/3/repositories/19/sync/failed")
+
+
 def test_create_issue_sends_workflow_and_bug_ids(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {}
 

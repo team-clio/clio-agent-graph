@@ -20,8 +20,11 @@ from clio_agent_graph.context.pcm.models import (
 
 
 class ScriptedKnowledgeModel:
-    def __init__(self, *, invalid_change_once: bool = False) -> None:
+    def __init__(
+        self, *, invalid_change_once: bool = False, duplicate_target_once: bool = False
+    ) -> None:
         self.invalid_change_once = invalid_change_once
+        self.duplicate_target_once = duplicate_target_once
         self.topic_attempts = 0
         self.change_attempts = 0
         self.received_validation_errors: list[tuple[str, ...]] = []
@@ -84,10 +87,13 @@ class ScriptedKnowledgeModel:
                 source_unit_ids=(source_unit_id,),
                 reason="The document defines a durable permission rule.",
             )
+        changes = (change,)
+        if self.duplicate_target_once and candidate and self.change_attempts == 2:
+            changes = (change, change)
         return KnowledgeChangeDraftSet(
             source_event_id=source_event_id,
             base_pcm_revision=snapshot.pcm_revision,
-            changes=(change,),
+            changes=changes,
         )
 
 
@@ -168,6 +174,24 @@ async def test_invalid_llm_change_is_retried_with_validation_error() -> None:
     assert model.change_attempts == 2
     assert model.received_validation_errors[0] == ()
     assert "unknown Source Units" in model.received_validation_errors[1][0]
+
+
+@pytest.mark.asyncio
+async def test_duplicate_knowledge_target_is_retried_before_commit() -> None:
+    pcm = InMemoryPCM()
+    model = ScriptedKnowledgeModel(duplicate_target_once=True)
+    pipeline = DocumentKnowledgePipeline(reader=pcm, writer=pcm, knowledge_model=model)
+    await pipeline.ingest(
+        ingest_command(event_id="EVENT-1", revision="1", rule="Only owners can edit.")
+    )
+
+    result = await pipeline.ingest(
+        ingest_command(event_id="EVENT-2", revision="2", rule="Owners and administrators can edit.")
+    )
+
+    assert result.pcm_revision == 2
+    assert model.change_attempts == 3
+    assert "changes more than once" in model.received_validation_errors[2][0]
 
 
 @pytest.mark.asyncio

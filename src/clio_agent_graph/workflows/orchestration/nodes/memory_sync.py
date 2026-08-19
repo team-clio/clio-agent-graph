@@ -98,30 +98,45 @@ async def build_repository_index(state: ClioState) -> dict[str, object]:
     service = services.repositories
     if service is None:
         return {"completed_nodes": {"build_repository_index": True}}
-    if state["request_type"] == "repository_removed":
-        removed = await service.remove(
-            project_id=state["project_id"], repository_id=state["repository_id"]
-        )
-        sync = {**state["repository_sync"], "removed": removed}
-    else:
-        registration = await service.register(
-            project_id=state["project_id"],
-            repository_id=state["repository_id"],
-            source_uri=state["repository_source_uri"],
-            branch=state["branch"],
-            commit=state.get("revision"),
-        )
-        sync = registration.model_dump(mode="json")
-        if services.repository_pipeline is not None:
-            knowledge = await services.repository_pipeline.ingest(
-                IngestRepositoryCommand(
-                    event_id=state["request_id"],
-                    project_id=state["project_id"],
-                    repository_id=state["repository_id"],
-                    commit=registration.active_commit,
-                )
+    try:
+        if state["request_type"] == "repository_removed":
+            removed = await service.remove(
+                project_id=state["project_id"], repository_id=state["repository_id"]
             )
-            sync["knowledge"] = _knowledge_result(knowledge)
+            sync = {**state["repository_sync"], "removed": removed}
+        else:
+            registration = await service.register(
+                project_id=state["project_id"],
+                repository_id=state["repository_id"],
+                source_uri=state["repository_source_uri"],
+                branch=state["branch"],
+                commit=state.get("revision"),
+            )
+            sync = registration.model_dump(mode="json")
+            if services.repository_pipeline is not None:
+                knowledge = await services.repository_pipeline.ingest(
+                    IngestRepositoryCommand(
+                        event_id=state["request_id"],
+                        project_id=state["project_id"],
+                        repository_id=state["repository_id"],
+                        commit=registration.active_commit,
+                    )
+                )
+                sync["knowledge"] = _knowledge_result(knowledge)
+    except Exception:
+        if state["request_type"] == "repository_added" and services.clio_server is not None:
+            await asyncio.to_thread(
+                services.clio_server.fail_repository_sync,
+                state["project_id"],
+                state["repository_id"],
+            )
+        raise
+    if state["request_type"] == "repository_added" and services.clio_server is not None:
+        await asyncio.to_thread(
+            services.clio_server.complete_repository_sync,
+            state["project_id"],
+            state["repository_id"],
+        )
     return {
         "repository_sync": sync,
         "completed_nodes": {"build_repository_index": True},

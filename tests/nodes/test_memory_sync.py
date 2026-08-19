@@ -34,7 +34,21 @@ class _RepositoryPipeline:
         )
 
 
-def _services(repositories: _Repositories) -> ApplicationServices:
+class _SyncServer:
+    def __init__(self) -> None:
+        self.completed: list[tuple[str, str]] = []
+        self.failed: list[tuple[str, str]] = []
+
+    def complete_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self.completed.append((project_id, repository_id))
+
+    def fail_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self.failed.append((project_id, repository_id))
+
+
+def _services(
+    repositories: _Repositories, server: _SyncServer | None = None
+) -> ApplicationServices:
     pcm = InMemoryPCM()
     return ApplicationServices(
         pcm=pcm,
@@ -45,6 +59,7 @@ def _services(repositories: _Repositories) -> ApplicationServices:
         ),
         repositories=repositories,  # type: ignore[arg-type]
         repository_pipeline=_RepositoryPipeline(),  # type: ignore[arg-type]
+        clio_server=server,  # type: ignore[arg-type]
     )
 
 
@@ -83,7 +98,8 @@ async def test_repository_registration_ingests_active_commit_into_pcm_knowledge(
             )
 
     repositories = Repositories()
-    services = _services(repositories)
+    server = _SyncServer()
+    services = _services(repositories, server)
     monkeypatch.setattr(memory_sync, "get_application_services", lambda: services)
 
     result = await memory_sync.build_repository_index(
@@ -99,3 +115,4 @@ async def test_repository_registration_ingests_active_commit_into_pcm_knowledge(
     )
 
     assert result["repository_sync"]["knowledge"]["pcm_revision"] == 1
+    assert server.completed == [("PROJECT-1", "backend")]

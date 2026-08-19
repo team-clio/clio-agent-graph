@@ -1,7 +1,7 @@
 """버그 리포트 매칭과 신규 이슈 분석을 연결하는 서브그래프."""
 
 import asyncio
-from contextlib import suppress
+import logging
 
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
@@ -23,6 +23,8 @@ from clio_agent_graph.workflows.orchestration.nodes.report_processing import (
     start_workflow,
 )
 from clio_agent_graph.workflows.orchestration.state import ReportWorkflowState
+
+logger = logging.getLogger(__name__)
 
 
 def build_report_processing_graph():
@@ -58,8 +60,14 @@ def build_report_processing_graph():
     processing_graph = processing.compile()
 
     def mark_failed(state: ReportWorkflowState, error: Exception) -> None:
-        with suppress(Exception):
+        try:
             fail_workflow(state, error)
+        except Exception:
+            logger.exception(
+                "Failed to record workflow failure. project_id=%s workflow_run_id=%s",
+                state.get("project_id"),
+                state.get("workflow_run_id"),
+            )
 
     def run_processing(state: ReportWorkflowState) -> dict[str, object]:
         try:

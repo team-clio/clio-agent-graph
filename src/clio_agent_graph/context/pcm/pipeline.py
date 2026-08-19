@@ -232,6 +232,8 @@ def _validate_change_drafts(
         for topic_candidates in candidates.values()
         for candidate in topic_candidates
     }
+    logical_keys: set[str] = set()
+    target_ids: set[str] = set()
     for change in draft_set.changes:
         unknown_sources = set(change.source_unit_ids) - valid_source_ids
         if unknown_sources:
@@ -245,6 +247,20 @@ def _validate_change_drafts(
             raise PCMValidationError(
                 f"Knowledge change targets an unretrieved candidate: {change.target_knowledge_id}"
             )
+        if change.operation == "create":
+            assert change.logical_key is not None
+            if change.logical_key in logical_keys:
+                raise PCMValidationError(
+                    f"Knowledge logical key {change.logical_key!r} changes more than once."
+                )
+            logical_keys.add(change.logical_key)
+        else:
+            assert change.target_knowledge_id is not None
+            if change.target_knowledge_id in target_ids:
+                raise PCMValidationError(
+                    f"Knowledge {change.target_knowledge_id!r} changes more than once."
+                )
+            target_ids.add(change.target_knowledge_id)
 
 
 def _trusted_change_set(

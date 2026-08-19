@@ -80,11 +80,17 @@ class IssueAnalysisAgent:
                 "evidence before returning facts, hypotheses, and calibrated confidence. "
                 "Do not claim unverified facts and do not modify external systems. Write all "
                 "user-facing narrative fields in Korean; preserve code identifiers and citation "
-                "metadata exactly as supplied."
+                "metadata exactly as supplied. Do not repeat an identical tool call or explore "
+                "unrelated files. Once you have a relevant code or knowledge citation, stop "
+                "exploring and return the structured result; an incomplete but evidence-backed "
+                "result is preferable to more exploration."
             ),
             tools=research_tools,
             response_model=IssueAnalysisOutput,
-            limits=AgentLimits(max_tool_calls=8, max_model_calls=10),
+            # 초기 검색에서 근거를 찾지 못한 경우 repository/PCM을 함께 탐색해야 한다.
+            # 8회는 정상적인 두 단계 조사에도 부족했으므로, 반복 호출은 prompt로 막고
+            # 복수 파일·PCM 조사를 허용할 수 있도록 안전 상한은 20회로 둔다.
+            limits=AgentLimits(max_tool_calls=20, max_model_calls=12),
         )
         self.planning_agent = ToolCallingAgent(
             name="resolution_planner",

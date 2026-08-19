@@ -41,6 +41,8 @@ class FakeClioServer:
         self.load_error: Exception | None = None
         self.complete_error: Exception | None = None
         self.workflow_start = WorkflowStart(501, "RUNNING")
+        self.completed_repository_syncs: list[tuple[str, str]] = []
+        self.failed_repository_syncs: list[tuple[str, str]] = []
 
     def start_workflow(
         self,
@@ -67,6 +69,12 @@ class FakeClioServer:
         failure_message: str,
     ) -> None:
         self.failed_runs.append((project_id, workflow_run_id, failure_code, failure_message))
+
+    def complete_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self.completed_repository_syncs.append((project_id, repository_id))
+
+    def fail_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self.failed_repository_syncs.append((project_id, repository_id))
 
     def load_bug(self, project_id: str, bug_id: str) -> dict[str, object]:
         if self.load_error is not None:

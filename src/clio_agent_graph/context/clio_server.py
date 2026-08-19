@@ -54,6 +54,10 @@ class ClioServer(Protocol):
         failure_message: str,
     ) -> None: ...
 
+    def complete_repository_sync(self, project_id: str, repository_id: str) -> None: ...
+
+    def fail_repository_sync(self, project_id: str, repository_id: str) -> None: ...
+
     def load_bug(self, project_id: str, bug_id: str) -> dict[str, Any]: ...
 
     def load_issue_representative_bug(self, project_id: str, issue_id: str) -> dict[str, Any]: ...
@@ -182,6 +186,18 @@ class ClioServerClient:
             },
         )
 
+    def complete_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self._request(
+            "PATCH",
+            f"/internal-api/v1/projects/{int(project_id)}/repositories/{int(repository_id)}/sync/completed",
+        )
+
+    def fail_repository_sync(self, project_id: str, repository_id: str) -> None:
+        self._request(
+            "PATCH",
+            f"/internal-api/v1/projects/{int(project_id)}/repositories/{int(repository_id)}/sync/failed",
+        )
+
     def load_bug(self, project_id: str, bug_id: str) -> dict[str, Any]:
         return self._request(
             "GET", f"/internal-api/v1/projects/{int(project_id)}/bugs/{int(bug_id)}"
@@ -307,6 +323,8 @@ class ClioServerClient:
             raise ClioServerError(f"Clio Server is unavailable: {error.reason}") from error
         if len(raw) > MAX_RESPONSE_BYTES:
             raise ClioServerError("Clio Server response exceeds the size limit.")
+        if not raw:
+            return {}
         try:
             decoded = json.loads(raw)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
