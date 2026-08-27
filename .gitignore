@@ -12,3 +12,6 @@ __pycache__/
 *.py[cod]
 build/
 dist/
+
+.claude/workflow-mode.json
+.claude/settings.local.json

@@ -16,6 +16,17 @@
 - `tests/`: 기능 계층과 관찰 가능한 동작별 테스트
 - `langgraph.json`: 공개 LangGraph entrypoint 설정
 
+## 작업 시작 전 (반드시 선행)
+
+**첫 파일 변경 전에 이 작업에 작업 절차 규칙을 적용할지 사용자에게 묻는다.**
+
+- 판단 기준: [`mydocs/workflow-rules.md`](mydocs/workflow-rules.md)의 "적용 기준" 표
+- 사용자의 답을 `.claude/workflow-mode.json`에 현재 브랜치 이름으로 기록한다
+- 기록 전에는 `.claude/hooks/workflow-gate.py`가 파일 변경과 커밋을 차단한다
+
+적용하기로 했으면 `mydocs/task-<이름>/`의 4단계 절차(overview → plan → decisions → result)를
+게이트대로 따른다. 적용하지 않기로 했으면 절차 없이 바로 작업한다.
+
 ## 작업별 컨벤션 읽기
 
 코드를 수정하기 전에 작업 범위를 판단하고 아래 문서를 읽는다. 모든 문서를 매번 읽을 필요는
@@ -24,6 +35,8 @@
 
 | 작업 상황 | 먼저 읽을 문서 |
 |---|---|
+| 작업 절차, 결정 기록, 커밋·브랜치 | `mydocs/workflow-rules.md` |
+| 문서·Issue·PR 글쓰기 | `mydocs/document-writing-rules.md` |
 | 처음 저장소를 보거나 변경 범위가 불명확함 | `convention/README.md` |
 | 공개 그래프 계약, 패키지 책임, 의존성 방향, 새로운 기능 영역 | `convention/architecture.md` |
 | LangGraph state, node, edge, routing, subgraph, 병렬 처리 | `convention/workflow-conventions.md` |
@@ -37,6 +50,9 @@
 - Agent Tool 추가: architecture + code + workflow + testing
 - RAG retrieval·index·평가 변경: architecture + code + testing
 - 전역 규칙을 새로 만들거나 바꾸는 변경: 관련 convention 문서도 구현과 함께 갱신
+
+`mydocs/workflow-rules.md`와 `mydocs/document-writing-rules.md`는 `clio-server`와 **같은
+내용의 사본**이다. 한쪽을 고치면 다른 쪽도 같은 변경으로 맞춘다.
 
 컨벤션 문서와 현재 코드가 충돌하면 조용히 한쪽을 따르지 않는다. 실제 동작과 변경 목적을
 확인하고, 코드와 문서를 같은 변경에서 일치시킨다.
