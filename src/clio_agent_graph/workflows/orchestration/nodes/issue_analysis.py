@@ -1,6 +1,7 @@
 """고정 PCM snapshot을 사용하는 이슈 분석 서브그래프 노드."""
 
 import asyncio
+import re
 from typing import Any, Literal
 
 from clio_agent_graph.context.application import get_application_services
@@ -32,7 +33,9 @@ def _agent(state: ClioState) -> IssueAnalysisAgent:
                 snapshot=snapshot,
             )
         )
-    if services.repositories is not None and not state.get("code_evidence"):
+    if services.repositories is not None and not _has_actionable_code_evidence(
+        state.get("code_evidence")
+    ):
         repository_tools = RepositoryToolFactory(services.repositories)
         tools.extend(CodebaseExplorationToolFactory(repository_tools).create_tools(snapshot))
     return IssueAnalysisAgent(tools)
@@ -413,9 +416,23 @@ def _code_search_queries(state: ClioState) -> list[str]:
     report = state.get("normalized_report", {})
     signals = report.get("error_signals", {}) if isinstance(report, dict) else {}
     surface = report.get("affected_surface", {}) if isinstance(report, dict) else {}
+    bug_context = state.get("bug_context", {})
+    responsive_context = " ".join(
+        value
+        for value in (
+            report.get("observed_behavior") if isinstance(report, dict) else None,
+            surface.get("operation") if isinstance(surface, dict) else None,
+            bug_context.get("title") if isinstance(bug_context, dict) else None,
+            bug_context.get("description") if isinstance(bug_context, dict) else None,
+        )
+        if isinstance(value, str)
+    )
     candidates: list[object] = [
         *(signals.get("error_codes", []) if isinstance(signals, dict) else []),
         signals.get("error_type") if isinstance(signals, dict) else None,
+        *_responsive_layout_queries(responsive_context),
+        surface.get("feature") if isinstance(surface, dict) else None,
+        surface.get("screen") if isinstance(surface, dict) else None,
         surface.get("operation") if isinstance(surface, dict) else None,
         surface.get("endpoint") if isinstance(surface, dict) else None,
     ]
@@ -426,15 +443,63 @@ def _code_search_queries(state: ClioState) -> list[str]:
     for candidate in candidates:
         if not isinstance(candidate, str):
             continue
-        query = candidate.strip()
-        if len(query) < 3 or len(query) > 120 or query.casefold() in {
-            item.casefold() for item in queries
-        }:
-            continue
-        queries.append(query)
-        if len(queries) == 5:
-            break
+        for query in _expand_code_query_candidate(candidate):
+            if query.casefold() in {item.casefold() for item in queries}:
+                continue
+            queries.append(query)
+            if len(queries) == 5:
+                return queries
     return queries or [state["issue_id"]]
+
+
+def _responsive_layout_queries(operation: object) -> list[str]:
+    """화면 크기 버그에는 Tailwind의 고정 레이아웃 단서를 우선 검색한다."""
+
+    if not isinstance(operation, str):
+        return []
+    normalized = operation.casefold()
+    if not any(
+        keyword in normalized
+        for keyword in ("축소", "줄이", "좁은 화면", "반응형", "responsive", "resize")
+    ):
+        return []
+    return ['className="flex px-', "w-1/4", "min-w-"]
+
+
+def _has_actionable_code_evidence(evidence: object) -> bool:
+    """단순 주석/라벨이 아니라 실행·스타일 코드가 이미 검색됐는지 판별한다."""
+
+    if not isinstance(evidence, list):
+        return False
+    markers = ("classname=", "style=", " min-w-", " max-w-", " overflow-", " flex ", " grid ")
+    return any(
+        isinstance(item, dict)
+        and isinstance(item.get("content"), str)
+        and any(marker in item["content"].casefold() for marker in markers)
+        for item in evidence
+    )
+
+
+def _expand_code_query_candidate(candidate: str) -> list[str]:
+    """한국어 기능명은 소스에 등장할 법한 짧은 명사 단위로 함께 검색한다."""
+
+    query = candidate.strip()
+    if len(query) > 120:
+        return []
+    if not re.search(r"[가-힣]", query):
+        return [query] if len(query) >= 3 else []
+
+    expanded: list[str] = []
+    for word in re.findall(r"[가-힣]+", query):
+        if len(word) == 2:
+            expanded.append(word)
+            continue
+        if len(word) < 2:
+            continue
+        # 합성어는 먼저 비중첩 2음절 단위(뉴스토론 -> 뉴스, 토론)를 시도한다.
+        expanded.extend(word[index : index + 2] for index in range(0, len(word) - 1, 2))
+        expanded.extend(word[index : index + 2] for index in range(0, len(word) - 1))
+    return list(dict.fromkeys(expanded))
 
 
 def _stack_frame_symbols(frames: object) -> list[str]:

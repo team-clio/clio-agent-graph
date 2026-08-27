@@ -36,6 +36,8 @@ class RequestState(TypedDict, total=False):
     repository_id: str
     repository_source_uri: str
     branch: str
+    include_paths: tuple[str, ...]
+    exclude_paths: tuple[str, ...]
     revision: str
     before_commit: str
     after_commit: str

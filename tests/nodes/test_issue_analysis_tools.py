@@ -69,7 +69,7 @@ def test_issue_analysis_exposes_high_level_exploration_only(
     )
 
 
-def test_issue_analysis_does_not_expose_repository_tools_when_code_evidence_exists(
+def test_issue_analysis_keeps_high_level_exploration_when_code_evidence_is_only_a_seed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     services = _services()
@@ -91,8 +91,36 @@ def test_issue_analysis_does_not_expose_repository_tools_when_code_evidence_exis
     )
 
     tool_names = {tool.name for tool in agent.analysis_agent.tools}
-    assert "explore_codebase" not in tool_names
-    assert tool_names == set()
+    assert tool_names == {"explore_codebase"}
+
+
+def test_issue_analysis_skips_exploration_when_search_found_actionable_layout_code(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    services = _services()
+    monkeypatch.setattr(issue_analysis, "get_application_services", lambda: services)
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"frontend": "a" * 40},
+    )
+
+    agent = issue_analysis._agent(
+        {
+            "project_id": "PROJECT-1",
+            "request_id": "REQ-1",
+            "context_snapshot": snapshot.model_dump(mode="json"),
+            "code_evidence": [
+                {
+                    "path": "src/pages/News/NewsPage.tsx",
+                    "content": '<main className="flex px-32 py-10 gap-10">',
+                }
+            ],
+        }
+    )
+
+    assert {tool.name for tool in agent.analysis_agent.tools} == set()
 
 
 @pytest.mark.asyncio
@@ -131,8 +159,7 @@ async def test_analysis_limit_preserves_initial_repository_search_evidence(
             "location": "src/payment.py:42",
             "snippet": "payment.approve()",
             "observation": (
-                "Repository 검색이 commit aaaaaaaaaaaa의 "
-                "src/payment.py:42에서 일치했습니다."
+                "Repository 검색이 commit aaaaaaaaaaaa의 src/payment.py:42에서 일치했습니다."
             ),
         }
     ]
@@ -160,3 +187,55 @@ def test_code_search_queries_prefer_normalized_bug_signals() -> None:
         "/checkout",
         "approve",
     ]
+
+
+def test_code_search_queries_include_korean_feature_and_screen_terms() -> None:
+    queries = issue_analysis._code_search_queries(
+        {
+            "issue_id": "1",
+            "normalized_report": {
+                "error_signals": {},
+                "affected_surface": {
+                    "feature": "뉴스토론",
+                    "screen": "뉴스토론 페이지",
+                    "operation": "화면 축소",
+                },
+            },
+        }
+    )
+
+    assert queries == ['className="flex px-', "w-1/4", "min-w-", "뉴스", "토론"]
+
+
+def test_code_search_queries_detect_responsive_bug_from_observed_behavior() -> None:
+    queries = issue_analysis._code_search_queries(
+        {
+            "issue_id": "1",
+            "normalized_report": {
+                "observed_behavior": "브라우저 폭을 축소하면 화면이 깨진다",
+                "error_signals": {},
+                "affected_surface": {"feature": "뉴스토론"},
+            },
+        }
+    )
+
+    assert 'className="flex px-' in queries
+    assert "w-1/4" in queries
+
+
+def test_code_search_queries_detect_responsive_bug_from_original_description() -> None:
+    queries = issue_analysis._code_search_queries(
+        {
+            "issue_id": "1",
+            "normalized_report": {
+                "error_signals": {},
+                "affected_surface": {"feature": "뉴스토론 페이지"},
+            },
+            "bug_context": {
+                "title": "뉴스토론 화면이 깨짐",
+                "description": "뉴스토론 페이지에서 화면을 줄이면 ui가 다 깨짐",
+            },
+        }
+    )
+
+    assert queries[:3] == ['className="flex px-', "w-1/4", "min-w-"]

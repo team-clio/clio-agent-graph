@@ -56,6 +56,8 @@ def validate_request(state: ClioState) -> dict[str, object]:
                 "branch": request.payload.branch,
                 "repository_source_uri": request.payload.source_uri,
                 "revision": request.payload.commit,
+                "include_paths": request.payload.include_paths,
+                "exclude_paths": request.payload.exclude_paths,
             }
         )
     elif isinstance(request, CodeChangeRequest):

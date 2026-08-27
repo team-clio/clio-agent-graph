@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 from dataclasses import dataclass
+from fnmatch import fnmatchcase
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from tempfile import NamedTemporaryFile
@@ -70,6 +71,8 @@ class RepositoryRegistration(BaseModel):
     branch: str
     active_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     file_count: int = Field(ge=0)
+    include_paths: tuple[str, ...] = ()
+    exclude_paths: tuple[str, ...] = ()
 
 
 class RepositorySearchHit(BaseModel):
@@ -104,11 +107,20 @@ class GitRepositoryService:
         source_uri: str,
         branch: str,
         commit: str | None = None,
+        include_paths: tuple[str, ...] = (),
+        exclude_paths: tuple[str, ...] = (),
     ) -> RepositoryRegistration:
         """원격 Repository를 mirror하고 분석에 사용할 branch commit을 활성화한다."""
 
         return await asyncio.to_thread(
-            self._register, project_id, repository_id, source_uri, branch, commit
+            self._register,
+            project_id,
+            repository_id,
+            source_uri,
+            branch,
+            commit,
+            include_paths,
+            exclude_paths,
         )
 
     def _register(
@@ -118,6 +130,8 @@ class GitRepositoryService:
         source_uri: str,
         branch: str,
         commit: str | None,
+        include_paths: tuple[str, ...],
+        exclude_paths: tuple[str, ...],
     ) -> RepositoryRegistration:
         self._validate_https_source_uri(source_uri)
         mirror = self._mirror_path(project_id, repository_id)
@@ -128,13 +142,23 @@ class GitRepositoryService:
         else:
             self._run("git", "clone", "--mirror", "--", source_uri, str(mirror))
         revision = self._resolve_commit(mirror, commit or f"refs/heads/{branch}")
-        file_count = len(self._git(mirror, "ls-tree", "-r", "--name-only", revision).splitlines())
+        normalized_include_paths = self._normalize_scope_patterns(include_paths)
+        normalized_exclude_paths = self._normalize_scope_patterns(exclude_paths)
+        tracked_paths = self._git(mirror, "ls-tree", "-r", "--name-only", revision).splitlines()
+        file_count = sum(
+            1
+            for path in tracked_paths
+            if self._path_in_scope(path, normalized_include_paths, normalized_exclude_paths)
+            and not self._denied_path(path)
+        )
         registration = RepositoryRegistration(
             project_id=project_id,
             repository_id=repository_id,
             branch=branch,
             active_commit=revision,
             file_count=file_count,
+            include_paths=normalized_include_paths,
+            exclude_paths=normalized_exclude_paths,
         )
         self._write_manifest(registration)
         return registration
@@ -197,7 +221,12 @@ class GitRepositoryService:
             self._resolve_commit(mirror, after_commit),
             "--",
         )
-        return [path for path in output.splitlines() if not self._denied_path(path)]
+        registration = await asyncio.to_thread(self._read_manifest, project_id, repository_id)
+        return [
+            path
+            for path in output.splitlines()
+            if not self._denied_path(path) and self._registration_allows_path(registration, path)
+        ]
 
     def _activate_revision(
         self, project_id: str, repository_id: str, branch: str, after_commit: str
@@ -211,7 +240,12 @@ class GitRepositoryService:
         branch_head = self._resolve_commit(mirror, f"refs/heads/{branch}")
         if revision != branch_head:
             raise RepositoryError("after_commit is not the current configured branch head")
-        file_count = len(self._git(mirror, "ls-tree", "-r", "--name-only", revision).splitlines())
+        tracked_paths = self._git(mirror, "ls-tree", "-r", "--name-only", revision).splitlines()
+        file_count = sum(
+            1
+            for path in tracked_paths
+            if self._registration_allows_path(current, path) and not self._denied_path(path)
+        )
         updated = current.model_copy(
             update={"branch": branch, "active_commit": revision, "file_count": file_count}
         )
@@ -281,11 +315,16 @@ class GitRepositoryService:
             raise RepositoryError("repository source collection limits must be positive")
         mirror = self._mirror_path(project_id, repository_id)
         revision = self._resolve_commit(mirror, commit)
+        registration = self._read_manifest(project_id, repository_id)
         listing = self._git(mirror, "ls-tree", "-r", "-l", revision)
         candidates: list[tuple[str, int]] = []
         for entry in listing.splitlines():
             metadata, separator, path = entry.partition("\t")
-            if not separator or self._denied_path(path):
+            if (
+                not separator
+                or self._denied_path(path)
+                or not self._registration_allows_path(registration, path)
+            ):
                 continue
             parts = metadata.split()
             if len(parts) != 4 or parts[1] != "blob" or not parts[3].isdigit():
@@ -345,6 +384,9 @@ class GitRepositoryService:
         targets = self._snapshot_targets(snapshot, repository_id)
         hits: list[RepositorySearchHit] = []
         for target_id, commit in targets:
+            registration = await asyncio.to_thread(
+                self._read_manifest, snapshot.project_id, target_id
+            )
             output = await asyncio.to_thread(
                 self._git_allow_no_match,
                 self._mirror_path(snapshot.project_id, target_id),
@@ -363,7 +405,9 @@ class GitRepositoryService:
                 if not match:
                     continue
                 path, line_number, matched = match.groups()
-                if self._denied_path(path):
+                if self._denied_path(path) or not self._registration_allows_path(
+                    registration, path
+                ):
                     continue
                 hits.append(
                     RepositorySearchHit(
@@ -391,6 +435,9 @@ class GitRepositoryService:
             raise RepositoryError("repository file list limit must be between 1 and 200")
         files: list[dict[str, str]] = []
         for target_id, commit in self._snapshot_targets(snapshot, repository_id):
+            registration = await asyncio.to_thread(
+                self._read_manifest, snapshot.project_id, target_id
+            )
             output = await asyncio.to_thread(
                 self._git,
                 self._mirror_path(snapshot.project_id, target_id),
@@ -401,7 +448,9 @@ class GitRepositoryService:
             )
             for path in output.splitlines():
                 normalized = self._safe_relative_path(path)
-                if self._denied_path(normalized):
+                if self._denied_path(normalized) or not self._registration_allows_path(
+                    registration, normalized
+                ):
                     continue
                 files.append({"repository_id": target_id, "commit": commit, "path": normalized})
                 if len(files) >= limit:
@@ -423,6 +472,11 @@ class GitRepositoryService:
         normalized = self._safe_relative_path(path)
         if self._denied_path(normalized):
             raise RepositoryError("access to secret-bearing files is denied")
+        registration = await asyncio.to_thread(
+            self._read_manifest, snapshot.project_id, repository_id
+        )
+        if not self._registration_allows_path(registration, normalized):
+            raise RepositoryError("repository path is outside the configured analysis scope")
         if start_line < 1 or end_line < start_line or end_line - start_line + 1 > 400:
             raise RepositoryError("line range must contain between 1 and 400 lines")
         content = await asyncio.to_thread(
@@ -452,6 +506,44 @@ class GitRepositoryService:
         if repository_id:
             return [(repository_id, self._snapshot_commit(snapshot, repository_id))]
         return sorted(snapshot.repository_revisions.items())
+
+    @classmethod
+    def _registration_allows_path(cls, registration: RepositoryRegistration, path: str) -> bool:
+        return cls._path_in_scope(path, registration.include_paths, registration.exclude_paths)
+
+    @classmethod
+    def _path_in_scope(
+        cls,
+        path: str,
+        include_paths: tuple[str, ...],
+        exclude_paths: tuple[str, ...],
+    ) -> bool:
+        normalized = cls._safe_relative_path(path)
+        included = not include_paths or any(
+            cls._scope_pattern_matches(normalized, pattern) for pattern in include_paths
+        )
+        excluded = any(cls._scope_pattern_matches(normalized, pattern) for pattern in exclude_paths)
+        return included and not excluded
+
+    @staticmethod
+    def _scope_pattern_matches(path: str, pattern: str) -> bool:
+        if fnmatchcase(path, pattern):
+            return True
+        prefix = pattern.removesuffix("/**").rstrip("/")
+        return pattern.endswith("/**") and (path == prefix or path.startswith(prefix + "/"))
+
+    @classmethod
+    def _normalize_scope_patterns(cls, patterns: tuple[str, ...]) -> tuple[str, ...]:
+        normalized: list[str] = []
+        for raw_pattern in patterns:
+            pattern = raw_pattern.strip().replace("\\", "/").removeprefix("./").rstrip("/")
+            if not pattern:
+                continue
+            if pattern.startswith("/") or ".." in PurePosixPath(pattern).parts:
+                raise RepositoryError("repository analysis paths must be contained relative paths")
+            if pattern not in normalized:
+                normalized.append(pattern)
+        return tuple(normalized)
 
     @staticmethod
     def _snapshot_commit(snapshot: ProjectContextSnapshot, repository_id: str) -> str:

@@ -111,6 +111,8 @@ async def build_repository_index(state: ClioState) -> dict[str, object]:
                 source_uri=state["repository_source_uri"],
                 branch=state["branch"],
                 commit=state.get("revision"),
+                include_paths=state.get("include_paths", ()),
+                exclude_paths=state.get("exclude_paths", ()),
             )
             sync = registration.model_dump(mode="json")
             if services.repository_pipeline is not None:

@@ -87,8 +87,11 @@ async def test_repository_removal_does_not_reconcile_pcm_knowledge(
 async def test_repository_registration_ingests_active_commit_into_pcm_knowledge(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    captured: dict[str, object] = {}
+
     class Repositories(_Repositories):
-        async def register(self, **_: object) -> RepositoryRegistration:
+        async def register(self, **arguments: object) -> RepositoryRegistration:
+            captured.update(arguments)
             return RepositoryRegistration(
                 project_id="PROJECT-1",
                 repository_id="backend",
@@ -110,9 +113,13 @@ async def test_repository_registration_ingests_active_commit_into_pcm_knowledge(
             "repository_id": "backend",
             "repository_source_uri": "https://github.com/acme/backend.git",
             "branch": "main",
+            "include_paths": ("src/**",),
+            "exclude_paths": ("src/generated/**",),
             "repository_sync": {"repository_id": "backend"},
         }
     )
 
     assert result["repository_sync"]["knowledge"]["pcm_revision"] == 1
     assert server.completed == [("PROJECT-1", "backend")]
+    assert captured["include_paths"] == ("src/**",)
+    assert captured["exclude_paths"] == ("src/generated/**",)

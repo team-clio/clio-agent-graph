@@ -104,6 +104,8 @@ class RepositorySyncPayload(BaseModel):
     branch: str = Field(min_length=1)
     source_uri: str | None = Field(default=None, min_length=1)
     commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
+    include_paths: tuple[str, ...] = Field(default=(), max_length=100)
+    exclude_paths: tuple[str, ...] = Field(default=(), max_length=100)
 
 
 class CodeChangePayload(BaseModel):

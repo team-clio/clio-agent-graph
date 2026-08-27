@@ -187,6 +187,68 @@ async def test_repository_file_listing_is_snapshot_bound_and_hides_secret_paths(
 
 
 @pytest.mark.asyncio
+async def test_repository_analysis_scope_limits_collection_search_listing_and_reads(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    git(source, "init", "-b", "main")
+    git(source, "config", "user.name", "Clio Test")
+    git(source, "config", "user.email", "clio@example.test")
+    (source / "src" / "discussion").mkdir(parents=True)
+    (source / "src" / "generated").mkdir(parents=True)
+    (source / "src" / "discussion" / "NewsDiscussion.tsx").write_text(
+        "export function NewsDiscussion() { return <main>responsive discussion layout</main> }\n"
+    )
+    (source / "src" / "generated" / "api.ts").write_text(
+        "export const generatedClient = 'exclude me'\n"
+    )
+    (source / "README.md").write_text("outside configured source root\n")
+    git(source, "add", ".")
+    git(source, "commit", "-m", "scoped source")
+    commit = git(source, "rev-parse", "HEAD")
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+
+    registration = await service.register(
+        project_id="PROJECT-1",
+        repository_id="frontend",
+        source_uri=str(source),
+        branch="main",
+        include_paths=("src/**",),
+        exclude_paths=("src/generated/**",),
+    )
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"frontend": commit},
+    )
+
+    assert registration.file_count == 1
+    assert registration.include_paths == ("src/**",)
+    assert registration.exclude_paths == ("src/generated/**",)
+    assert await service.list_files(snapshot=snapshot) == [
+        {
+            "repository_id": "frontend",
+            "commit": commit,
+            "path": "src/discussion/NewsDiscussion.tsx",
+        }
+    ]
+    assert len(await service.search(snapshot=snapshot, query="responsive discussion")) == 1
+    assert await service.search(snapshot=snapshot, query="configured source root") == []
+    units = await service.collect_source_units(
+        project_id="PROJECT-1", repository_id="frontend", commit=commit
+    )
+    assert {unit.path for unit in units} == {"src/discussion/NewsDiscussion.tsx"}
+    with pytest.raises(RepositoryError, match="outside the configured analysis scope"):
+        await service.read_file(
+            snapshot=snapshot,
+            repository_id="frontend",
+            path="README.md",
+        )
+
+
+@pytest.mark.asyncio
 async def test_repository_removal_deletes_only_managed_mirror_and_manifest(tmp_path: Path) -> None:
     source = tmp_path / "source"
     create_repository(source)
