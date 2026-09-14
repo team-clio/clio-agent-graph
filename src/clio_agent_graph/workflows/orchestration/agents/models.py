@@ -109,7 +109,11 @@ class EvidenceCitation(BaseModel):
 
     @model_validator(mode="after")
     def validate_code_location(self) -> "EvidenceCitation":
-        if self.end_line is not None and self.start_line is not None and self.end_line < self.start_line:
+        if (
+            self.end_line is not None
+            and self.start_line is not None
+            and self.end_line < self.start_line
+        ):
             raise ValueError("end_line must not precede start_line")
         return self
 

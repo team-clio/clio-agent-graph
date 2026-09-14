@@ -77,15 +77,12 @@ def build_risk_user_prompt(
 ) -> str:
     """위험도 평가에 필요한 이슈 문맥을 하나의 사용자 메시지로 만든다."""
 
-    return (
-        "Assess the business risk of this issue.\n"
-        + _json_dump(
-            {
-                "issue_id": issue_id,
-                "bug_context": bug_context or {},
-                "analysis": analysis or {},
-            }
-        )
+    return "Assess the business risk of this issue.\n" + _json_dump(
+        {
+            "issue_id": issue_id,
+            "bug_context": bug_context or {},
+            "analysis": analysis or {},
+        }
     )
 
 

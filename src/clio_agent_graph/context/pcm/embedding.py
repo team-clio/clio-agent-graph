@@ -93,7 +93,6 @@ class OllamaEmbeddingProvider:
 
         return f"ollama:{self._require_model_name()}:{self.dimensions}"
 
-
     @property
     def dimensions(self) -> int:
         """생성되는 feature-hash vector의 고정 차원."""
@@ -108,14 +107,12 @@ class OllamaEmbeddingProvider:
             return []
         return await asyncio.to_thread(self._request_embeddings, inputs)
 
-
     async def embed_query(self, text: str) -> list[float]:
         """문서와 동일한 feature hashing 규칙으로 검색어를 변환한다."""
 
         instructed_query = f"Instruct: {QUERY_INSTRUCTION}\nQuery: {text}"
         embeddings = await asyncio.to_thread(self._request_embeddings, [instructed_query])
         return embeddings[0]
-
 
     def _request_embeddings(self, texts: list[str]) -> list[list[float]]:
         request = Request(

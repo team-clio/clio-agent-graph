@@ -80,7 +80,7 @@ def build_agentic_code_exploration_graph(
                 system_prompt=SYSTEM_PROMPT,
                 response_model=ExplorationResponse,
                 name="issue_evidence_explorer",
-            limits=agent_limits or AgentLimits(max_tool_calls=8, max_model_calls=10),
+                limits=agent_limits or AgentLimits(max_tool_calls=8, max_model_calls=10),
             )
         return actual_agent
 

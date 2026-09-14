@@ -123,6 +123,35 @@ def test_issue_analysis_skips_exploration_when_search_found_actionable_layout_co
     assert {tool.name for tool in agent.analysis_agent.tools} == set()
 
 
+def test_issue_analysis_skips_exploration_when_search_found_backend_code(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    services = _services()
+    monkeypatch.setattr(issue_analysis, "get_application_services", lambda: services)
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"backend": "a" * 40},
+    )
+
+    agent = issue_analysis._agent(
+        {
+            "project_id": "PROJECT-1",
+            "request_id": "REQ-1",
+            "context_snapshot": snapshot.model_dump(mode="json"),
+            "code_evidence": [
+                {
+                    "path": "src/payment.py",
+                    "content": "raise PaymentApprovalError('PAY-500')",
+                }
+            ],
+        }
+    )
+
+    assert {tool.name for tool in agent.analysis_agent.tools} == set()
+
+
 @pytest.mark.asyncio
 async def test_analysis_limit_preserves_initial_repository_search_evidence(
     monkeypatch: pytest.MonkeyPatch,

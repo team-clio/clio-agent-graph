@@ -217,9 +217,7 @@ def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
                 location = f"{hit['path']}:{hit['line']}"
                 return {
                     "issue_id": payload["issue_id"],
-                    "evidence_counts": {
-                        source: len(items) for source, items in evidence.items()
-                    },
+                    "evidence_counts": {source: len(items) for source, items in evidence.items()},
                     "facts": [
                         {
                             "fact": "Payment approval reaches the failing code path.",
@@ -231,6 +229,9 @@ def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
                             "source_type": "repository",
                             "repository_id": hit["repository_id"],
                             "commit": hit["commit"],
+                            "file_path": hit["path"],
+                            "start_line": hit["line"],
+                            "end_line": hit["line"],
                             "location": location,
                             "snippet": hit["content"],
                         }
@@ -451,6 +452,9 @@ async def test_new_report_persists_complete_analysis_with_repository_citation() 
             "source_type": "repository",
             "repository_id": "backend",
             "commit": commit,
+            "file_path": "src/payment.py",
+            "start_line": 42,
+            "end_line": 42,
             "location": "src/payment.py:42",
             "snippet": "raise PaymentApprovalError('PAY-500')",
         }

@@ -467,15 +467,14 @@ def _responsive_layout_queries(operation: object) -> list[str]:
 
 
 def _has_actionable_code_evidence(evidence: object) -> bool:
-    """단순 주석/라벨이 아니라 실행·스타일 코드가 이미 검색됐는지 판별한다."""
+    """파일 seed가 아니라 실제 코드 내용이 검색됐는지 판별한다."""
 
     if not isinstance(evidence, list):
         return False
-    markers = ("classname=", "style=", " min-w-", " max-w-", " overflow-", " flex ", " grid ")
     return any(
         isinstance(item, dict)
         and isinstance(item.get("content"), str)
-        and any(marker in item["content"].casefold() for marker in markers)
+        and bool(item["content"].strip())
         for item in evidence
     )
 
