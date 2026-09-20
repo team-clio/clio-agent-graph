@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Clio Operational Evidence</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#0b0d12;color:#eef2ff;font-family:Inter,Pretendard,Arial,sans-serif}
+    main{width:1440px;min-height:900px;padding:58px 72px;background:radial-gradient(circle at 85% 0,#172036 0,transparent 33%)}
+    .eyebrow{color:#7dd3fc;font-size:16px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    h1{font-size:48px;line-height:1.12;margin:14px 0 10px;letter-spacing:-.035em}.sub{color:#98a2b8;font-size:20px;margin:0 0 38px}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:#111722;border:1px solid #263044;border-radius:16px;padding:22px}
+    .label{color:#98a2b8;font-size:15px}.value{font-size:38px;font-weight:750;margin:10px 0 4px}.ok{color:#86efac}.blue{color:#7dd3fc}.amber{color:#fbbf24}.unit{font-size:16px;color:#98a2b8}
+    .trace{margin-top:28px;background:#111722;border:1px solid #263044;border-radius:18px;padding:28px}
+    .trace-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:26px}.trace h2{margin:0;font-size:24px}.trace-id{font-family:monospace;color:#7dd3fc;font-size:14px}
+    .lane{display:grid;grid-template-columns:180px 1fr 90px;gap:20px;align-items:center;margin:18px 0}.service{font-weight:700}.bar-bg{height:40px;background:#0b0d12;border-radius:9px;padding:5px}.bar{height:30px;border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:700;white-space:nowrap}.server{background:#2563eb}.client{background:#475569;width:99%}.agent{background:#7c3aed;width:86%;margin-left:13%}.duration{text-align:right;color:#cbd5e1;font-variant-numeric:tabular-nums}
+    .flow{display:flex;align-items:center;gap:12px;margin-top:26px;padding:18px 20px;background:#0b0d12;border-radius:12px;color:#cbd5e1}.arrow{color:#38bdf8;font-size:22px}.proof{margin-left:auto;color:#86efac;font-weight:700}
+    footer{display:flex;justify-content:space-between;margin-top:24px;color:#667085;font-size:13px}.tag{border:1px solid #334155;border-radius:999px;padding:7px 12px;color:#cbd5e1}
+  </style>
+</head>
+<body><main>
+  <div class="eyebrow">Operational Observability · Local E2E</div>
+  <h1>에이전트를 만들고 끝내지 않았습니다.<br>운영 가능한 시스템으로 검증했습니다.</h1>
+  <p class="sub">Prometheus · Grafana · Tempo · OpenTelemetry 기반 실제 실행 + 통제 장애 주입</p>
+  <section class="metrics">
+    <div class="card"><div class="label">누적 Workflow 이벤트</div><div class="value blue">42</div><div class="unit">Server + Agent lifecycle</div></div>
+    <div class="card"><div class="label">실제 LLM 호출</div><div class="value">4<span class="unit"> 회</span></div><div class="unit">DeepSeek structured output</div></div>
+    <div class="card"><div class="label">모델 토큰</div><div class="value amber">17,263</div><div class="unit">입력 12,900 · 출력 4,363</div></div>
+    <div class="card"><div class="label">Quality Gate</div><div class="value ok">1 / 1 / 1</div><div class="unit">pass · retry · review</div></div>
+  </section>
+  <section class="trace">
+    <div class="trace-head"><div><div class="label">Distributed Trace Evidence</div><h2>Server → Agent 문서 동기화</h2></div><div class="trace-id">trace dddddddd…dddd</div></div>
+    <div class="lane"><div class="service">clio-server</div><div class="bar-bg"><div class="bar server">POST /projects/{id}/documents</div></div><div class="duration">6.998 s</div></div>
+    <div class="lane"><div class="service">HTTP client</div><div class="bar-bg"><div class="bar client">POST /runs/wait</div></div><div class="duration">6.909 s</div></div>
+    <div class="lane"><div class="service">clio-agent-graph</div><div class="bar-bg"><div class="bar agent">clio.workflow.document_sync</div></div><div class="duration">6.029 s</div></div>
+    <div class="flow"><span>사용자 요청</span><span class="arrow">→</span><span>Spring API</span><span class="arrow">→</span><span>LangGraph workflow</span><span class="proof">✓ 단일 Trace ID · 정체 0건</span></div>
+  </section>
+  <footer><span>측정일 2026-09-20 · 정상 실행, Quality Gate, Citation, dependency, 멱등성 검증</span><span class="tag">payload 미수집 · 실패 주입은 별도 service.name으로 구분</span></footer>
+</main></body></html>
