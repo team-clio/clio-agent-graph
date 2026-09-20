@@ -32,3 +32,29 @@ end-to-end waterfall을 증명할 수 없어 제외했다.
 - 잘못된 context는 업무 요청을 실패시키지 않고 새 trace로 시작하되 검증 실패 event를 남긴다.
 - LangGraph Server가 실행 context를 안전하게 전달하는 공식 확장 지점을 제공하면 body envelope를
   그 방식으로 대체할지 재검토한다.
+
+## D2. 1차 관측 표준
+
+- 결정일: 2026-09-20
+- 결정: OpenTelemetry와 Micrometer를 공통 관측 표준으로 사용한다.
+- 보조 도구: LangSmith 설정은 유지하되 LLM 상세 분석용 선택 기능으로 한정한다.
+
+### 근거
+
+- Spring과 Python Agent가 같은 W3C trace context와 OTLP 전송 규격을 사용할 수 있다.
+- trace, metric과 log correlation을 특정 SaaS 계정에 종속하지 않고 로컬에서 재현할 수 있다.
+- Server lifecycle과 Agent graph를 하나의 조사 흐름으로 보여줘 포트폴리오의 운영 증거가 된다.
+- Spring에서는 Micrometer Observation·MeterRegistry라는 기존 생태계를 그대로 활용한다.
+
+### 제외한 대안
+
+LangSmith를 Agent의 주 관측 도구로 사용하면 LLM·Tool trace를 빠르게 확인할 수 있다. 그러나
+Spring workflow와 동일한 trace·dashboard로 연결하기 어렵고 운영 증거가 Agent 내부에 한정되므로
+1차 표준에서 제외했다.
+
+### 제약과 재검토 조건
+
+- OpenTelemetry에는 prompt·응답과 source 원문을 기록하지 않는다.
+- LangSmith를 켜더라도 end-to-end 상태·지연·실패 수치의 기준은 OpenTelemetry·Micrometer로 둔다.
+- 실제 운영에서 LangSmith의 평가·LLM 분석 기능이 핵심 요구가 되면 이중 전송 비용과 retention을
+  별도로 결정한다.
