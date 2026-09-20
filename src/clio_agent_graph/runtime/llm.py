@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from clio_agent_graph.observability import get_telemetry
 from clio_agent_graph.runtime.agent_runtime import AgentExecutionLimitError, AgentLimits
+from clio_agent_graph.runtime.observation_callback import RuntimeObservationCallback
 from clio_agent_graph.runtime.structured_output import tool_strategy
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
@@ -142,11 +143,15 @@ class ToolCallingAgent:
         started = time.perf_counter()
         attributes = _model_attributes(self.name)
         outcome = "success"
+        callback = RuntimeObservationCallback(telemetry, attributes)
         try:
             with telemetry.span("clio.llm.agent", attributes=attributes):
                 result = self._create_agent().invoke(
                     {"messages": [{"role": "user", "content": prompt}]},
-                    config={"recursion_limit": self.limits.recursion_limit},
+                    config={
+                        "recursion_limit": self.limits.recursion_limit,
+                        "callbacks": [callback],
+                    },
                 )
         except GraphRecursionError as error:
             outcome = "limit"
@@ -164,7 +169,7 @@ class ToolCallingAgent:
             outcome = "failure"
             raise
         finally:
-            _record_model_execution(telemetry, attributes, outcome, started)
+            _record_agent_execution(telemetry, attributes, outcome, started)
         _record_result_usage(telemetry, result, attributes)
         return self._parse_result(result)
 
@@ -175,11 +180,15 @@ class ToolCallingAgent:
         started = time.perf_counter()
         attributes = _model_attributes(self.name)
         outcome = "success"
+        callback = RuntimeObservationCallback(telemetry, attributes)
         try:
             with telemetry.span("clio.llm.agent", attributes=attributes):
                 result = await self._create_agent().ainvoke(
                     {"messages": [{"role": "user", "content": prompt}]},
-                    config={"recursion_limit": self.limits.recursion_limit},
+                    config={
+                        "recursion_limit": self.limits.recursion_limit,
+                        "callbacks": [callback],
+                    },
                 )
         except GraphRecursionError as error:
             outcome = "limit"
@@ -197,7 +206,7 @@ class ToolCallingAgent:
             outcome = "failure"
             raise
         finally:
-            _record_model_execution(telemetry, attributes, outcome, started)
+            _record_agent_execution(telemetry, attributes, outcome, started)
         _record_result_usage(telemetry, result, attributes)
         return self._parse_result(result)
 
@@ -209,16 +218,16 @@ def _model_attributes(operation: str) -> dict[str, object]:
     }
 
 
-def _record_model_execution(
+def _record_agent_execution(
     telemetry,
     attributes: dict[str, object],
     outcome: str,
     started: float,
 ) -> None:
     metric_attributes = {**attributes, "outcome": outcome}
-    telemetry.counter("clio.model.call.total", attributes=metric_attributes)
+    telemetry.counter("clio.agent.run.total", attributes=metric_attributes)
     telemetry.histogram(
-        "clio.model.call.duration",
+        "clio.agent.run.duration",
         time.perf_counter() - started,
         attributes=metric_attributes,
     )
@@ -246,14 +255,6 @@ def _record_result_usage(
                         "clio.model.token.total",
                         value=value,
                         attributes={**attributes, "direction": direction},
-                    )
-        tool_calls = getattr(message, "tool_calls", None)
-        if isinstance(tool_calls, list):
-            for call in tool_calls:
-                if isinstance(call, dict) and isinstance(call.get("name"), str):
-                    telemetry.counter(
-                        "clio.tool.call.total",
-                        attributes={"tool": call["name"], "outcome": "selected"},
                     )
 
 

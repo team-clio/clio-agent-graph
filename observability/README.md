@@ -32,6 +32,7 @@
 | 얼마나 느렸나? | `clio_workflow_duration_seconds` p95 |
 | 어느 단계가 병목인가? | `clio_node_duration_seconds` p95 |
 | 모델 호출이 얼마나 발생했나? | `clio_model_call_total`, `clio_model_token_total` |
+| Tool이 실제로 성공했나? | `clio_tool_call_total`, `clio_tool_call_duration_seconds` |
 | 품질 검증이 막아냈나? | `clio_quality_gate_total`, `clio_citation_rejected_total` |
 | 사람이 봐야 할 결과가 늘었나? | `clio_analysis_needs_review_total` |
 | 작업이 멈춰 있나? | `clio_workflow_stuck`, `clio_workflow_running_age_max_seconds` |

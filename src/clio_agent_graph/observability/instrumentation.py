@@ -175,7 +175,7 @@ def observe_workflow(name: str, runnable: Runnable[Any, dict[str, object]]) -> R
                 attributes=attributes,
                 carrier=_carrier(state, telemetry),
             ):
-                telemetry.event("workflow.started", request_type=state.get("request_type", name))
+                telemetry.event("workflow.started", **_event_fields(state, name))
                 return await runnable.ainvoke(state)
         except Exception as error:
             outcome = "failure"
@@ -185,7 +185,7 @@ def observe_workflow(name: str, runnable: Runnable[Any, dict[str, object]]) -> R
             )
             raise
         finally:
-            _finish_workflow(telemetry, name, outcome, started)
+            _finish_workflow(telemetry, name, outcome, started, state)
 
     return RunnableLambda(invoke, ainvoke)
 
@@ -204,7 +204,7 @@ def _invoke_workflow(
             attributes=_attributes(state),
             carrier=_carrier(state, telemetry),
         ):
-            telemetry.event("workflow.started", request_type=state.get("request_type", name))
+            telemetry.event("workflow.started", **_event_fields(state, name))
             return runnable.invoke(state)
     except Exception as error:
         outcome = "failure"
@@ -214,7 +214,7 @@ def _invoke_workflow(
         )
         raise
     finally:
-        _finish_workflow(telemetry, name, outcome, started)
+        _finish_workflow(telemetry, name, outcome, started, state)
 
 
 def _finish_workflow(
@@ -222,6 +222,7 @@ def _finish_workflow(
     name: str,
     outcome: str,
     started: float,
+    state: Mapping[str, object],
 ) -> None:
     attributes = {"request_type": name, "outcome": outcome}
     telemetry.counter("clio.workflow.total", attributes=attributes)
@@ -230,4 +231,13 @@ def _finish_workflow(
         time.perf_counter() - started,
         attributes=attributes,
     )
-    telemetry.event("workflow.completed", request_type=name, outcome=outcome)
+    telemetry.event("workflow.completed", outcome=outcome, **_event_fields(state, name))
+
+
+def _event_fields(state: Mapping[str, object], name: str) -> dict[str, object]:
+    fields: dict[str, object] = {"request_type": state.get("request_type", name)}
+    for key in ("request_id", "workflow_run_id"):
+        value = state.get(key)
+        if isinstance(value, str | int):
+            fields[key] = value
+    return fields

@@ -15,6 +15,7 @@ from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel, ValidationError
 
 from clio_agent_graph.observability import get_telemetry
+from clio_agent_graph.runtime.observation_callback import RuntimeObservationCallback
 from clio_agent_graph.runtime.structured_output import tool_strategy
 
 StructuredResult = TypeVar("StructuredResult", bound=BaseModel)
@@ -119,11 +120,15 @@ class StructuredToolAgent(Generic[StructuredResult]):
         started = time.perf_counter()
         attributes = _model_attributes(self._name)
         outcome = "success"
+        callback = RuntimeObservationCallback(telemetry, attributes)
         try:
             with telemetry.span("clio.llm.agent", attributes=attributes):
                 result = self._agent.invoke(
                     {"messages": [{"role": "user", "content": user_prompt}]},
-                    config={"recursion_limit": self._limits.recursion_limit},
+                    config={
+                        "recursion_limit": self._limits.recursion_limit,
+                        "callbacks": [callback],
+                    },
                 )
         except GraphRecursionError as error:
             outcome = "limit"
@@ -144,7 +149,6 @@ class StructuredToolAgent(Generic[StructuredResult]):
             _record_execution(telemetry, attributes, outcome, started)
 
         self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
-        _record_tool_calls(telemetry, self._last_tool_calls)
         structured = result.get("structured_response")
         if structured is None:
             raise StructuredAgentOutputError("Agent did not return a structured response.")
@@ -161,11 +165,15 @@ class StructuredToolAgent(Generic[StructuredResult]):
         started = time.perf_counter()
         attributes = _model_attributes(self._name)
         outcome = "success"
+        callback = RuntimeObservationCallback(telemetry, attributes)
         try:
             with telemetry.span("clio.llm.agent", attributes=attributes):
                 result = await self._agent.ainvoke(
                     {"messages": [{"role": "user", "content": user_prompt}]},
-                    config={"recursion_limit": self._limits.recursion_limit},
+                    config={
+                        "recursion_limit": self._limits.recursion_limit,
+                        "callbacks": [callback],
+                    },
                 )
         except GraphRecursionError as error:
             outcome = "limit"
@@ -186,7 +194,6 @@ class StructuredToolAgent(Generic[StructuredResult]):
             _record_execution(telemetry, attributes, outcome, started)
 
         self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
-        _record_tool_calls(telemetry, self._last_tool_calls)
         structured = result.get("structured_response")
         if structured is None:
             raise StructuredAgentOutputError("Agent did not return a structured response.")
@@ -224,9 +231,9 @@ def _model_attributes(operation: str) -> dict[str, object]:
 
 def _record_execution(telemetry, attributes, outcome: str, started: float) -> None:
     metric_attributes = {**attributes, "outcome": outcome}
-    telemetry.counter("clio.model.call.total", attributes=metric_attributes)
+    telemetry.counter("clio.agent.run.total", attributes=metric_attributes)
     telemetry.histogram(
-        "clio.model.call.duration",
+        "clio.agent.run.duration",
         time.perf_counter() - started,
         attributes=metric_attributes,
     )
@@ -237,11 +244,3 @@ def _record_limit(telemetry, limit_type: str, attributes: dict[str, object]) -> 
         "clio.execution.limit.total",
         attributes={**attributes, "limit_type": limit_type},
     )
-
-
-def _record_tool_calls(telemetry, calls: list[ToolCallRecord]) -> None:
-    for call in calls:
-        telemetry.counter(
-            "clio.tool.call.total",
-            attributes={"tool": call["name"], "outcome": "selected"},
-        )

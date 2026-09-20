@@ -109,7 +109,8 @@ def test_tool_calling_agent_builds_a_langchain_agent_when_configured(
 
     assert result == {"answer": "done"}
     assert captured["kwargs"] is not None
-    assert captured["config"] == {"recursion_limit": 40}
+    assert captured["config"]["recursion_limit"] == 40
+    assert len(captured["config"]["callbacks"]) == 1
 
 
 def test_json_object_extracts_json_after_model_preamble() -> None:

@@ -78,7 +78,8 @@ def test_structured_agent_records_llm_selected_tools(monkeypatch) -> None:
     assert captured["tools"] == [lookup_context]
     assert isinstance(captured["response_format"], ToolStrategy)
     assert "Decide which of the provided tools" in captured["system_prompt"]
-    assert compiled.configs == [{"recursion_limit": 40}]
+    assert compiled.configs[0]["recursion_limit"] == 40
+    assert len(compiled.configs[0]["callbacks"]) == 1
 
 
 @pytest.mark.asyncio
@@ -100,4 +101,5 @@ async def test_structured_agent_awaits_async_tool_execution(monkeypatch) -> None
     )
 
     assert await agent.ainvoke("Find the relevant context") == AgentResult(answer="found")
-    assert compiled.configs == [{"recursion_limit": 40}]
+    assert compiled.configs[0]["recursion_limit"] == 40
+    assert len(compiled.configs[0]["callbacks"]) == 1
