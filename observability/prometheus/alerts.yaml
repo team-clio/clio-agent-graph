@@ -1,0 +1,32 @@
+groups:
+  - name: clio-operational-alerts
+    rules:
+      - alert: ClioWorkflowStuck
+        expr: clio_workflow_stuck > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "실행 중인 workflow가 정체 기준을 넘었습니다."
+          action: "Grafana Tempo에서 같은 시간대의 clio.workflow trace를 확인합니다."
+      - alert: ClioWorkflowFailureBurst
+        expr: sum(increase(clio_workflow_failure_total[5m])) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "5분 동안 workflow 실패가 3건 이상 발생했습니다."
+          action: "error_kind와 request_type별 증가량을 확인합니다."
+      - alert: ClioExecutionLimitReached
+        expr: sum(increase(clio_execution_limit_total[5m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent 실행 한도에 도달한 요청이 발생했습니다."
+          action: "limit_type과 해당 trace의 tool/model 호출 반복을 확인합니다."
+      - alert: ClioQualityReviewSpike
+        expr: sum(increase(clio_analysis_needs_review_total[15m])) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: "검토 필요 분석이 15분 동안 6건 이상 발생했습니다."
+          action: "quality gate 결과와 citation rejection 원인을 확인합니다."

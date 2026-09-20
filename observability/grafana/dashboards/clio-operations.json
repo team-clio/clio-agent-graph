@@ -1,0 +1,31 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":5,"w":6,"x":0,"y":0},"id":1,"options":{"colorMode":"value","graphMode":"area","justifyMode":"auto","orientation":"auto","reduceOptions":{"calcs":["lastNotNull"],"fields":"","values":false},"textMode":"auto"},"targets":[{"expr":"sum(increase(clio_workflow_total[$__range]))","refId":"A"}],"title":"Workflow 실행","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"percentunit"},"overrides":[]},"gridPos":{"h":5,"w":6,"x":6,"y":0},"id":2,"options":{"colorMode":"value","graphMode":"area","reduceOptions":{"calcs":["lastNotNull"],"fields":"","values":false}},"targets":[{"expr":"sum(increase(clio_workflow_failure_total[$__range])) / clamp_min(sum(increase(clio_workflow_total[$__range])), 1)","refId":"A"}],"title":"Workflow 실패율","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"s"},"overrides":[]},"gridPos":{"h":5,"w":6,"x":12,"y":0},"id":3,"options":{"colorMode":"value","graphMode":"area","reduceOptions":{"calcs":["lastNotNull"],"fields":"","values":false}},"targets":[{"expr":"histogram_quantile(0.95, sum by (le) (rate(clio_workflow_duration_seconds_bucket[5m])))","refId":"A"}],"title":"Workflow p95","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":5,"w":6,"x":18,"y":0},"id":4,"options":{"colorMode":"background","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"fields":"","values":false}},"targets":[{"expr":"sum(clio_workflow_stuck)","refId":"A"}],"title":"정체 Workflow","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"s"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":0,"y":5},"id":5,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"histogram_quantile(0.95, sum by (le, node) (rate(clio_node_duration_seconds_bucket[5m])))","legendFormat":"{{node}}","refId":"A"}],"title":"Node별 p95 지연","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":12,"y":5},"id":6,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (model, outcome) (rate(clio_model_call_total[5m]))","legendFormat":"{{model}} / {{outcome}}","refId":"A"}],"title":"모델 호출률","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":0,"y":13},"id":7,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (outcome) (increase(clio_quality_gate_total[$__range]))","legendFormat":"{{outcome}}","refId":"A"}],"title":"Quality Gate 결과","type":"barchart"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":8,"y":13},"id":8,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (reason) (increase(clio_citation_rejected_total[$__range]))","legendFormat":"{{reason}}","refId":"A"}],"title":"Citation 거절 원인","type":"barchart"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":16,"y":13},"id":9,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (reason) (increase(clio_analysis_needs_review_total[$__range]))","legendFormat":"{{reason}}","refId":"A"}],"title":"검토 필요 원인","type":"barchart"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":0,"y":21},"id":10,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (direction, model) (increase(clio_model_token_total[$__range]))","legendFormat":"{{model}} / {{direction}}","refId":"A"}],"title":"모델 토큰 사용량","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":12,"y":21},"id":11,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true}},"targets":[{"expr":"sum by (error_kind, request_type) (increase(clio_workflow_failure_total[$__range]))","legendFormat":"{{request_type}} / {{error_kind}}","refId":"A"}],"title":"Workflow 실패 유형","type":"timeseries"}
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["clio", "operations", "portfolio"],
+  "templating": {"list": []},
+  "time": {"from":"now-1h","to":"now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Clio Operational Evidence",
+  "uid": "clio-operations",
+  "version": 1
+}

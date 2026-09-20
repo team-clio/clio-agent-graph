@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Clio
+    orgId: 1
+    folder: Clio
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards
