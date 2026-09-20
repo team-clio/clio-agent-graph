@@ -2,6 +2,7 @@
 
 from langgraph.graph import END, START, StateGraph
 
+from clio_agent_graph.observability.instrumentation import observe_node
 from clio_agent_graph.workflows.orchestration.nodes.issue_analysis import (
     analyze_issue,
     assess_risk,
@@ -23,16 +24,19 @@ def build_issue_analysis_graph():
     """직접 분석 요청과 신규 이슈 경로가 공유하는 서브그래프를 만든다."""
 
     builder = StateGraph(IssueWorkflowState)
-    builder.add_node("prepare_analysis", prepare_analysis)
-    builder.add_node("search_documents", search_documents)
-    builder.add_node("search_code", search_code)
-    builder.add_node("search_history", search_history)
-    builder.add_node("analyze_issue", analyze_issue)
-    builder.add_node("plan_resolution", plan_resolution)
-    builder.add_node("quality_gate", quality_gate)
-    builder.add_node("assess_risk", assess_risk)
-    builder.add_node("save_analysis", save_analysis)
-    builder.add_node("mark_analysis_for_review", mark_analysis_for_review)
+    builder.add_node("prepare_analysis", observe_node("prepare_analysis", prepare_analysis))
+    builder.add_node("search_documents", observe_node("search_documents", search_documents))
+    builder.add_node("search_code", observe_node("search_code", search_code))
+    builder.add_node("search_history", observe_node("search_history", search_history))
+    builder.add_node("analyze_issue", observe_node("analyze_issue", analyze_issue))
+    builder.add_node("plan_resolution", observe_node("plan_resolution", plan_resolution))
+    builder.add_node("quality_gate", observe_node("quality_gate", quality_gate))
+    builder.add_node("assess_risk", observe_node("assess_risk", assess_risk))
+    builder.add_node("save_analysis", observe_node("save_analysis", save_analysis))
+    builder.add_node(
+        "mark_analysis_for_review",
+        observe_node("mark_analysis_for_review", mark_analysis_for_review),
+    )
 
     builder.add_edge(START, "prepare_analysis")
     builder.add_edge("prepare_analysis", "search_documents")

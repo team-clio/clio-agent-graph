@@ -2,11 +2,14 @@
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
+
+from clio_agent_graph.observability import get_telemetry
 
 DEFAULT_SERVER_URL = "http://localhost:8080"
 DEFAULT_TIMEOUT_SECONDS = 10.0
@@ -307,20 +310,42 @@ class ClioServerClient:
     def _request_json(
         self, method: str, path: str, payload: dict[str, object] | None = None
     ) -> object:
+        telemetry = get_telemetry()
+        operation = _server_operation(method, path)
+        started = time.perf_counter()
         data = None
         headers = {"Accept": "application/json"}
         if payload is not None:
             data = json.dumps(payload, separators=(",", ":")).encode()
             headers["Content-Type"] = "application/json"
-        request = Request(f"{self._base_url}{path}", data=data, headers=headers, method=method)
+        outcome = "success"
         try:
-            with urlopen(request, timeout=self._timeout_seconds) as response:  # noqa: S310
-                raw = response.read(MAX_RESPONSE_BYTES + 1)
-        except HTTPError as error:
-            detail = _read_error_message(error)
-            raise ClioServerError(detail, status_code=error.code) from error
-        except URLError as error:
-            raise ClioServerError(f"Clio Server is unavailable: {error.reason}") from error
+            with telemetry.span(
+                "clio.server.request",
+                attributes={"operation": operation, "http.request.method": method},
+            ):
+                headers.update(telemetry.inject_current())
+                request = Request(
+                    f"{self._base_url}{path}", data=data, headers=headers, method=method
+                )
+                try:
+                    with urlopen(request, timeout=self._timeout_seconds) as response:  # noqa: S310
+                        raw = response.read(MAX_RESPONSE_BYTES + 1)
+                except HTTPError as error:
+                    outcome = "http_error"
+                    detail = _read_error_message(error)
+                    raise ClioServerError(detail, status_code=error.code) from error
+                except URLError as error:
+                    outcome = "unavailable"
+                    raise ClioServerError(f"Clio Server is unavailable: {error.reason}") from error
+        finally:
+            attributes = {"operation": operation, "outcome": outcome}
+            telemetry.counter("clio.server.request.total", attributes=attributes)
+            telemetry.histogram(
+                "clio.server.request.duration",
+                time.perf_counter() - started,
+                attributes=attributes,
+            )
         if len(raw) > MAX_RESPONSE_BYTES:
             raise ClioServerError("Clio Server response exceeds the size limit.")
         if not raw:
@@ -340,3 +365,21 @@ def _read_error_message(error: HTTPError) -> str:
     if isinstance(payload, dict) and isinstance(payload.get("message"), str):
         return payload["message"]
     return f"Clio Server request failed with HTTP {error.code}."
+
+
+def _server_operation(method: str, path: str) -> str:
+    """식별자가 포함된 URL을 metric label로 쓰지 않고 제한된 연산명으로 변환한다."""
+
+    if "workflow-runs" in path and "analysis-result" in path:
+        return "analysis_result.save"
+    if "workflow-runs" in path:
+        return "workflow.update" if method == "PATCH" else "workflow.create"
+    if "candidate-bug-links" in path:
+        return "candidate_bug_links.list"
+    if "/bugs" in path:
+        return "bug.read"
+    if "/issues" in path:
+        return "issue.write" if method in {"POST", "PUT", "PATCH"} else "issue.read"
+    if "/repositories" in path:
+        return "repository_sync.update"
+    return "internal_api.other"

@@ -2,6 +2,7 @@
 
 from langgraph.graph import END, START, StateGraph
 
+from clio_agent_graph.observability.instrumentation import observe_node, observe_workflow
 from clio_agent_graph.workflows.orchestration.graphs import (
     build_code_change_sync_graph,
     build_code_evidence_graph,
@@ -30,15 +31,19 @@ def build_graph():
     code_evidence_graph = build_code_evidence_graph()
 
     builder = StateGraph(ClioState)
-    builder.add_node("validate_request", validate_request)
-    builder.add_node("route_request", route_request)
-    builder.add_node("report_processing", report_processing_graph)
-    builder.add_node("issue_analysis", issue_analysis_graph)
-    builder.add_node("document_sync", document_sync_graph)
-    builder.add_node("repository_sync", repository_sync_graph)
-    builder.add_node("code_change_sync", code_change_sync_graph)
-    builder.add_node("code_evidence", code_evidence_graph)
-    builder.add_node("finalize_request", finalize_request)
+    builder.add_node("validate_request", observe_node("validate_request", validate_request))
+    builder.add_node("route_request", observe_node("route_request", route_request))
+    builder.add_node(
+        "report_processing", observe_workflow("process_report", report_processing_graph)
+    )
+    builder.add_node("issue_analysis", observe_workflow("analyze_issue", issue_analysis_graph))
+    builder.add_node("document_sync", observe_workflow("document_sync", document_sync_graph))
+    builder.add_node("repository_sync", observe_workflow("repository_sync", repository_sync_graph))
+    builder.add_node(
+        "code_change_sync", observe_workflow("repository_changed", code_change_sync_graph)
+    )
+    builder.add_node("code_evidence", observe_workflow("read_code_evidence", code_evidence_graph))
+    builder.add_node("finalize_request", observe_node("finalize_request", finalize_request))
 
     builder.add_edge(START, "validate_request")
     builder.add_edge("validate_request", "route_request")

@@ -21,6 +21,7 @@ class RequestState(TypedDict, total=False):
     """요청 검증과 root routing에 필요한 공통 상태."""
 
     request: dict[str, Any]
+    telemetry: dict[str, str]
     request_id: str
     request_type: RequestType
     project_id: str
