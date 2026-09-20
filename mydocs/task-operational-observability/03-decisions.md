@@ -130,3 +130,27 @@ trace 링크 요구가 없고 DB migration과 API 노출 범위가 늘어나므�
 - trace에는 `workflow_run_id`와 `request_id`를 high-cardinality attribute로만 기록한다.
 - 관리자 UI의 장기 trace 링크가 요구되거나 trace 검색이 반복적인 운영 부담이 되면 DB 저장을
   별도 계약 변경으로 재검토한다.
+
+## D6. Agent 계측 방식
+
+- 결정일: 2026-09-20
+- 결정: HTTP context는 경계 adapter에서, graph·LLM·Tool은 공통 wrapper로 명시 계측한다.
+
+### 근거
+
+- node, Quality Gate와 실행 한도처럼 Clio의 업무 의미를 안정된 span·metric 이름으로 표현한다.
+- no-op telemetry port와 test fake를 사용해 관측 기능을 업무 로직과 분리한다.
+- 허용 attribute와 민감정보 금지 규칙을 단위 테스트에서 직접 검증할 수 있다.
+- HTTP 자동 계측이 놓치는 `/runs` 비동기 경계와 `urllib` internal API 호출을 명시적으로 다룬다.
+
+### 제외한 대안
+
+Python zero-code 계측은 빠르게 HTTP·라이브러리 span을 얻을 수 있지만 graph node와 Quality Gate의
+의미가 드러나지 않고 수집 범위를 통제하기 어렵다. smoke demo보다 검증 가능한 운영 계약을
+우선하므로 주 방식에서 제외했다.
+
+### 제약과 재검토 조건
+
+- 업무 node 안에서 tracer·meter SDK를 직접 호출하지 않고 공통 port와 wrapper를 사용한다.
+- framework 자동 계측은 HTTP 같은 기술 경계의 보조 수단으로만 사용한다.
+- LangGraph가 안정적인 OpenTelemetry hook을 공식 제공하면 wrapper 중복을 줄일지 재검토한다.
