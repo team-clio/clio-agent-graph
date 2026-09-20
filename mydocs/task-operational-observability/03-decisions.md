@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 작성일: 2026-09-20
-- 상태: 결정 진행 중
+- 상태: 결정 완료
 - 선행 문서: [02-plan.md](02-plan.md)
 - 리뷰: 사용자 리뷰 진행 중
 
@@ -154,3 +154,27 @@ Python zero-code 계측은 빠르게 HTTP·라이브러리 span을 얻을 수 �
 - 업무 node 안에서 tracer·meter SDK를 직접 호출하지 않고 공통 port와 wrapper를 사용한다.
 - framework 자동 계측은 HTTP 같은 기술 경계의 보조 수단으로만 사용한다.
 - LangGraph가 안정적인 OpenTelemetry hook을 공식 제공하면 wrapper 중복을 줄일지 재검토한다.
+
+## D7. 장애 주입과 초기 alert 기준
+
+- 결정일: 2026-09-20
+- 결정: port fake·test stub과 제한된 로컬 인프라 중단으로 장애를 검증한다.
+- alert 기준: 실패·저장 오류·실행 한도 초과·stuck 같은 의미 기반 조건부터 적용한다.
+
+### 근거
+
+- production 경로에 오용 가능한 fault flag를 남기지 않고 장애를 결정적으로 재현한다.
+- 실제 baseline 없이 임의의 P95·오류율 threshold를 SLA처럼 제시하지 않는다.
+- 상태 전이, checkpoint, 중복 저장 방지와 alert 발생을 시나리오별로 독립 검증할 수 있다.
+- 통제된 실험이라는 범위와 실행 조건을 포트폴리오에 명확히 표시할 수 있다.
+
+### 제외한 대안
+
+runtime fault flag는 시연 중 장애를 쉽게 전환할 수 있지만 production 설정에 위험한 경로가 남는다.
+임의 threshold는 dashboard를 풍부하게 보이게 하지만 측정 근거가 없어 신뢰도를 낮추므로 제외했다.
+
+### 제약과 재검토 조건
+
+- 인프라 중단은 로컬 관측 환경과 테스트 데이터에만 적용한다.
+- baseline을 반복 측정한 뒤 정상 분포와 운영 목표가 정해지면 지연·오류율 alert를 별도 결정한다.
+- 실제 chaos engineering이 필요해지면 권한·대상·중단 범위를 별도 작업으로 설계한다.
