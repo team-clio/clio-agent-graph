@@ -2,6 +2,7 @@
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
@@ -14,6 +15,7 @@ from langchain_core.tools import BaseTool
 from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel
 
+from clio_agent_graph.observability import get_telemetry
 from clio_agent_graph.runtime.agent_runtime import AgentExecutionLimitError, AgentLimits
 from clio_agent_graph.runtime.structured_output import tool_strategy
 
@@ -136,34 +138,123 @@ class ToolCallingAgent:
     def invoke(self, prompt: str) -> dict[str, Any]:
         """동기 호출부에서 Tool loop를 실행하고 검증된 결과만 반환한다."""
 
+        telemetry = get_telemetry()
+        started = time.perf_counter()
+        attributes = _model_attributes(self.name)
+        outcome = "success"
         try:
-            result = self._create_agent().invoke(
-                {"messages": [{"role": "user", "content": prompt}]},
-                config={"recursion_limit": self.limits.recursion_limit},
-            )
+            with telemetry.span("clio.llm.agent", attributes=attributes):
+                result = self._create_agent().invoke(
+                    {"messages": [{"role": "user", "content": prompt}]},
+                    config={"recursion_limit": self.limits.recursion_limit},
+                )
         except GraphRecursionError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "recursion", attributes)
             raise AgentExecutionLimitError("recursion") from error
         except ModelCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "model_calls", attributes)
             raise AgentExecutionLimitError("model_calls") from error
         except ToolCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "tool_calls", attributes)
             raise AgentExecutionLimitError("tool_calls") from error
+        except Exception:
+            outcome = "failure"
+            raise
+        finally:
+            _record_model_execution(telemetry, attributes, outcome, started)
+        _record_result_usage(telemetry, result, attributes)
         return self._parse_result(result)
 
     async def ainvoke(self, prompt: str) -> dict[str, Any]:
         """비동기 Graph Node에서 tool-calling loop를 실행한다."""
 
+        telemetry = get_telemetry()
+        started = time.perf_counter()
+        attributes = _model_attributes(self.name)
+        outcome = "success"
         try:
-            result = await self._create_agent().ainvoke(
-                {"messages": [{"role": "user", "content": prompt}]},
-                config={"recursion_limit": self.limits.recursion_limit},
-            )
+            with telemetry.span("clio.llm.agent", attributes=attributes):
+                result = await self._create_agent().ainvoke(
+                    {"messages": [{"role": "user", "content": prompt}]},
+                    config={"recursion_limit": self.limits.recursion_limit},
+                )
         except GraphRecursionError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "recursion", attributes)
             raise AgentExecutionLimitError("recursion") from error
         except ModelCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "model_calls", attributes)
             raise AgentExecutionLimitError("model_calls") from error
         except ToolCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "tool_calls", attributes)
             raise AgentExecutionLimitError("tool_calls") from error
+        except Exception:
+            outcome = "failure"
+            raise
+        finally:
+            _record_model_execution(telemetry, attributes, outcome, started)
+        _record_result_usage(telemetry, result, attributes)
         return self._parse_result(result)
+
+
+def _model_attributes(operation: str) -> dict[str, object]:
+    return {
+        "model": os.getenv("CLIO_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL,
+        "operation": operation,
+    }
+
+
+def _record_model_execution(
+    telemetry,
+    attributes: dict[str, object],
+    outcome: str,
+    started: float,
+) -> None:
+    metric_attributes = {**attributes, "outcome": outcome}
+    telemetry.counter("clio.model.call.total", attributes=metric_attributes)
+    telemetry.histogram(
+        "clio.model.call.duration",
+        time.perf_counter() - started,
+        attributes=metric_attributes,
+    )
+
+
+def _record_limit(telemetry, limit_type: str, attributes: dict[str, object]) -> None:
+    telemetry.counter(
+        "clio.execution.limit.total",
+        attributes={**attributes, "limit_type": limit_type},
+    )
+
+
+def _record_result_usage(
+    telemetry,
+    result: dict[str, Any],
+    attributes: dict[str, object],
+) -> None:
+    for message in result.get("messages", []):
+        usage = getattr(message, "usage_metadata", None)
+        if isinstance(usage, dict):
+            for source, direction in (("input_tokens", "input"), ("output_tokens", "output")):
+                value = usage.get(source)
+                if isinstance(value, int) and value >= 0:
+                    telemetry.counter(
+                        "clio.model.token.total",
+                        value=value,
+                        attributes={**attributes, "direction": direction},
+                    )
+        tool_calls = getattr(message, "tool_calls", None)
+        if isinstance(tool_calls, list):
+            for call in tool_calls:
+                if isinstance(call, dict) and isinstance(call.get("name"), str):
+                    telemetry.counter(
+                        "clio.tool.call.total",
+                        attributes={"tool": call["name"], "outcome": "selected"},
+                    )
 
 
 def _json_object(content: str) -> str:

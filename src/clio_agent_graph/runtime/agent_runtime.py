@@ -1,5 +1,7 @@
 """제공된 읽기 Tool 안에서 자율적으로 조사하는 bounded structured agent runtime."""
 
+import os
+import time
 from dataclasses import dataclass
 from typing import Any, Generic, Literal, TypedDict, TypeVar
 
@@ -12,6 +14,7 @@ from langchain_core.tools import BaseTool
 from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel, ValidationError
 
+from clio_agent_graph.observability import get_telemetry
 from clio_agent_graph.runtime.structured_output import tool_strategy
 
 StructuredResult = TypeVar("StructuredResult", bound=BaseModel)
@@ -80,6 +83,7 @@ class StructuredToolAgent(Generic[StructuredResult]):
     ) -> None:
         if not tools:
             raise ValueError("StructuredToolAgent requires at least one tool.")
+        self._name = name
         self._response_model = response_model
         self._limits = limits or AgentLimits()
         self._last_tool_calls: list[ToolCallRecord] = []
@@ -111,19 +115,36 @@ class StructuredToolAgent(Generic[StructuredResult]):
         """bounded tool loop를 실행하고 최종 structured response를 검증한다."""
 
         self._last_tool_calls = []
+        telemetry = get_telemetry()
+        started = time.perf_counter()
+        attributes = _model_attributes(self._name)
+        outcome = "success"
         try:
-            result = self._agent.invoke(
-                {"messages": [{"role": "user", "content": user_prompt}]},
-                config={"recursion_limit": self._limits.recursion_limit},
-            )
+            with telemetry.span("clio.llm.agent", attributes=attributes):
+                result = self._agent.invoke(
+                    {"messages": [{"role": "user", "content": user_prompt}]},
+                    config={"recursion_limit": self._limits.recursion_limit},
+                )
         except GraphRecursionError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "recursion", attributes)
             raise AgentExecutionLimitError("recursion") from error
         except ModelCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "model_calls", attributes)
             raise AgentExecutionLimitError("model_calls") from error
         except ToolCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "tool_calls", attributes)
             raise AgentExecutionLimitError("tool_calls") from error
+        except Exception:
+            outcome = "failure"
+            raise
+        finally:
+            _record_execution(telemetry, attributes, outcome, started)
 
         self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
+        _record_tool_calls(telemetry, self._last_tool_calls)
         structured = result.get("structured_response")
         if structured is None:
             raise StructuredAgentOutputError("Agent did not return a structured response.")
@@ -136,19 +157,36 @@ class StructuredToolAgent(Generic[StructuredResult]):
         """비동기 Tool을 가진 실행 경로에서 bounded tool loop를 실행한다."""
 
         self._last_tool_calls = []
+        telemetry = get_telemetry()
+        started = time.perf_counter()
+        attributes = _model_attributes(self._name)
+        outcome = "success"
         try:
-            result = await self._agent.ainvoke(
-                {"messages": [{"role": "user", "content": user_prompt}]},
-                config={"recursion_limit": self._limits.recursion_limit},
-            )
+            with telemetry.span("clio.llm.agent", attributes=attributes):
+                result = await self._agent.ainvoke(
+                    {"messages": [{"role": "user", "content": user_prompt}]},
+                    config={"recursion_limit": self._limits.recursion_limit},
+                )
         except GraphRecursionError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "recursion", attributes)
             raise AgentExecutionLimitError("recursion") from error
         except ModelCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "model_calls", attributes)
             raise AgentExecutionLimitError("model_calls") from error
         except ToolCallLimitExceededError as error:
+            outcome = "limit"
+            _record_limit(telemetry, "tool_calls", attributes)
             raise AgentExecutionLimitError("tool_calls") from error
+        except Exception:
+            outcome = "failure"
+            raise
+        finally:
+            _record_execution(telemetry, attributes, outcome, started)
 
         self._last_tool_calls = _collect_tool_calls(result.get("messages", []))
+        _record_tool_calls(telemetry, self._last_tool_calls)
         structured = result.get("structured_response")
         if structured is None:
             raise StructuredAgentOutputError("Agent did not return a structured response.")
@@ -175,3 +213,35 @@ def _collect_tool_calls(messages: list[Any]) -> list[ToolCallRecord]:
                 )
             )
     return calls
+
+
+def _model_attributes(operation: str) -> dict[str, object]:
+    return {
+        "model": os.getenv("CLIO_MODEL", "configured_model").strip() or "configured_model",
+        "operation": operation,
+    }
+
+
+def _record_execution(telemetry, attributes, outcome: str, started: float) -> None:
+    metric_attributes = {**attributes, "outcome": outcome}
+    telemetry.counter("clio.model.call.total", attributes=metric_attributes)
+    telemetry.histogram(
+        "clio.model.call.duration",
+        time.perf_counter() - started,
+        attributes=metric_attributes,
+    )
+
+
+def _record_limit(telemetry, limit_type: str, attributes: dict[str, object]) -> None:
+    telemetry.counter(
+        "clio.execution.limit.total",
+        attributes={**attributes, "limit_type": limit_type},
+    )
+
+
+def _record_tool_calls(telemetry, calls: list[ToolCallRecord]) -> None:
+    for call in calls:
+        telemetry.counter(
+            "clio.tool.call.total",
+            attributes={"tool": call["name"], "outcome": "selected"},
+        )

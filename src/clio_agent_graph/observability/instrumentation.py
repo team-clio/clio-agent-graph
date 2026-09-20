@@ -72,11 +72,35 @@ def _record_node_result(
                     "clio.quality_gate.total",
                     attributes={"outcome": outcome},
                 )
+                if outcome == "retry":
+                    telemetry.counter("clio.quality_gate.retry.total")
+                elif outcome == "needs_review":
+                    telemetry.counter(
+                        "clio.analysis.needs_review.total",
+                        attributes={"reason": "quality_gate"},
+                    )
+            reasons = quality.get("reasons")
+            if isinstance(reasons, list):
+                for reason in reasons:
+                    if isinstance(reason, str) and "citation" in reason.lower():
+                        telemetry.counter(
+                            "clio.citation.rejected.total",
+                            attributes={"reason": _citation_reason(reason)},
+                        )
     if name == "mark_analysis_for_review":
         telemetry.counter(
             "clio.analysis.needs_review.total",
             attributes={"reason": "quality_or_limit"},
         )
+
+
+def _citation_reason(reason: str) -> str:
+    lowered = reason.lower()
+    if "revision" in lowered or "commit" in lowered:
+        return "snapshot_mismatch"
+    if "not available" in lowered:
+        return "outside_snapshot"
+    return "missing_or_invalid"
 
 
 def observe_node(name: str, node: Node) -> Node:
