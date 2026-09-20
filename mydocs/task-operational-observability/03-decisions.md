@@ -82,3 +82,27 @@ Jaeger는 독립 trace UI로 빠르게 시작하기 좋지만 metric dashboard�
   간주하지 않는다.
 - 실제 배포 환경의 기존 observability backend가 정해지면 Tempo 고정을 해제하고 OTLP 호환성을
   기준으로 교체한다.
+
+## D4. log 수집 범위
+
+- 결정일: 2026-09-20
+- 결정: JSON stdout과 trace correlation까지만 구현한다.
+- 제외 범위: Loki 수집·저장·조회 구성
+
+### 근거
+
+- 이번 작업의 핵심 증거는 metric, trace와 안전한 workflow 종료다.
+- `trace_id`, `request_id`, `workflow_run_id`가 있는 구조화 log면 로컬 장애 조사 증거로 충분하다.
+- 별도 log 저장소의 설정·retention·resource 비용을 제외해 구현과 검증 범위를 통제한다.
+- stdout은 컨테이너·배포 환경에서 다른 log backend로 전달하기 쉬운 중립적인 출력 경계다.
+
+### 제외한 대안
+
+Loki를 사용하면 Grafana에서 metric → trace → log 이동을 한 화면에 구성할 수 있다. 그러나 현재
+목표에 필수적이지 않고 운영 stack과 dashboard 복잡도를 늘리므로 제외했다.
+
+### 제약과 재검토 조건
+
+- log schema와 민감정보 금지 규칙은 자동 테스트로 보호한다.
+- 실제 배포에서 중앙 log 검색이 필요하거나 stdout만으로 장애 자료를 보존하기 어려워지면 Loki
+  또는 기존 조직의 log backend를 별도 작업으로 추가한다.
