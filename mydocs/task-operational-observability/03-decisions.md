@@ -106,3 +106,27 @@ Loki를 사용하면 Grafana에서 metric → trace → log 이동을 한 화면
 - log schema와 민감정보 금지 규칙은 자동 테스트로 보호한다.
 - 실제 배포에서 중앙 log 검색이 필요하거나 stdout만으로 장애 자료를 보존하기 어려워지면 Loki
   또는 기존 조직의 log backend를 별도 작업으로 추가한다.
+
+## D5. trace ID 영속화
+
+- 결정일: 2026-09-20
+- 결정: trace ID를 업무 DB에 저장하지 않는다.
+- 저장 위치: Tempo와 JSON log
+
+### 근거
+
+- `workflow_run_id`를 trace attribute로 기록하면 workflow 실행에서 관련 trace를 검색할 수 있다.
+- 관측 backend의 retention과 업무 데이터 lifecycle을 분리할 수 있다.
+- `agent_workflow_runs` schema와 Server API 계약을 바꾸지 않아 변경 위험이 줄어든다.
+- trace가 만료되어도 workflow 상태·checkpoint·결과와 실패 code는 기존 DB에 남는다.
+
+### 제외한 대안
+
+workflow row에 trace ID를 저장하면 관리자 UI에서 trace로 직접 이동하기 쉽다. 그러나 현재 관리자
+trace 링크 요구가 없고 DB migration과 API 노출 범위가 늘어나므로 제외했다.
+
+### 제약과 재검토 조건
+
+- trace에는 `workflow_run_id`와 `request_id`를 high-cardinality attribute로만 기록한다.
+- 관리자 UI의 장기 trace 링크가 요구되거나 trace 검색이 반복적인 운영 부담이 되면 DB 저장을
+  별도 계약 변경으로 재검토한다.
