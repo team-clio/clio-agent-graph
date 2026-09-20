@@ -58,3 +58,27 @@ Spring workflow와 동일한 trace·dashboard로 연결하기 어렵고 운영 �
 - LangSmith를 켜더라도 end-to-end 상태·지연·실패 수치의 기준은 OpenTelemetry·Micrometer로 둔다.
 - 실제 운영에서 LangSmith의 평가·LLM 분석 기능이 핵심 요구가 되면 이중 전송 비용과 retention을
   별도로 결정한다.
+
+## D3. 로컬 trace backend
+
+- 결정일: 2026-09-20
+- 결정: Tempo를 trace backend로 사용하고 Grafana에서 조회한다.
+
+### 근거
+
+- Prometheus metric dashboard와 trace 조회를 Grafana 한 화면에서 연결할 수 있다.
+- 지연·실패 지표에서 관련 trace로 이동하는 장애 조사 흐름을 포트폴리오로 제시하기 좋다.
+- OpenTelemetry Collector의 OTLP 수신 구조를 그대로 유지해 Agent와 Server exporter를 단순화한다.
+- trace 전용 기능보다 metric과의 연계를 우선하는 이번 작업 목적에 맞는다.
+
+### 제외한 대안
+
+Jaeger는 독립 trace UI로 빠르게 시작하기 좋지만 metric dashboard와 조사 화면이 분리된다. 이번
+작업은 trace 자체보다 `이상 탐지 → 원인 trace 확인` 흐름을 증명하는 것이 목적이므로 제외했다.
+
+### 제약과 재검토 조건
+
+- local compose의 데이터 보존 기간은 개발·시연 목적의 짧은 값으로 두고 운영 retention으로
+  간주하지 않는다.
+- 실제 배포 환경의 기존 observability backend가 정해지면 Tempo 고정을 해제하고 OTLP 호환성을
+  기준으로 교체한다.
