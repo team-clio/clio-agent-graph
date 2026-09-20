@@ -1,3 +1,6 @@
+import json
+import logging
+
 from langchain_core.runnables import RunnableLambda
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.trace import TracerProvider
@@ -18,7 +21,7 @@ def _telemetry() -> tuple[ClioTelemetry, InMemorySpanExporter]:
     )
 
 
-def test_observed_workflow_continues_dispatched_trace(monkeypatch) -> None:
+def test_observed_workflow_continues_dispatched_trace(monkeypatch, caplog) -> None:
     telemetry, exporter = _telemetry()
     monkeypatch.setattr(
         "clio_agent_graph.observability.instrumentation.get_telemetry", lambda: telemetry
@@ -28,20 +31,26 @@ def test_observed_workflow_continues_dispatched_trace(monkeypatch) -> None:
         RunnableLambda(observe_node("search_code", lambda _state: {"result": {}})),
     )
 
-    workflow.invoke(
-        {
-            "request_type": "analyze_issue",
-            "telemetry": {
-                "traceparent": ("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01")
-            },
-        }
-    )
+    with caplog.at_level(logging.INFO, logger="clio.observability"):
+        workflow.invoke(
+            {
+                "request_type": "analyze_issue",
+                "telemetry": {
+                    "traceparent": (
+                        "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+                    )
+                },
+            }
+        )
 
     spans = {span.name: span for span in exporter.get_finished_spans()}
     workflow_span = spans["clio.workflow.analyze_issue"]
     node_span = spans["clio.node.search_code"]
     assert format(workflow_span.context.trace_id, "032x") == "4bf92f3577b34da6a3ce929d0e0e4736"
     assert node_span.parent.span_id == workflow_span.context.span_id
+    events = [json.loads(record.message) for record in caplog.records]
+    completed = next(event for event in events if event["event"] == "workflow.completed")
+    assert completed["trace_id"] == "4bf92f3577b34da6a3ce929d0e0e4736"
 
 
 def test_invalid_envelope_starts_a_new_trace(monkeypatch) -> None:

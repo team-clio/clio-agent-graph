@@ -169,14 +169,18 @@ def observe_workflow(name: str, runnable: Runnable[Any, dict[str, object]]) -> R
         started = time.perf_counter()
         attributes = _attributes(state)
         outcome = "success"
+        trace_id: str | None = None
         try:
             with telemetry.span(
                 f"clio.workflow.{name}",
                 attributes=attributes,
                 carrier=_carrier(state, telemetry),
             ):
-                telemetry.event("workflow.started", **_event_fields(state, name))
-                return await runnable.ainvoke(state)
+                try:
+                    telemetry.event("workflow.started", **_event_fields(state, name))
+                    return await runnable.ainvoke(state)
+                finally:
+                    trace_id = telemetry.trace_id()
         except Exception as error:
             outcome = "failure"
             telemetry.counter(
@@ -185,7 +189,7 @@ def observe_workflow(name: str, runnable: Runnable[Any, dict[str, object]]) -> R
             )
             raise
         finally:
-            _finish_workflow(telemetry, name, outcome, started, state)
+            _finish_workflow(telemetry, name, outcome, started, state, trace_id)
 
     return RunnableLambda(invoke, ainvoke)
 
@@ -198,14 +202,18 @@ def _invoke_workflow(
     telemetry = get_telemetry()
     started = time.perf_counter()
     outcome = "success"
+    trace_id: str | None = None
     try:
         with telemetry.span(
             f"clio.workflow.{name}",
             attributes=_attributes(state),
             carrier=_carrier(state, telemetry),
         ):
-            telemetry.event("workflow.started", **_event_fields(state, name))
-            return runnable.invoke(state)
+            try:
+                telemetry.event("workflow.started", **_event_fields(state, name))
+                return runnable.invoke(state)
+            finally:
+                trace_id = telemetry.trace_id()
     except Exception as error:
         outcome = "failure"
         telemetry.counter(
@@ -214,7 +222,7 @@ def _invoke_workflow(
         )
         raise
     finally:
-        _finish_workflow(telemetry, name, outcome, started, state)
+        _finish_workflow(telemetry, name, outcome, started, state, trace_id)
 
 
 def _finish_workflow(
@@ -223,6 +231,7 @@ def _finish_workflow(
     outcome: str,
     started: float,
     state: Mapping[str, object],
+    trace_id: str | None,
 ) -> None:
     attributes = {"request_type": name, "outcome": outcome}
     telemetry.counter("clio.workflow.total", attributes=attributes)
@@ -231,7 +240,12 @@ def _finish_workflow(
         time.perf_counter() - started,
         attributes=attributes,
     )
-    telemetry.event("workflow.completed", outcome=outcome, **_event_fields(state, name))
+    telemetry.event(
+        "workflow.completed",
+        trace_id=trace_id,
+        outcome=outcome,
+        **_event_fields(state, name),
+    )
 
 
 def _event_fields(state: Mapping[str, object], name: str) -> dict[str, object]:
