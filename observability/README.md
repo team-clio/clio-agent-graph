@@ -26,6 +26,10 @@
 
 ## 대시보드에서 보는 것
 
+카운터와 지연시간은 Grafana에서 선택한 시간 구간(`$__range`)을 기준으로 계산한다. Workflow
+완료·실패·지연은 상태 저장의 기준점인 `clio-server`를 사용하고, Node·LLM·Tool·Quality Gate는
+실제 실행 주체인 `clio-agent-graph`를 사용한다. 따라서 동일 Workflow를 양쪽에서 중복 집계하지 않는다.
+
 | 질문 | 지표 |
 | --- | --- |
 | 요청이 실제로 처리됐나? | `clio_workflow_total` |
