@@ -16,6 +16,7 @@ from opentelemetry.metrics import Meter
 from opentelemetry.propagators.textmap import Getter
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.metrics.view import ExplicitBucketHistogramAggregation, View
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -24,6 +25,27 @@ from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapProp
 
 logger = logging.getLogger("clio.observability")
 INSTRUMENTATION_NAME = "clio-agent-graph"
+DURATION_BUCKET_BOUNDARIES_SECONDS = (
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.5,
+    5.0,
+    10.0,
+    30.0,
+)
+DURATION_HISTOGRAMS = (
+    "clio.node.duration",
+    "clio.model.call.duration",
+    "clio.tool.call.duration",
+    "clio.agent.run.duration",
+    "clio.workflow.duration",
+)
 
 
 class _CarrierGetter(Getter[Mapping[str, str]]):
@@ -55,6 +77,19 @@ def _safe_attributes(attributes: Mapping[str, object] | None) -> dict[str, Any]:
         if isinstance(value, str | bool | int | float):
             safe[key] = value
     return safe
+
+
+def _duration_views() -> tuple[View, ...]:
+    """짧은 노드 실행부터 긴 모델 호출까지 p95를 과대평가하지 않도록 구간을 고정한다."""
+    return tuple(
+        View(
+            instrument_name=name,
+            aggregation=ExplicitBucketHistogramAggregation(
+                boundaries=DURATION_BUCKET_BOUNDARIES_SECONDS
+            ),
+        )
+        for name in DURATION_HISTOGRAMS
+    )
 
 
 class ClioTelemetry:
@@ -147,7 +182,11 @@ def _build_telemetry() -> ClioTelemetry:
         metric_readers.append(
             PeriodicExportingMetricReader(OTLPMetricExporter(endpoint=_signal_endpoint("metrics")))
         )
-    meter_provider = MeterProvider(resource=resource, metric_readers=metric_readers)
+    meter_provider = MeterProvider(
+        resource=resource,
+        metric_readers=metric_readers,
+        views=_duration_views(),
+    )
     return ClioTelemetry(
         tracer_provider.get_tracer(INSTRUMENTATION_NAME),
         meter_provider.get_meter(INSTRUMENTATION_NAME),

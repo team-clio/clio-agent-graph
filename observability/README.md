@@ -42,6 +42,8 @@
 | 작업이 멈춰 있나? | `clio_workflow_stuck`, `clio_workflow_running_age_max_seconds` |
 
 요청 ID와 workflow run ID는 metric label에 넣지 않는다. 상세 원인 추적은 같은 시간대의 trace에서 확인한다.
+Agent 지연시간 histogram은 5ms부터 30초까지 명시적 구간을 사용해 짧은 Node·Tool 실행의 p95가
+수 초로 과대 표시되지 않게 한다. 대시보드 제목·범례와 패널 설명은 포트폴리오 독자를 위해 한국어로 제공한다.
 
 ## 의도적 장애 검증
 

@@ -6,6 +6,11 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from pydantic import ValidationError
 
 from clio_agent_graph.observability import ClioTelemetry, TelemetryEnvelope
+from clio_agent_graph.observability.telemetry import (
+    DURATION_BUCKET_BOUNDARIES_SECONDS,
+    DURATION_HISTOGRAMS,
+    _duration_views,
+)
 
 
 def _telemetry() -> tuple[ClioTelemetry, InMemorySpanExporter]:
@@ -66,3 +71,11 @@ def test_attributes_ignore_payload_shaped_values() -> None:
     attributes = exporter.get_finished_spans()[0].attributes
     assert attributes["node"] == "search_code"
     assert "payload" not in attributes
+
+
+def test_duration_histograms_use_seconds_scale_buckets() -> None:
+    views = _duration_views()
+
+    assert len(views) == len(DURATION_HISTOGRAMS)
+    assert DURATION_BUCKET_BOUNDARIES_SECONDS[:5] == (0.005, 0.01, 0.025, 0.05, 0.1)
+    assert DURATION_BUCKET_BOUNDARIES_SECONDS[-2:] == (10.0, 30.0)
