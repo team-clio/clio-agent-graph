@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "experiment_date": "2026-09-27",
+  "case_count": 1,
+  "planned_repetitions_per_profile": 5,
+  "controlled_revisions": {
+    "agent": "47aa8ac32cf60ad379bc421f45fadb3a37bc7be9",
+    "server": "2a56794b5c3380f8514b4615eb5d943f298e8d42",
+    "fixture": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+    "evaluator": "1c70901"
+  },
+  "profiles": {
+    "one-shot": {
+      "successful_repetitions": 5,
+      "scores": [86.67, 100.0, 100.0, 100.0, 95.88],
+      "score_mean": 96.51,
+      "score_sample_stddev": 5.7828,
+      "score_min": 86.67,
+      "score_max": 100.0,
+      "durations_seconds": [30.624, 36.675, 28.736, 36.684, 30.736],
+      "duration_mean_seconds": 32.691,
+      "duration_sample_stddev_seconds": 3.7267,
+      "dimension_means": {
+        "verdict": 1.0,
+        "root_cause": 1.0,
+        "code_location": 0.9,
+        "evidence_quality": 0.989474,
+        "reproduction": 0.866667,
+        "uncertainty": 0.9
+      },
+      "first_attempt_successes": 3,
+      "eventual_completed_slots": 5,
+      "actual_attempts": 7,
+      "failed_attempts": 2
+    },
+    "full-clio": {
+      "successful_repetitions": 4,
+      "scores": [100.0, 96.67, 94.17, 94.17],
+      "score_mean": 96.2525,
+      "score_sample_stddev": 2.7623,
+      "score_min": 94.17,
+      "score_max": 100.0,
+      "durations_seconds": [32.61, 36.697, 34.741, 34.748],
+      "duration_mean_seconds": 34.699,
+      "duration_sample_stddev_seconds": 1.6693,
+      "dimension_means": {
+        "verdict": 1.0,
+        "root_cause": 1.0,
+        "code_location": 1.0,
+        "evidence_quality": 1.0,
+        "reproduction": 0.75,
+        "uncertainty": 0.75
+      },
+      "first_attempt_successes": 4,
+      "eventual_completed_slots": 4,
+      "actual_attempts": 8,
+      "failed_attempts": 4
+    }
+  },
+  "comparison": {
+    "score_mean_delta_full_clio": -0.2575,
+    "score_min_delta_full_clio": 7.5,
+    "score_stddev_delta_full_clio": -3.0205,
+    "duration_mean_delta_seconds_full_clio": 2.008,
+    "duration_mean_delta_percent_full_clio": 6.1424
+  },
+  "post_fix_validation": {
+    "revision": "080774bf7ce45c717f1b4568a5a5d293b345b3de",
+    "independent_runs": 4,
+    "repository_sync_successes": 4,
+    "analysis_passes": 4,
+    "scores": [94.17, 94.17, 86.67, 94.17],
+    "score_mean": 92.295,
+    "durations_seconds": [32.63, 36.56, 34.65, 36.62],
+    "duration_mean_seconds": 35.115
+  },
+  "known_failures": [
+    "Repository synchronization can fail when generated PCM knowledge contains a duplicate logical key.",
+    "Repository synchronization can fail when a generated update omits required type, title, or body fields.",
+    "Workflow verification is unavailable because the Server performs a locking read in a read-only transaction."
+  ]
+}

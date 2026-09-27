@@ -1,0 +1,330 @@
+{
+  "input": {
+    "id": "flag-value-changes-after-another-tenant-lookup",
+    "report": {
+      "title": "다른 테넌트 조회 후 기능 플래그 값이 잘못 반환됨",
+      "description": "같은 이름의 기능 플래그를 사용하는 두 테넌트가 서로 다른 값을 설정했습니다. 한 테넌트의 플래그를 조회한 직후 다른 테넌트의 플래그를 조회하면 두 번째 테넌트에 첫 번째 테넌트의 값이 반환됩니다.",
+      "steps_to_reproduce": [
+        "tenant-alpha의 new-checkout 플래그를 true로 저장합니다.",
+        "tenant-beta의 new-checkout 플래그를 false로 저장합니다.",
+        "tenant-alpha의 new-checkout을 조회합니다.",
+        "같은 프로세스에서 tenant-beta의 new-checkout을 조회합니다."
+      ],
+      "expected_behavior": "tenant-beta에 저장된 false가 반환되어야 합니다.",
+      "actual_behavior": "tenant-alpha에 저장된 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py"
+    }
+  },
+  "bug": {
+    "id": 1,
+    "project_id": 1,
+    "issue_id": 1,
+    "title": "다른 테넌트 조회 후 기능 플래그 값이 잘못 반환됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-27T14:11:53.733621Z",
+    "created_at": "2026-09-27T14:11:53.778962Z"
+  },
+  "analysis": {
+    "analysisResultId": 1,
+    "workflowRunId": 1,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "feature-flags-service는 멀티테넌트 기능 플래그 조회 라이브러리이며 ... 여러 용도가 아님(README 명시)",
+          "end_line": 20,
+          "location": "README.md:1-20",
+          "file_path": "README.md",
+          "source_id": "1",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "repository.py(테넌트별 플래그 저장소), cache.py(조회 결과 캐시), service.py(플래그 조회 서비스)로 구성된 멀티테넌트 조회 라이브러리 구조를 확인했다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_c2b0bf4a6eaa5872ad817ad1f149a067",
+          "repository_id": "1",
+          "source_revision": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "knowledge_revision": 5
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "is_enabled(tenant_id, flag_name): 캐시 조회 → 저장소 조회 → cache.set(tenant_id, flag_name, flag.enabled) → flag.enabled 반환",
+          "end_line": 26,
+          "location": "src/feature_flags/service.py:1-26",
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "1",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "서비스 조회 경로에서 캐시 히트 시 즉시 반환하고, 미스 시 저장소 조회 후 캐시에 저장하는 흐름을 확인했다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5af3778159aa5b83a0a1c57aa546162d",
+          "repository_id": "1",
+          "source_revision": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "knowledge_revision": 5
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "FeatureFlagCache._key는 flag_name.casefold()를 반환한다. FeatureFlagRepository는 (tenant_id, name.casefold()) 튜플을 키로 사용한다. tenant_id는 정규화 없이 그대로 키에 사용된다.",
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "1",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "캐시 키에 tenant_id가 포함되지 않고 저장소 키에만 테넌트 구분이 존재한다는 불일치 단서를 확인했다(구현 라인 미제공으로 확정 불가).",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_196ea5fa9c1151f1a9486b703b6218a5",
+          "repository_id": "1",
+          "source_revision": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "저장소는 dict[tuple[str, str], FeatureFlag] 형태이며 키는 (tenant_id, flag.name.casefold()) 튜플이다. save는 (flag.tenant_id, flag.name.casefold())로 upsert한다.",
+          "end_line": 21,
+          "location": "src/feature_flags/repository.py:1-21",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "1",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "저장소 계층은 테넌트별 키 격리를 유지하므로 테넌트 간 값 혼선의 원인일 가능성이 낮음을 확인했다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_f218667c534257fbb553592be24a6aec",
+          "repository_id": "1",
+          "source_revision": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "knowledge_revision": 3
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": "1",
+          "start_line": 3,
+          "evidence_id": "README.md:3",
+          "observation": "대상 저장소가 테넌트별 기능 플래그 조회 라이브러리임을 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "- `src/feature_flags/cache.py`: 조회 결과 캐시",
+          "end_line": 17,
+          "location": "README.md:17",
+          "file_path": "README.md",
+          "source_id": "1",
+          "start_line": 17,
+          "evidence_id": "README.md:17",
+          "observation": "cache.py가 조회 결과 캐시를 담당함을 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": "README.md:18",
+          "file_path": "README.md",
+          "source_id": "1",
+          "start_line": 18,
+          "evidence_id": "README.md:18",
+          "observation": "service.py가 플래그 조회 서비스 계층임을 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": "README.md:16",
+          "file_path": "README.md",
+          "source_id": "1",
+          "start_line": 16,
+          "evidence_id": "README.md:16",
+          "observation": "repository.py가 테넌트별 플래그 저장소임을 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "feature-flags-service는 테넌트별 기능 플래그 조회를 제공하는 Python 라이브러리이며 Clio Benchmark 분석 대상 fixture로 프로덕션 용도가 아니다.",
+          "verified": true
+        },
+        {
+          "fact": "저장소는 repository.py(테넌트별 플래그 저장소), cache.py(조회 결과 캐시), service.py(플래그 조회 서비스)로 구성된다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagService.is_enabled(tenant_id, flag_name)는 캐시에 값이 있으면(None이 아니면) 그 값을 반환하고, 캐시 미스 시에만 저장소에서 조회한다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagRepository는 (tenant_id, flag_name.casefold()) 튜플을 키로 사용해 플래그 이름은 대소문자 비구분, tenant_id는 대소문자 구분으로 저장/조회한다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagCache._key는 flag_name.casefold()만 반환한다고 지식 스냅샷에 기술되어 있어, 캐시 계층 키에 tenant_id 포함 여부는 제공된 근거만으로 확정할 수 없다.",
+          "verified": false
+        },
+        {
+          "fact": "제공된 코드 근거는 README.md 일부 라인만 포함하며 cache.py, service.py, repository.py의 실제 구현 라인은 제공되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "제출된 bug_context의 stack_trace는 비어 있고 raw_payload에 benchmark_case_id=flag-value-changes-after-another-tenant-lookup이 포함되어 있다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 1,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.45,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_5af3778159aa5b83a0a1c57aa546162d: is_enabled()가 캐시 미스 시 저장소 조회 후 cache.set(tenant_id, flag_name, flag.enabled)로 저장하고 이후 조회는 캐시 값을 그대로 반환",
+            "kn_196ea5fa9c1151f1a9486b703b6218a5: FeatureFlagCache._key는 flag_name.casefold()를 반환하는 반면, FeatureFlagRepository는 (tenant_id, name.casefold()) 튜플을 키로 사용 → 캐시 키에서 tenant_id가 누락될 개연성",
+            "kn_c2b0bf4a6eaa5872ad817ad1f149a067: cache.py(조회 결과 캐시)와 repository.py(테넌트별 저장소)가 별도 계층으로 분리되어 있어 테넌트 격리는 repository 계층에만 존재"
+          ],
+          "confidence": 0.6,
+          "hypothesis": "FeatureFlagCache가 조회 결과를 tenant_id와 flag_name의 복합 키가 아니라 flag_name 단독(casefold) 키로 저장해, tenant-alpha 조회 시 캐시에 저장된 값이 tenant-beta 조회 시 그대로 반환된다."
+        },
+        {
+          "evidence": [
+            "kn_5af3778159aa5b83a0a1c57aa546162d: FeatureFlagService가 FeatureFlagCache를 생성자로 주입받아 사용하며 캐시 히트 시 즉시 반환",
+            "kn_c2b0bf4a6eaa5872ad817ad1f149a067: 공개 API가 FeatureFlagCache, FeatureFlagRepository, FeatureFlagService 세 클래스로 구성됨"
+          ],
+          "confidence": 0.35,
+          "hypothesis": "FeatureFlagService가 단일 프로세스 전역 캐시 인스턴스를 테넌트 구분 없이 공유해, 서로 다른 테넌트 조회가 같은 캐시 항목을 재사용한다."
+        },
+        {
+          "evidence": [
+            "kn_196ea5fa9c1151f1a9486b703b6218a5: tenant_id는 정규화 없이 그대로 키에 사용되며 (tenant_id, name.casefold()) 튜플로 저장소 키가 구성됨 → 저장소 자체는 테넌트를 구분하므로 이 가설의 직접 근거는 약함"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "tenant_id 정규화/전달 누락으로 저장소 조회 키가 테넌트 간 동일해진다."
+        }
+      ],
+      "project_id": 1,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "cache.py, service.py, repository.py의 실제 구현 라인이 제공되지 않아 캐시 키 구조 가설이 확정되지 않았다(사실 5, confidence 0.45).",
+            "mitigation": "1단계에서 실제 소스 라인을 확보하기 전까지 코드 수정에 착수하지 않고, 재현 테스트로 가설을 실증한 뒤 수정한다."
+          },
+          {
+            "risk": "FeatureFlagService가 테넌트 구분 없는 전역 캐시 인스턴스를 공유하면(가설 2, confidence 0.35) 키 수정만으로는 문제가 완전히 해소되지 않을 수 있다.",
+            "mitigation": "캐시 키에 tenant_id를 포함한 뒤에도 재현 테스트가 실패하면 캐시 인스턴스 스코프를 추가로 점검하고, 테넌트별 캐시 분리 또는 키 격리 강화를 적용한다."
+          },
+          {
+            "risk": "캐시 키에 tenant_id를 추가하면 기존 키 규약과 불일치하는 캐시 항목이 남아 일시적으로 잘못된 값을 반환할 수 있다.",
+            "mitigation": "배포 시 캐시를 초기화하거나 키 스키마 버전을 반영해 기존 항목을 무효화한다."
+          },
+          {
+            "risk": "tenant_id 정규화 누락 가설(가설 3, confidence 0.2)이 실제로 존재할 경우 저장소 계층에서도 격리가 깨질 수 있다.",
+            "mitigation": "저장소 조회 키가 항상 전달된 tenant_id를 그대로 사용하는지 테스트로 검증하고, 정규화 도입 여부는 별도 판단한다."
+          },
+          {
+            "risk": "제출된 bug_context의 stack_trace가 비어 있어 실패 지점이 코드상 확인되지 않는다.",
+            "mitigation": "재현 테스트 결과와 raw_payload의 benchmark_case_id를 근거로 실패 지점을 특정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "실제 구현 소스 확보 및 캐시 키 구조 확인",
+            "details": "제공된 코드 근거는 README.md 일부 라인만 포함하므로, src/feature_flags/cache.py, src/feature_flags/service.py, src/feature_flags/repository.py의 실제 구현 라인을 확보한다. FeatureFlagCache._key 및 cache.set/get 호출부에서 tenant_id 포함 여부를 확인한다(지식 스냅샷 kn_196ea5fa9c1151f1a9486b703b6218a5에 따르면 _key는 flag_name.casefold()만 반환한다고 기술되어 있으나 구현 라인 미제공으로 미확정)."
+          },
+          {
+            "id": 2,
+            "action": "재현 테스트 작성",
+            "details": "benchmark_case_id=flag-value-changes-after-another-tenant-lookup 시나리오를 재현하는 테스트를 작성한다. 두 개의 tenant_id(예: tenant-alpha, tenant-beta)와 동일 flag_name에 대해 서로 다른 enabled 값을 저장한 뒤, alpha 조회 → beta 조회 순서로 is_enabled()를 호출하고 각 반환값이 저장소 값과 일치하는지 검증한다. 현재 (tenant_id, flag_name.casefold()) 격리는 repository.py에만 존재하므로 캐시 계층에서 교차 오염이 발생하는지 확인한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키에 tenant_id 포함 여부 결정 및 수정",
+            "details": "근본 원인 가설 1(캐시 키에 tenant_id 누락)이 재현되면 FeatureFlagCache._key가 (tenant_id, flag_name.casefold()) 튜플을 반환하도록 수정하여 repository.py의 키 규약과 일치시킨다. service.py의 cache.set(tenant_id, flag_name, flag.enabled) 호출부와 키 생성 로직의 시그니처 일관성을 확인한다. 가설 2(전역 캐시 인스턴스 공유)는 구조상 별도 원인이 아니므로 캐시 키 수정 후에도 문제가 남을 경우에만 캐시 인스턴스 스코프를 검토한다."
+          },
+          {
+            "id": 4,
+            "action": "회귀 테스트 실행 및 캐시 무효화 경로 검증",
+            "details": "수정 후 재현 테스트와 기존 테스트 스위트를 실행한다. 캐시 히트 시 즉시 반환 경로, 캐시 미스 시 저장소 조회 후 저장 경로, 동일 테넌트 재조회 시 캐시 히트 경로를 각각 검증한다."
+          },
+          {
+            "id": 5,
+            "action": "대소문자 비구분 및 테넌트 대소문자 구분 동작 유지 확인",
+            "details": "flag_name은 casefold로 대소문자 비구분, tenant_id는 대소문자 구분 규약(repository.py 검증됨)이 캐시 계층에서도 동일하게 유지되는지 테스트로 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "1",
+        "acceptance_criteria": [
+          "benchmark_case_id=flag-value-changes-after-another-tenant-lookup 시나리오에서 tenant-alpha 조회 직후 tenant-beta를 조회해도 각 테넌트에 저장된 enabled 값이 교차 오염 없이 반환된다.",
+          "FeatureFlagCache의 키가 tenant_id를 포함하도록 수정되어 FeatureFlagRepository의 (tenant_id, flag_name.casefold()) 키 규약과 일치한다.",
+          "동일 테넌트·동일 flag_name 재조회 시 캐시 히트가 유지되어 저장소 재조회가 발생하지 않는다.",
+          "flag_name 대소문자 비구분(casefold)과 tenant_id 대소문자 구분 동작이 캐시 계층에서도 repository.py와 동일하게 유지된다.",
+          "수정 후 기존 테스트 스위트 전체가 통과하고 재현 테스트가 회귀 테스트로 편입된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 72,
+            "rationale": "멀티테넌트 환경에서 동일한 flag_name(new-checkout)을 사용하는 모든 테넌트가 영향을 받는다. 캐시 키에서 tenant_id가 누락되면 같은 프로세스에서 동일 플래그명을 조회하는 모든 테넌트로 오염이 전파되어, 기능 플래그의 핵심 전제인 테넌트 격리가 붕괴된다. 다만 대상이 Clio Benchmark fixture 라이브러리(프로덕션 용도 아님)이므로 실제 서비스 중단 범위는 제한적이다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 78,
+            "rationale": "크래시나 데이터 손상은 아니지만 테넌트 A의 플래그 값이 테넌트 B에 노출·적용되는 데이터 격리 위반(cross-tenant leakage)이다. 기능 플래그 오작동으로 잘못된 릴리스/체크아웃 경로가 활성화될 수 있고, 테넌트 설정의 기밀성·정확성이 훼손된다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "버그 컨텍스트의 4단계 재현 절차(alpha 저장 → beta 저장 → alpha 조회 → 같은 프로세스에서 beta 조회)로 결정론적으로 100% 재현된다. 발생 조건이 '같은 프로세스에서 두 테넌트를 연속 조회'라는 일반적 사용 패턴에 해당해 실무에서도 상시 발생한다. stack_trace는 비어 있어 별도 진단 단서는 없다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 62,
+            "rationale": "테넌트별로 프로세스를 분리하거나 매 조회마다 캐시를 무효화해야 하는 등 우회가 가능하기는 하나 코드 수정 없이는 근본 회피가 어렵고, 캐시 계층(cache.py)의 키 설계를 바꾸는 패치가 필요하다. 라이브러리 사용자 입장에서 서비스 코드를 우회 구현해야 하므로 우회 비용이 높은 편이다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 70,
+            "rationale": "feature-flags-service는 결제/체크아웃(new-checkout) 플래그를 다루는 라이브러리로, 플래그 판정 오류는 결제·핵심 경로 노출에 직접 연결된다. 기능 플래그는 릴리스 제어·기능 게이팅의 신뢰 기반이므로 격리 결함은 핵심 경로 신뢰성에 영향을 준다. 다만 fixture 저장소라는 점을 감안해 다소 감점했다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "핵심 문제는 캐시 계층에서 테넌트 격리가 깨지는 크로스 테넌트 값 오염이다. FeatureFlagRepository는 (tenant_id, flag_name.casefold()) 튜플 키로 테넌트를 정상 분리한다는 근거(kn_f218667c534257fbb553592be24a6aec)가 있으나, FeatureFlagCache._key는 flag_name.casefold()만 반환한다는 지식 근거(kn_196ea5fa9c1151f1a9486b703b6218a5)가 있어 캐시 키에서 tenant_id가 누락됐을 개연성이 높다(최상위 가설 confidence 0.6). 이 경우 FeatureFlagService.is_enabled()가 캐시 히트 시 즉시 반환하므로(kn_5af3778159aa5b83a0a1c57aa546162d) alpha 조회 결과가 beta 조회에 그대로 재사용된다. 4단계 절차로 100% 결정론적으로 재현되며(data leakage이자 cross-tenant isolation 위반), 기능 플래그는 결제/체크아웃 등 핵심 경로 게이팅에 쓰이므로 비즈니스 영향이 크다. 다만 대상이 Clio Benchmark 분석용 fixture 라이브러리로 프로덕션이 아니라는 사실(fact 검증됨)과, 제공된 코드 근거가 README 부분 라인뿐이라 cache.py/service.py/repository.py 실제 구현 라인이 없어 근본 원인이 확정되지 않았다는 점(confidence 0.45, 캐시 키의 tenant_id 포함 여부는 미확정)을 감안해 P0(85-100)까지는 올리지 않고 P1 높음(70-84) 구간의 74로 산정한다. 기능적으로는 특정 핵심 기능이 부분 차단되고 우회가 어려운 수준이나, 데이터 손실이나 전면 장애는 아니며 격리 위반의 실제 노출 범위가 fixture 특성상 제한적이므로 P0 긴급에는 해당하지 않는다.",
+        "risk_score": 74
+      },
+      "workflow_run_id": 1
+    }
+  },
+  "workflow": {
+    "verification_status": "unavailable",
+    "verification_error": "Clio Server returned HTTP 500: {\"timestamp\":\"2026-09-27T14:12:26.360Z\",\"status\":500,\"error\":\"Internal Server Error\",\"path\":\"/internal-api/v1/projects/1/workflow-runs/1\"}"
+  },
+  "efficiency": {
+    "duration_seconds": 32.629
+  }
+}

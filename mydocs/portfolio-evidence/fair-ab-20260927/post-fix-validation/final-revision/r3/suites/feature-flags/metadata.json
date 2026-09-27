@@ -1,0 +1,31 @@
+{
+  "suite": "feature-flags",
+  "repository": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+  "commit_sha": "ab6286c0b43e92a57a26ace27e1cc46d4de4a009",
+  "project": {
+    "id": 1,
+    "name": "benchmark-20260927T141241Z-39687ccc-feature-flags",
+    "description": "Clio Benchmark run 20260927T141241Z-39687ccc",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-27T14:12:42.759761Z",
+    "updatedAt": "2026-09-27T14:12:42.759761Z"
+  },
+  "clio_repository": {
+    "id": 1,
+    "projectId": 1,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "main",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-27T14:13:09.457397Z",
+    "createdAt": "2026-09-27T14:12:42.897416Z",
+    "updatedAt": "2026-09-27T14:13:09.458370Z"
+  }
+}
