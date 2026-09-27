@@ -40,7 +40,7 @@ class DocumentKnowledgePipeline:
         knowledge_model: KnowledgeModel,
         parser: MarkdownSourceParser | None = None,
         source_store: DocumentSourceStore | None = None,
-        max_generation_attempts: int = 2,
+        max_generation_attempts: int = 3,
     ) -> None:
         if max_generation_attempts < 1:
             raise ValueError("max_generation_attempts must be at least 1")
@@ -166,10 +166,11 @@ class DocumentKnowledgePipeline:
         topics: Sequence[ExtractedTopic],
         source_units: Sequence[DocumentSourceUnit],
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
+        validation_errors: Sequence[str] = (),
     ) -> KnowledgeChangeDraftSet:
         """LLM 변경안이 현재 snapshot과 실제 검색 후보만 가리키도록 검증한다."""
 
-        errors: tuple[str, ...] = ()
+        errors = tuple(validation_errors)
         for attempt in range(self._max_generation_attempts):
             try:
                 draft_set = await self._knowledge_model.generate_change_set(

@@ -106,7 +106,10 @@ class LangChainKnowledgeModel:
             task=(
                 "Create one atomic Knowledge change set. Use create for a new durable topic, "
                 "update only for a supplied candidate, and no_change when a candidate already "
-                "contains the same knowledge. Cite only supplied source_unit_ids."
+                "contains the same knowledge. Every create logical_key must be unique. Every "
+                "update must repeat the candidate knowledge_type and title and provide a complete "
+                "replacement body_markdown. Cite only supplied source_unit_ids. If validation "
+                "errors from a previous attempt are present, correct every reported error."
             ),
             payload=payload,
             response_model=KnowledgeChangeDraftSet,

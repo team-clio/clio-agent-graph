@@ -2,6 +2,10 @@
 
 from collections.abc import Mapping, Sequence
 
+from clio_agent_graph.context.pcm.errors import (
+    KnowledgeModelOutputError,
+    PCMValidationError,
+)
 from clio_agent_graph.context.pcm.knowledge_model import KnowledgeModel
 from clio_agent_graph.context.pcm.models import (
     ExtractedTopic,
@@ -35,7 +39,7 @@ class RepositoryKnowledgePipeline(DocumentKnowledgePipeline):
         writer: ProjectContextWriter,
         knowledge_model: KnowledgeModel,
         repositories: GitRepositoryService,
-        max_generation_attempts: int = 2,
+        max_generation_attempts: int = 3,
     ) -> None:
         super().__init__(
             reader=reader,
@@ -70,24 +74,38 @@ class RepositoryKnowledgePipeline(DocumentKnowledgePipeline):
         )
         _validate_topics(topics, source_units)
         candidates = await self._retrieve_candidates(snapshot, topics.topics)
-        drafts = await self._generate_repository_changes(
-            command=command,
-            snapshot=snapshot,
-            topics=topics.topics,
-            source_units=source_units,
-            candidates=candidates,
-        )
-        change_set = _trusted_repository_change_set(
-            command=command,
-            snapshot=snapshot,
-            source_units=source_units,
-            candidates=candidates,
-            draft_set=drafts,
-        )
-        return await self._writer.apply_knowledge_changes(
-            project_id=command.project_id,
-            change_set=change_set,
-        )
+        commit_errors: tuple[str, ...] = ()
+        for attempt in range(self._max_generation_attempts):
+            drafts = await self._generate_repository_changes(
+                command=command,
+                snapshot=snapshot,
+                topics=topics.topics,
+                source_units=source_units,
+                candidates=candidates,
+                validation_errors=commit_errors,
+            )
+            change_set = _trusted_repository_change_set(
+                command=command,
+                snapshot=snapshot,
+                source_units=source_units,
+                candidates=candidates,
+                draft_set=drafts,
+            )
+            try:
+                return await self._writer.apply_knowledge_changes(
+                    project_id=command.project_id,
+                    change_set=change_set,
+                )
+            except PCMValidationError as exc:
+                if attempt + 1 == self._max_generation_attempts:
+                    raise KnowledgeModelOutputError(
+                        f"Repository Knowledge commit failed validation: {exc}"
+                    ) from exc
+                commit_errors = (str(exc),)
+                snapshot = await self._reader.resolve_snapshot(command.project_id)
+                snapshot = snapshot.model_copy(update={"repository_revisions": revisions})
+                candidates = await self._retrieve_candidates(snapshot, topics.topics)
+        raise AssertionError("unreachable")
 
     async def _generate_repository_changes(
         self,
@@ -97,6 +115,7 @@ class RepositoryKnowledgePipeline(DocumentKnowledgePipeline):
         topics: Sequence[ExtractedTopic],
         source_units: Sequence[RepositorySourceUnit],
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
+        validation_errors: Sequence[str] = (),
     ) -> KnowledgeChangeDraftSet:
         # The shared generator already validates source IDs, candidate targets, and base revision.
         return await self._generate_changes(
@@ -105,6 +124,7 @@ class RepositoryKnowledgePipeline(DocumentKnowledgePipeline):
             topics=topics,
             source_units=source_units,  # type: ignore[arg-type]
             candidates=candidates,
+            validation_errors=validation_errors,
         )
 
 

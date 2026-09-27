@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from clio_agent_graph.context.pcm import InMemoryPCM
+from clio_agent_graph.context.pcm.errors import PCMValidationError
 from clio_agent_graph.context.pcm.models import (
     ExtractedTopic,
     IngestRepositoryCommand,
@@ -61,6 +62,10 @@ def create_repository(path: Path) -> tuple[str, str]:
 
 class FakeRepositoryKnowledgeModel:
     seen_units: Sequence[RepositorySourceUnit] = ()
+    received_validation_errors: list[tuple[str, ...]]
+
+    def __init__(self) -> None:
+        self.received_validation_errors = []
 
     async def extract_topics(
         self,
@@ -93,6 +98,7 @@ class FakeRepositoryKnowledgeModel:
         candidates: Mapping[str, Sequence[KnowledgeCandidate]],
         validation_errors: Sequence[str] = (),
     ) -> KnowledgeChangeDraftSet:
+        self.received_validation_errors.append(tuple(validation_errors))
         candidate = next(iter(candidates["permissions-component"]), None)
         common = {
             "knowledge_type": "component",
@@ -192,3 +198,55 @@ async def test_repository_pipeline_creates_and_updates_provenanced_knowledge(
     assert document.sources[0].source_id == "backend"
     assert document.sources[0].source_revision == second
     assert document.sources[0].locator["path"] == "permissions.py"
+
+
+@pytest.mark.asyncio
+async def test_repository_pipeline_retries_commit_validation_with_model_feedback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    first, _ = create_repository(source)
+    repositories = GitRepositoryService(tmp_path / "repository-data")
+    pcm = InMemoryPCM()
+    model = FakeRepositoryKnowledgeModel()
+    pipeline = RepositoryKnowledgePipeline(
+        reader=pcm,
+        writer=pcm,
+        knowledge_model=model,  # type: ignore[arg-type]
+        repositories=repositories,
+    )
+    await repositories.register(
+        project_id="PROJECT-1",
+        repository_id="backend",
+        source_uri=str(source),
+        branch="main",
+        commit=first,
+    )
+    original_apply = pcm.apply_knowledge_changes
+    apply_attempts = 0
+
+    async def flaky_apply(*, project_id: str, change_set: object) -> object:
+        nonlocal apply_attempts
+        apply_attempts += 1
+        if apply_attempts == 1:
+            raise PCMValidationError("generated logical key already exists")
+        return await original_apply(project_id=project_id, change_set=change_set)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(pcm, "apply_knowledge_changes", flaky_apply)
+
+    result = await pipeline.ingest(
+        IngestRepositoryCommand(
+            event_id="REPOSITORY-EVENT-1",
+            project_id="PROJECT-1",
+            repository_id="backend",
+            commit=first,
+        )
+    )
+
+    assert result.pcm_revision == 1
+    assert apply_attempts == 2
+    assert model.received_validation_errors == [
+        (),
+        ("generated logical key already exists",),
+    ]
