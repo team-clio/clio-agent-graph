@@ -152,6 +152,37 @@ def test_issue_analysis_skips_exploration_when_search_found_backend_code(
     assert {tool.name for tool in agent.analysis_agent.tools} == set()
 
 
+@pytest.mark.parametrize(
+    ("profile", "expected_tools"),
+    [
+        ("one-shot", set()),
+        ("repository-agent", {"explore_codebase"}),
+    ],
+)
+def test_benchmark_profile_exposes_only_its_allowed_tools(
+    monkeypatch: pytest.MonkeyPatch, profile: str, expected_tools: set[str]
+) -> None:
+    services = _services()
+    monkeypatch.setattr(issue_analysis, "get_application_services", lambda: services)
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"backend": "a" * 40},
+    )
+
+    agent = issue_analysis._agent(
+        {
+            "project_id": "PROJECT-1",
+            "request_id": "REQ-1",
+            "analysis_profile": profile,
+            "context_snapshot": snapshot.model_dump(mode="json"),
+        }
+    )
+
+    assert {tool.name for tool in agent.analysis_agent.tools} == expected_tools
+
+
 @pytest.mark.asyncio
 async def test_analysis_limit_preserves_initial_repository_search_evidence(
     monkeypatch: pytest.MonkeyPatch,

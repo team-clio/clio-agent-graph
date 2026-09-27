@@ -57,6 +57,7 @@ class ReportProcessingState(TypedDict, total=False):
 class IssueAnalysisState(TypedDict, total=False):
     """고정 snapshot을 사용하는 이슈 분석 상태."""
 
+    analysis_profile: str
     context_snapshot: dict[str, Any]
     analysis_queries: dict[str, list[str]]
     document_evidence: list[dict[str, Any]]

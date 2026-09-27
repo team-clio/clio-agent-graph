@@ -12,6 +12,10 @@ from clio_agent_graph.context.tools.repository import RepositoryToolFactory
 from clio_agent_graph.runtime.agent_runtime import AgentExecutionLimitError
 from clio_agent_graph.workflows.analysis.risk import map_risk_to_priority
 from clio_agent_graph.workflows.orchestration.agents.issue_analysis import IssueAnalysisAgent
+from clio_agent_graph.workflows.orchestration.analysis_profile import (
+    AnalysisProfile,
+    AnalysisProfileSettings,
+)
 from clio_agent_graph.workflows.orchestration.nodes import report_processing
 from clio_agent_graph.workflows.orchestration.state import ClioState
 from clio_agent_graph.workflows.reporting.normalization.models import NormalizeReportInput
@@ -25,7 +29,8 @@ def _agent(state: ClioState) -> IssueAnalysisAgent:
     services = get_application_services()
     snapshot = _snapshot(state)
     tools = []
-    if not state.get("code_evidence"):
+    profile = AnalysisProfile(state.get("analysis_profile", AnalysisProfile.FULL_CLIO.value))
+    if profile is AnalysisProfile.FULL_CLIO and not state.get("code_evidence"):
         tools = PCMToolFactory(services.pcm).create_tools(
             PCMToolContext(
                 project_id=state["project_id"],
@@ -33,15 +38,19 @@ def _agent(state: ClioState) -> IssueAnalysisAgent:
                 snapshot=snapshot,
             )
         )
-    if services.repositories is not None and not _has_actionable_code_evidence(
-        state.get("code_evidence")
-    ):
+    should_explore_repository = profile is AnalysisProfile.REPOSITORY_AGENT or (
+        profile is AnalysisProfile.FULL_CLIO
+        and not _has_actionable_code_evidence(state.get("code_evidence"))
+    )
+    if services.repositories is not None and should_explore_repository:
         repository_tools = RepositoryToolFactory(services.repositories)
         tools.extend(CodebaseExplorationToolFactory(repository_tools).create_tools(snapshot))
     return IssueAnalysisAgent(tools)
 
 
-async def prepare_analysis(state: ClioState) -> dict[str, object]:
+async def prepare_analysis(
+    state: ClioState, settings: AnalysisProfileSettings | None = None
+) -> dict[str, object]:
     """Graph가 project 범위와 PCM revision을 한 번 선택해 이후 호출에 고정한다."""
 
     if state.get("context_snapshot"):
@@ -90,13 +99,22 @@ async def prepare_analysis(state: ClioState) -> dict[str, object]:
             "history": [state["issue_id"]],
         },
     )
-    return {
+    selected = settings or AnalysisProfileSettings()
+    update: dict[str, object] = {
+        "analysis_profile": selected.profile.value,
         "context_snapshot": snapshot.model_dump(mode="json"),
         "bug_context": bug_context or {},
         "normalized_report": normalized_report,
         "analysis_queries": queries,
         "completed_nodes": {"prepare_analysis": True},
     }
+    if not selected.topology.quality_gate:
+        update["quality_result"] = {
+            "status": "not_evaluated",
+            "reasons": [],
+            "warnings": ["Quality Gate is disabled for this benchmark profile."],
+        }
+    return update
 
 
 async def search_documents(state: ClioState) -> dict[str, object]:
@@ -302,6 +320,7 @@ def save_analysis(state: ClioState) -> dict[str, object]:
         "result": {
             "action": "analysis_completed",
             "issue_id": state["issue_id"],
+            "analysis_profile": state.get("analysis_profile", AnalysisProfile.FULL_CLIO.value),
             "analysis": state["issue_analysis"],
             "resolution_plan": state["resolution_plan"],
             "quality": state["quality_result"],
@@ -327,6 +346,7 @@ def mark_analysis_for_review(state: ClioState) -> dict[str, object]:
         "result": {
             "action": "analysis_needs_review",
             "issue_id": state["issue_id"],
+            "analysis_profile": state.get("analysis_profile", AnalysisProfile.FULL_CLIO.value),
             "quality": state["quality_result"],
         },
         "completed_nodes": {"mark_analysis_for_review": True},
