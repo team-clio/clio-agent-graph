@@ -107,9 +107,12 @@ class LangChainKnowledgeModel:
                 "Create one atomic Knowledge change set. Use create for a new durable topic, "
                 "update only for a supplied candidate, and no_change when a candidate already "
                 "contains the same knowledge. Every create logical_key must be unique. Every "
-                "update must repeat the candidate knowledge_type and title and provide a complete "
-                "replacement body_markdown. Cite only supplied source_unit_ids. If validation "
-                "errors from a previous attempt are present, correct every reported error."
+                "create must omit target_knowledge_id. Every update must use target_knowledge_id, "
+                "omit logical_key, repeat the candidate knowledge_type and title, and provide a "
+                "complete replacement body_markdown. Every no_change must use target_knowledge_id "
+                "and omit logical_key, body_markdown, and source_unit_ids. Cite only supplied "
+                "source_unit_ids. If validation errors from a previous attempt are present, "
+                "correct every reported error."
             ),
             payload=payload,
             response_model=KnowledgeChangeDraftSet,

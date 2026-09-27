@@ -251,6 +251,20 @@ class KnowledgeChangeDraft(PCMModel):
     related_knowledge_ids: tuple[str, ...] = ()
     reason: str = Field(min_length=1)
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_exclusive_identifiers(cls, value: object) -> object:
+        """모델이 함께 보낸 비활성 식별자만 제거하고 필수값은 추론하지 않는다."""
+
+        if not isinstance(value, dict):
+            return value
+        normalized = dict(value)
+        if normalized.get("operation") == "create":
+            normalized.pop("target_knowledge_id", None)
+        elif normalized.get("operation") in {"update", "no_change"}:
+            normalized.pop("logical_key", None)
+        return normalized
+
     @model_validator(mode="after")
     def validate_operation_contract(self) -> "KnowledgeChangeDraft":
         """LLM 변경안이 create/update/no-change 의미를 일관되게 표현하게 한다."""

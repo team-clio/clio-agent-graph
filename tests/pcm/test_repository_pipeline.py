@@ -60,6 +60,24 @@ def create_repository(path: Path) -> tuple[str, str]:
     return first, git(path, "rev-parse", "HEAD")
 
 
+def test_change_draft_normalizes_only_inactive_identifier() -> None:
+    draft = KnowledgeChangeDraft.model_validate(
+        {
+            "operation": "update",
+            "logical_key": "model-added-but-inactive",
+            "target_knowledge_id": "kn_existing",
+            "knowledge_type": "component",
+            "title": "Permissions component",
+            "body_markdown": "Complete replacement body.",
+            "source_unit_ids": ["repository-unit-1"],
+            "reason": "The source changed.",
+        }
+    )
+
+    assert draft.logical_key is None
+    assert draft.target_knowledge_id == "kn_existing"
+
+
 class FakeRepositoryKnowledgeModel:
     seen_units: Sequence[RepositorySourceUnit] = ()
     received_validation_errors: list[tuple[str, ...]]
