@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "run_id": "20260918T034719Z-07c9de7c",
+  "profile": "one-shot",
+  "repetition": 1,
+  "case_count": 1,
+  "mean_score": 77.92,
+  "pass_rate": 1.0,
+  "dimensions": {
+    "verdict": 1.0,
+    "root_cause": 0.75,
+    "code_location": 0.5,
+    "evidence_quality": 1.0,
+    "reproduction": 0.6666666666666666,
+    "uncertainty": 0.5
+  },
+  "efficiency": {
+    "mean_duration_seconds": 30.645
+  },
+  "cases": [
+    {
+      "score": 77.92,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.75,
+          "method": "deterministic",
+          "rationale": "3/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "16/16 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.645,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags",
+      "case_id": "flag-value-changes-after-another-tenant-lookup"
+    }
+  ]
+}

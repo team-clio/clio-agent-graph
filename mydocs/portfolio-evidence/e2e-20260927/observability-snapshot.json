@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-09-27T12:55:00Z",
+  "scope": "Grafana selected local window; benchmark plus controlled follow-up workflows",
+  "source_image": "../50-final-operational-dashboard.png",
+  "portfolio_crop": "../51-final-operational-dashboard-crop.png",
+  "displayed": {
+    "completed_workflows": 3,
+    "workflow_failure_rate_percent": 0,
+    "workflow_p95_seconds": 30,
+    "stuck_workflows": 0,
+    "successful_model_calls": 6,
+    "quality_gate_passed": 1,
+    "quality_gate_retry": 0,
+    "quality_gate_needs_review": 0,
+    "citation_rejections": 0,
+    "review_required": 0
+  },
+  "interpretation_warning": "Model-call and token panels cover the selected dashboard window, not only the scored benchmark run."
+}
