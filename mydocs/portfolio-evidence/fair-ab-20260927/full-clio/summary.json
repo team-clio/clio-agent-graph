@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "run_id": "20260927T133133Z-44c9ad63",
+  "profile": "full-clio",
+  "repetition": 1,
+  "case_count": 1,
+  "mean_score": 100.0,
+  "pass_rate": 1.0,
+  "dimensions": {
+    "verdict": 1.0,
+    "root_cause": 1.0,
+    "code_location": 1.0,
+    "evidence_quality": 1.0,
+    "reproduction": 1.0,
+    "uncertainty": 1.0
+  },
+  "efficiency": {
+    "mean_duration_seconds": 32.61
+  },
+  "cases": [
+    {
+      "score": 100.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "22/22 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 32.61,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags",
+      "case_id": "flag-value-changes-after-another-tenant-lookup"
+    }
+  ]
+}

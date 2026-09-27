@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "run_id": "20260927T132925Z-9ed9bc10",
+  "status": "completed",
+  "created_at": "2026-09-27T13:29:25.107104Z",
+  "updated_at": "2026-09-27T13:30:22.828128Z",
+  "config": {
+    "schema_version": 1,
+    "clio": {
+      "agent": {
+        "repository": "https://github.com/team-clio/clio-agent-graph.git",
+        "revision": "47aa8ac32cf60ad379bc421f45fadb3a37bc7be9"
+      },
+      "server": {
+        "repository": "https://github.com/team-clio/clio-server.git",
+        "revision": "2a56794b5c3380f8514b4615eb5d943f298e8d42"
+      }
+    },
+    "runtime": {
+      "server_url": "http://127.0.0.1:8080/",
+      "startup_timeout_seconds": 300,
+      "case_timeout_seconds": 1800,
+      "poll_interval_seconds": 2.0
+    },
+    "evaluation": {
+      "pass_threshold": 70.0,
+      "weights": {
+        "verdict": 20.0,
+        "root_cause": 35.0,
+        "code_location": 15.0,
+        "evidence_quality": 15.0,
+        "reproduction": 10.0,
+        "uncertainty": 5.0
+      }
+    },
+    "experiment": {
+      "profile": "one-shot",
+      "repetition": 1
+    },
+    "environment": {
+      "agent": {
+        "CLIO_ANALYSIS_PROFILE": "one-shot",
+        "CLIO_BENCHMARK_MODE": "true"
+      },
+      "server": {}
+    },
+    "secret_names": {
+      "agent": [],
+      "server": []
+    },
+    "suites": [
+      {
+        "name": "feature-flags",
+        "repository": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+        "revision": "main",
+        "oracle": "/private/tmp/clio-benchmark-comparison/oracles/feature-flags.json"
+      }
+    ]
+  },
+  "case_count": 1,
+  "error": null
+}
