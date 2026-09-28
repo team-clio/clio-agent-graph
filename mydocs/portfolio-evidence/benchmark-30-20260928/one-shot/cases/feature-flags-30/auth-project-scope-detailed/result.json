@@ -1,0 +1,483 @@
+{
+  "input": {
+    "id": "auth-project-scope-detailed",
+    "report": {
+      "title": "다른 프로젝트의 owner가 플래그 수정 가능",
+      "description": "역할만 확인하고 사용자 프로젝트와 대상 프로젝트의 일치 여부를 확인하지 않습니다.",
+      "steps_to_reproduce": [
+        "project-alpha owner를 준비합니다.",
+        "project-beta 플래그 편집 권한을 확인합니다."
+      ],
+      "expected_behavior": "프로젝트가 다르므로 거부되어야 합니다.",
+      "actual_behavior": "owner 역할만으로 허용됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_owner_cannot_edit_another_project"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 10,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-project-scope-detailed",
+    "description": "Clio Benchmark feature-flags-30: auth-project-scope-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:44:02.160338Z",
+    "updatedAt": "2026-09-28T07:44:02.160338Z"
+  },
+  "clio_repository": {
+    "id": 10,
+    "projectId": 10,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:44:38.709736Z",
+    "createdAt": "2026-09-28T07:44:02.177137Z",
+    "updatedAt": "2026-09-28T07:44:38.710167Z"
+  },
+  "bug": {
+    "id": 10,
+    "project_id": 10,
+    "issue_id": 10,
+    "title": "다른 프로젝트의 owner가 플래그 수정 가능",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:44:40.597810Z",
+    "created_at": "2026-09-28T07:44:40.605772Z"
+  },
+  "analysis": {
+    "analysisResultId": 10,
+    "workflowRunId": 10,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "10:README.md:3",
+          "observation": "저장소 10은 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리로 설명된다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "10",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "10:README.md:16",
+          "observation": "테넌트별 플래그 저장소가 repository.py로 문서화되어 있다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "10",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "10:README.md:18",
+          "observation": "플래그 조회 서비스가 service.py로 문서화되어 있다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "10",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+          "end_line": 19,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 19,
+          "evidence_id": "10:README.md:19",
+          "observation": "authorization.py가 관리자 권한과 프로젝트 범위 검사를 담당하는 파일로 문서화되어 있다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "10",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 제목은 \"다른 프로젝트의 owner가 플래그 수정 가능\"이며, 설명에는 역할만 확인하고 사용자 프로젝트와 대상 프로젝트의 일치 여부를 확인하지 않는다고 명시되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거는 저장소 10의 README.md 내용으로, 저장소가 \"테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리\"임을 설명한다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 `src/feature_flags/authorization.py`를 \"관리자 권한과 프로젝트 범위 검사\"를 담당하는 파일로 문서화하고 있다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 `src/feature_flags/repository.py`를 \"테넌트별 플래그 저장소\", `src/feature_flags/service.py`를 \"플래그 조회 서비스\"로 문서화하고 있다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 근거에는 authorization.py, service.py, repository.py의 실제 소스 코드와 이력(history)이 포함되어 있지 않다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 10,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.45,
+      "hypotheses": [
+        {
+          "evidence": [
+            "버그 설명: \"역할만 확인하고 사용자 프로젝트와 대상 프로젝트의 일치 여부를 확인하지 않습니다.\"",
+            "README.md line 19: `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사"
+          ],
+          "confidence": 0.65,
+          "hypothesis": "권한 검사 함수가 사용자의 역할(role)만 평가하고, 대상 플래그가 속한 프로젝트와 사용자가 속한 프로젝트의 일치 여부(프로젝트 범위 검사)를 수행하지 않아 project-alpha owner가 project-beta 플래그 수정 권한을 얻게 된다."
+        },
+        {
+          "evidence": [
+            "README.md line 18: `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "README.md line 16: `src/feature_flags/repository.py`: 테넌트별 플래그 저장소"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "프로젝트 범위 검사가 authorization.py에 문서상 존재하나, service.py 또는 repository.py 호출 경로에서 프로젝트 식별자를 전달/전파하지 않아 검사가 실질적으로 우회된다."
+        }
+      ],
+      "project_id": 10,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "프로젝트 범위 검사를 추가하면서 정상적으로 허용되어야 하는 동일 프로젝트 요청이 과도하게 차단될 수 있다.",
+            "mitigation": "동일 프로젝트 owner 허용과 타 프로젝트 owner 거부를 모두 다루는 회귀 테스트를 함께 작성해 허용/거부 경계를 명시적으로 검증한다."
+          },
+          {
+            "risk": "제공된 근거에 실제 소스 코드와 이력이 없어, service.py/repository.py의 프로젝트 식별자 전달 경로가 추정에 기반할 수 있다.",
+            "mitigation": "구현 전 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 실제 소스를 확인하여 가설 2(식별자 미전파)를 검증하거나 기각한다."
+          },
+          {
+            "risk": "시그니처 변경으로 기존 호출부가 깨지거나 다른 호출 경로에 영향이 발생할 수 있다.",
+            "mitigation": "호출부를 전수 검색하여 갱신하고, 변경 전후 전체 테스트 스위트를 실행해 회귀를 확인한다."
+          },
+          {
+            "risk": "프로젝트 식별자가 누락된 경우의 처리 정책이 불명확하면 검사가 다시 우회될 수 있다.",
+            "mitigation": "식별자 누락 시 fail-closed(거부) 기본 정책을 적용하고 이를 테스트로 고정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 권한 검사 경로를 재현하고 확인한다",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 저장소 10을 체크아웃하고, project-alpha의 owner 사용자가 project-beta 플래그를 수정할 수 있는지 재현 테스트를 작성해 결함을 확정한다. 대상 파일: src/feature_flags/authorization.py, src/feature_flags/service.py, src/feature_flags/repository.py."
+          },
+          {
+            "id": 2,
+            "action": "authorization.py의 권한 검사 로직을 분석한다",
+            "details": "src/feature_flags/authorization.py에서 사용자 role 평가만 수행하고 프로젝트 범위(user_project vs target_flag_project) 일치 여부를 검사하지 않는 지점을 식별한다."
+          },
+          {
+            "id": 3,
+            "action": "service.py/repository.py 호출 경로에서 프로젝트 식별자 전달 여부를 확인한다",
+            "details": "플래그 조회 시 사용자 프로젝트 식별자와 대상 플래그 프로젝트 식별자가 src/feature_flags/service.py를 거쳐 src/feature_flags/repository.py까지 전달/전파되는지 추적하여, 식별자 미전달로 검사가 우회되는 경로가 있는지 확정한다."
+          },
+          {
+            "id": 4,
+            "action": "프로젝트 범위 검사를 권한 검사 함수에 구현한다",
+            "details": "authorization.py의 관리자 권한 검사에 프로젝트 범위 일치 검사(사용자 프로젝트 != 대상 플래그 프로젝트이면 거부)를 추가하고, 필요한 식별자를 service.py/repository.py에서 시그니처에 명시적으로 전달하도록 수정한다."
+          },
+          {
+            "id": 5,
+            "action": "회귀 테스트를 추가하고 검증한다",
+            "details": "동일 프로젝트 owner의 정상 수정 허용, 타 프로젝트 owner의 수정 거부, 프로젝트 식별자 누락 시 거부(fail-closed) 케이스를 테스트로 추가하고 전체 테스트 스위트를 실행한다."
+          },
+          {
+            "id": 6,
+            "action": "README.md 문서를 갱신한다",
+            "details": "README.md line 19의 authorization.py 설명(관리자 권한과 프로젝트 범위 검사)과 실제 구현이 일치하는지 확인하고, 변경된 시그니처/검사 규칙을 반영한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "10",
+        "acceptance_criteria": [
+          "project-alpha owner 사용자가 project-beta 플래그를 수정하려 하면 권한 거부로 실패한다.",
+          "동일 프로젝트 owner가 자신의 프로젝트 플래그를 수정하면 정상 허용된다.",
+          "authorization.py의 권한 검사가 사용자 프로젝트와 대상 플래그 프로젝트의 일치 여부를 검사한다.",
+          "service.py/repository.py 호출 경로에서 프로젝트 식별자가 누락되지 않고 전달/전파된다.",
+          "프로젝트 식별자가 누락된 경우 fail-closed로 거부된다.",
+          "추가된 재현/회귀 테스트와 기존 전체 테스트 스위트가 모두 통과한다.",
+          "README.md의 authorization.py 설명이 실제 구현과 일치한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 70,
+            "rationale": "테넌트별 기능 플래그 서비스 전반의 권한 경계가 무력화될 수 있다. project-alpha owner가 project-beta의 플래그를 수정할 수 있으므로, 프로젝트 간 격리를 신뢰하는 모든 테넌트/프로젝트의 플래그 변경 흐름이 영향을 받는다. 다만 영향 대상이 'owner 역할 보유자'로 한정되고 플래그 조회 전체 장애는 아니므로 70점으로 산정."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 75,
+            "rationale": "크래시나 데이터 손실은 아니지만 크로스 테넌트 권한 상승(Authorization Bypass)에 해당하는 보안 취약점이다. 다른 프로젝트의 기능 플래그를 임의로 변경하면 해당 프로젝트의 릴리스/기능 노출 제어가 조작될 수 있어 무결성 침해로 이어진다. 확정된 익스플로잇 경로가 재현 절차로 제시되어 있어 75점."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "재현 절차가 명확하다: 1) project-alpha owner 준비, 2) project-beta 플래그 편집 권한 확인. 역할만 검사하고 프로젝트 일치 여부를 보지 않는다는 결정적 결함이므로 owner 역할을 가진 사용자라면 재현율이 사실상 100%에 가깝다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 80,
+            "rationale": "사용자 측 우회 수단이 없다. 권한 검사 로직 자체가 잘못되어 있어 상위 레이어에서 막을 방법이 없고, 근본적으로 authorization.py의 프로젝트 범위 검사 누락을 수정하거나 서비스 호출 경로에서 프로젝트 식별자를 강제해야만 해결된다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 80,
+            "rationale": "프로젝트/테넌트 격리는 멀티테넌트 SaaS의 핵심 신뢰 경계이며, 권한 상승은 계정·결제급 임계성에 준한다. 기능 플래그는 배포 제어·점진적 롤아웃·킬 스위치로 쓰이므로 무단 변경은 서비스 동작 변경으로 직결된다. 단, 데이터 유출이나 서비스 전면 중단은 아니므로 80점."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "권한 검사 함수가 사용자 역할(owner)만 평가하고 대상 플래그가 속한 프로젝트와 사용자 프로젝트의 일치 여부(프로젝트 범위 검사)를 수행하지 않아, project-alpha owner가 project-beta 플래그를 수정할 수 있는 크로스 테넌트 권한 상승 취약점이다. 보안 익스플로잇 경로가 재현 절차로 명확히 제시되어 있고(재현성 매우 높음), 사용자 측 우회가 불가능하며, 프로젝트 격리는 멀티테넌트 서비스의 핵심 신뢰 경계에 해당해 비즈니스 임계성이 높다. 다만 크래시/데이터 유실이나 서비스 전면 중단이 아니고 owner 역할 보유자로 익스플로잇이 제한되므로 P0(85-100)가 아닌 P1 높음 밴드에 해당한다. 다만 근거로 제시된 코드는 README.md 문서 수준이고 authorization.py/service.py/repository.py의 실제 소스와 이력이 없어, 프로젝트 식별자 전파 여부 등 세부 경로는 미확정(confidence 0.45)이라는 점을 감안해 78점으로 산정한다. 권고: authorization.py의 프로젝트 범위 검사 강제, service.py/repository.py 호출 경로에서 project_id 전파 검증, 회귀 테스트 추가.",
+        "risk_score": 78
+      },
+      "workflow_run_id": 10
+    }
+  },
+  "workflow": {
+    "id": 10,
+    "project_id": 10,
+    "request_id": "process-bug-10",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 제목은 \"다른 프로젝트의 owner가 플래그 수정 가능\"이며, 설명에는 역할만 확인하고 사용자 프로젝트와 대상 프로젝트의 일치 여부를 확인하지 않는다고 명시되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거는 저장소 10의 README.md 내용으로, 저장소가 \"테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리\"임을 설명한다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 `src/feature_flags/authorization.py`를 \"관리자 권한과 프로젝트 범위 검사\"를 담당하는 파일로 문서화하고 있다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 `src/feature_flags/repository.py`를 \"테넌트별 플래그 저장소\", `src/feature_flags/service.py`를 \"플래그 조회 서비스\"로 문서화하고 있다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 근거에는 authorization.py, service.py, repository.py의 실제 소스 코드와 이력(history)이 포함되어 있지 않다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "10",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "10:README.md:3",
+            "observation": "저장소 10은 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리로 설명된다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "10",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "10:README.md:16",
+            "observation": "테넌트별 플래그 저장소가 repository.py로 문서화되어 있다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "10",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "10:README.md:18",
+            "observation": "플래그 조회 서비스가 service.py로 문서화되어 있다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "10",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+            "end_line": 19,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 19,
+            "evidence_id": "10:README.md:19",
+            "observation": "authorization.py가 관리자 권한과 프로젝트 범위 검사를 담당하는 파일로 문서화되어 있다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "10",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.45,
+        "evidence_counts": {
+          "code": 5,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "버그 설명: \"역할만 확인하고 사용자 프로젝트와 대상 프로젝트의 일치 여부를 확인하지 않습니다.\"",
+              "README.md line 19: `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사"
+            ],
+            "confidence": 0.65,
+            "hypothesis": "권한 검사 함수가 사용자의 역할(role)만 평가하고, 대상 플래그가 속한 프로젝트와 사용자가 속한 프로젝트의 일치 여부(프로젝트 범위 검사)를 수행하지 않아 project-alpha owner가 project-beta 플래그 수정 권한을 얻게 된다."
+          },
+          {
+            "evidence": [
+              "README.md line 18: `src/feature_flags/service.py`: 플래그 조회 서비스",
+              "README.md line 16: `src/feature_flags/repository.py`: 테넌트별 플래그 저장소"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "프로젝트 범위 검사가 authorization.py에 문서상 존재하나, service.py 또는 repository.py 호출 경로에서 프로젝트 식별자를 전달/전파하지 않아 검사가 실질적으로 우회된다."
+          }
+        ]
+      },
+      "issue_id": "10",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "프로젝트 범위 검사를 추가하면서 정상적으로 허용되어야 하는 동일 프로젝트 요청이 과도하게 차단될 수 있다.",
+            "mitigation": "동일 프로젝트 owner 허용과 타 프로젝트 owner 거부를 모두 다루는 회귀 테스트를 함께 작성해 허용/거부 경계를 명시적으로 검증한다."
+          },
+          {
+            "risk": "제공된 근거에 실제 소스 코드와 이력이 없어, service.py/repository.py의 프로젝트 식별자 전달 경로가 추정에 기반할 수 있다.",
+            "mitigation": "구현 전 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 실제 소스를 확인하여 가설 2(식별자 미전파)를 검증하거나 기각한다."
+          },
+          {
+            "risk": "시그니처 변경으로 기존 호출부가 깨지거나 다른 호출 경로에 영향이 발생할 수 있다.",
+            "mitigation": "호출부를 전수 검색하여 갱신하고, 변경 전후 전체 테스트 스위트를 실행해 회귀를 확인한다."
+          },
+          {
+            "risk": "프로젝트 식별자가 누락된 경우의 처리 정책이 불명확하면 검사가 다시 우회될 수 있다.",
+            "mitigation": "식별자 누락 시 fail-closed(거부) 기본 정책을 적용하고 이를 테스트로 고정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 권한 검사 경로를 재현하고 확인한다",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 저장소 10을 체크아웃하고, project-alpha의 owner 사용자가 project-beta 플래그를 수정할 수 있는지 재현 테스트를 작성해 결함을 확정한다. 대상 파일: src/feature_flags/authorization.py, src/feature_flags/service.py, src/feature_flags/repository.py."
+          },
+          {
+            "id": 2,
+            "action": "authorization.py의 권한 검사 로직을 분석한다",
+            "details": "src/feature_flags/authorization.py에서 사용자 role 평가만 수행하고 프로젝트 범위(user_project vs target_flag_project) 일치 여부를 검사하지 않는 지점을 식별한다."
+          },
+          {
+            "id": 3,
+            "action": "service.py/repository.py 호출 경로에서 프로젝트 식별자 전달 여부를 확인한다",
+            "details": "플래그 조회 시 사용자 프로젝트 식별자와 대상 플래그 프로젝트 식별자가 src/feature_flags/service.py를 거쳐 src/feature_flags/repository.py까지 전달/전파되는지 추적하여, 식별자 미전달로 검사가 우회되는 경로가 있는지 확정한다."
+          },
+          {
+            "id": 4,
+            "action": "프로젝트 범위 검사를 권한 검사 함수에 구현한다",
+            "details": "authorization.py의 관리자 권한 검사에 프로젝트 범위 일치 검사(사용자 프로젝트 != 대상 플래그 프로젝트이면 거부)를 추가하고, 필요한 식별자를 service.py/repository.py에서 시그니처에 명시적으로 전달하도록 수정한다."
+          },
+          {
+            "id": 5,
+            "action": "회귀 테스트를 추가하고 검증한다",
+            "details": "동일 프로젝트 owner의 정상 수정 허용, 타 프로젝트 owner의 수정 거부, 프로젝트 식별자 누락 시 거부(fail-closed) 케이스를 테스트로 추가하고 전체 테스트 스위트를 실행한다."
+          },
+          {
+            "id": 6,
+            "action": "README.md 문서를 갱신한다",
+            "details": "README.md line 19의 authorization.py 설명(관리자 권한과 프로젝트 범위 검사)과 실제 구현이 일치하는지 확인하고, 변경된 시그니처/검사 규칙을 반영한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "10",
+        "acceptance_criteria": [
+          "project-alpha owner 사용자가 project-beta 플래그를 수정하려 하면 권한 거부로 실패한다.",
+          "동일 프로젝트 owner가 자신의 프로젝트 플래그를 수정하면 정상 허용된다.",
+          "authorization.py의 권한 검사가 사용자 프로젝트와 대상 플래그 프로젝트의 일치 여부를 검사한다.",
+          "service.py/repository.py 호출 경로에서 프로젝트 식별자가 누락되지 않고 전달/전파된다.",
+          "프로젝트 식별자가 누락된 경우 fail-closed로 거부된다.",
+          "추가된 재현/회귀 테스트와 기존 전체 테스트 스위트가 모두 통과한다.",
+          "README.md의 authorization.py 설명이 실제 구현과 일치한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:44:41.265551Z",
+    "completed_at": "2026-09-28T07:45:04.222548Z",
+    "created_at": "2026-09-28T07:44:41.250024Z",
+    "updated_at": "2026-09-28T07:45:04.223849Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 24.324
+  }
+}

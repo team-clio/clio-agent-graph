@@ -1,0 +1,459 @@
+{
+  "input": {
+    "id": "target-country-case-short",
+    "report": {
+      "title": "kr 사용자가 KR 타기팅에서 제외",
+      "description": "국가 코드 비교가 표기 대소문자에 민감합니다.",
+      "steps_to_reproduce": [
+        "KR 규칙과 kr 요청을 비교합니다."
+      ],
+      "expected_behavior": "일치해야 합니다.",
+      "actual_behavior": "불일치로 판정됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_country_matching_is_case_insensitive"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 20,
+    "name": "benchmark-20260928T073431Z-64ae54ac-target-country-case-short",
+    "description": "Clio Benchmark feature-flags-30: target-country-case-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:54:33.812089Z",
+    "updatedAt": "2026-09-28T07:54:33.812089Z"
+  },
+  "clio_repository": {
+    "id": 20,
+    "projectId": 20,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:55:13.211246Z",
+    "createdAt": "2026-09-28T07:54:33.823294Z",
+    "updatedAt": "2026-09-28T07:55:13.211515Z"
+  },
+  "bug": {
+    "id": 20,
+    "project_id": 20,
+    "issue_id": 20,
+    "title": "kr 사용자가 KR 타기팅에서 제외",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:55:14.128718Z",
+    "created_at": "2026-09-28T07:55:14.135893Z"
+  },
+  "analysis": {
+    "analysisResultId": 20,
+    "workflowRunId": 20,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 21,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-20-README.md-21-1",
+          "observation": "README.md 라인 21은 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 구현 위치로 안내한다. 이는 대소문자 민감 비교가 존재할 후보 모듈을 지시하지만, 실제 비교 연산 코드는 제공되지 않았다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "20",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 21,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-20-README.md-21-2",
+          "observation": "동일 라인 21에 대한 중복 제공 근거로, 동일한 모듈 경로 정보만 포함한다(추가 정보 없음).",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "20",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 21,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-20-README.md-21-3",
+          "observation": "세 번째 중복 근거로, 동일한 `src/feature_flags/targeting.py` 경로 정보만 확인된다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "20",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 20의 제목은 'kr 사용자가 KR 타기팅에서 제외'이며, 오류 유형은 ReportedBehaviorMismatch로 보고되었다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 설명에는 '국가 코드 비교가 표기 대소문자에 민감합니다'라고 명시되어 있고, 재현 절차는 'KR 규칙과 kr 요청을 비교합니다'이다.",
+          "verified": true
+        },
+        {
+          "fact": "기대 동작은 '일치해야 합니다', 실제 동작은 '불일치로 판정됩니다'로 기록되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "raw_payload의 benchmark_case_id는 'target-country-case-short'이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거는 repository_id 20, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 라인 21 내용뿐이며, 이는 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 설명한다.",
+          "verified": true
+        },
+        {
+          "fact": "이슈 제공 근거에는 문서 0건, 이력 0건이며, `src/feature_flags/targeting.py`의 실제 비교 코드(라인 내용)는 포함되어 있지 않다.",
+          "verified": true
+        },
+        {
+          "fact": "그러므로 대소문자 정규화 누락이 실제로 어떤 함수/라인에서 발생하는지는 제공된 근거만으로 확정할 수 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 20,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.45,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md 라인 21이 국가·사용자 타기팅 구현 위치를 `src/feature_flags/targeting.py`로 명시",
+            "버그 설명: '국가 코드 비교가 표기 대소문자에 민감합니다'",
+            "재현 절차: KR 규칙과 kr 요청 비교 시 불일치 판정"
+          ],
+          "confidence": 0.55,
+          "hypothesis": "국가 코드 비교가 대소문자를 구분(case-sensitive)하여 'KR' 규칙과 'kr' 요청이 서로 다른 값으로 취급되고, 타기팅 평가에서 불일치로 판정된다. README가 가리키는 `src/feature_flags/targeting.py`의 국가 타기팅 비교 로직에 대소문자 정규화(예: upper()/casefold)가 누락되었을 가능성이 있다."
+        },
+        {
+          "evidence": [
+            "README.md 라인 21의 타기팅 모듈 설명",
+            "오류 유형: ReportedBehaviorMismatch"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "국가 코드 정규화가 요청 파싱 단계(사용자 속성 로딩)에서만 적용되고 규칙 정의 파싱 단계에는 적용되지 않아, 양쪽 표현이 비대칭적으로 비교된다."
+        }
+      ],
+      "project_id": 20,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에는 `src/feature_flags/targeting.py`의 실제 비교 코드가 포함되어 있지 않아(문서 0건, 이력 0건, README 라인 21 안내만 존재), 대소문자 정규화 누락이 실제로 어떤 함수/라인에서 발생하는지 확정할 수 없다.",
+            "mitigation": "1단계에서 코드를 직접 열람해 문제 지점을 확정하기 전에는 수정을 진행하지 않는다. 해당 모듈에서 국가 비교 로직이 발견되지 않으면 가설을 기각하고 조사 범위를 확장한다."
+          },
+          {
+            "risk": "정규화를 규칙 정의 파싱 단계에만 적용하면 요청 파싱 단계와 여전히 비대칭이 남아(가설 2) 동일 증상이 재발할 수 있다.",
+            "mitigation": "양측을 동일 정규화 지점에서 처리하도록 강제하고, 파싱·비교 두 경로 각각에 대한 테스트 케이스를 모두 둔다."
+          },
+          {
+            "risk": "정규화 범위를 잘못 넓히면 대소문자만 다른 것이 아닌 코드(예: 향후 도입될 지역/언어 코드)가 동일시되어 오탐 타기팅이 발생할 수 있다.",
+            "mitigation": "완전 불일치 코드가 불일치로 유지되는지 검증하는 회귀 케이스를 수용 기준에 포함하고, 정규화를 국가 코드 필드에만 한정한다."
+          },
+          {
+            "risk": "국가 코드 정규화가 성능 민감 경로(요청마다 실행되는 타기팅 평가)에 추가되어 지연이 증가할 수 있다.",
+            "mitigation": "규칙 정의 파싱 시점에 1회 정규화하는 방식을 우선 검토하고, 요청 단위 반복 정규화가 필요한 경우 마이크로 벤치마크로 영향도를 측정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 20, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 `src/feature_flags/targeting.py` 파일 전체를 열어 국가 타기팅(country targeting) 비교 연산 라인을 식별한다.",
+            "details": "README.md 라인 21이 지시하는 모듈(`src/feature_flags/targeting.py`)이 유일한 후보 위치다. 규칙(country rule) 정의 파싱 경로와 요청 사용자 속성 로딩 경로를 각각 추적하여, 두 경로 중 어디에 국가 코드 정규화(예: upper()/casefold)가 누락되었는지 라인 단위로 기록한다. 실제 비교 연산 코드는 제공된 근거에 포함되지 않았으므로 코드 열람으로만 확정한다."
+          },
+          {
+            "id": 2,
+            "action": "재현 테스트를 먼저 작성하여 현재 동작을 고정한다.",
+            "details": "benchmark_case_id 'target-country-case-short'에 대응하는 재현 케이스로, 국가 규칙을 'KR'로 정의하고 요청 사용자 국가를 'kr'로 설정했을 때 현재 '불일치로 판정됨'이 재현되는지 확인하는 테스트를 추가한다. 이 시점에는 실패(또는 현재 동작 재현)가 기대 결과다."
+          },
+          {
+            "id": 3,
+            "action": "양측(규칙 정의, 요청 사용자 속성) 국가 코드 비교에 동일한 대소문자 정규화를 적용한다.",
+            "details": "가설 2에서 지적된 비대칭(요청 파싱 단계에만 정규화 적용)을 제거하기 위해, 비교 직전 양쪽 값을 동일한 정규화 함수(예: upper() 또는 casefold)로 통일한다. 규칙 파싱 시점 정규화와 비교 시점 정규화 중 한 방식을 선택하되, 비대칭이 남지 않도록 어느 한 곳에서 반드시 양측을 함께 처리한다."
+          },
+          {
+            "id": 4,
+            "action": "수정 후 재현 테스트와 함께 기존 국가 타기팅 테스트 스위트 전체를 실행하여 회귀 여부를 확인한다.",
+            "details": "'KR'/'kr', 'US'/'us' 등 표기 변형 쌍과 완전 불일치 코드(예: 'KR' vs 'US') 케이스를 모두 포함한다. 완전 불일치가 일치로 오판되지 않는지(과잉 정규화 방지)를 함께 검증한다."
+          },
+          {
+            "id": 5,
+            "action": "변경 파일과 diff를 근거로 기록하고 이슈 20의 상태를 갱신한다.",
+            "details": "변경 대상 파일 경로, 정규화 적용 지점(함수/라인), 테스트 실행 결과를 이슈에 남긴다. 후속 확인 항목으로 대소문자 외 국가 코드 표기 변형(공백, 하이픈 등) 처리 여부를 별도 티켓으로 분리할지 검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "acceptance_criteria": [
+          "`src/feature_flags/targeting.py`에서 국가 코드 비교 지점이 라인 단위로 특정되고, 해당 비교에 대소문자 정규화가 적용(또는 양측 정규화로 대체)되어 있어야 한다.",
+          "재현 케이스 benchmark_case_id 'target-country-case-short'에서 국가 규칙 'KR'과 요청 사용자 'kr'이 '일치해야 합니다'라는 기대 동작대로 일치로 판정된다.",
+          "'KR'/'kr', 'US'/'us' 등 대소문자만 다른 쌍은 모두 일치로 판정되고, 'KR'/'US'처럼 실제로 다른 국가 코드는 불일치로 유지된다.",
+          "국가 타기팅 관련 기존 테스트 스위트가 모두 통과하고, 신규 재현 테스트가 수정 전 실패(또는 현재 동작 재현)·수정 후 통과를 보인다.",
+          "이슈 20에 변경 파일, 정규화 적용 지점, 테스트 실행 결과가 기록되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 55,
+            "rationale": "국가 타기팅은 `src/feature_flags/targeting.py` 기반의 핵심 플래그 평가 경로로, 대소문자 표기가 다른 모든 국가 코드(예: 'kr' 요청 vs 'KR' 규칙)에 해당하는 사용자 집단이 잘못 제외될 수 있다. 다만 영향이 국가 타기팅 규칙 전반이 아닌 대소문자 불일치 케이스에 한정되므로 중간 수준으로 평가한다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 55,
+            "rationale": "크래시나 데이터 손실/손상은 없고, 기능이 조용히 잘못 판정되는 논리 오류(ReportedBehaviorMismatch)다. 보안 노출은 아니나 타기팅 오판정으로 사용자에게 잘못된 기능 노출/차단이 발생할 수 있어 중간 수준이다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 70,
+            "rationale": "재현 절차가 'KR 규칙과 kr 요청을 비교합니다'로 단순하며 결정적(deterministic)이다. 대소문자 표기가 다른 요청은 항상 불일치로 판정되므로 재현성이 높고 benchmark_case_id 'target-country-case-short' 형태의 케이스에서 상시 발생한다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 60,
+            "rationale": "규칙 정의를 'KR'로 통일하거나 요청 국가 코드를 대문자로 정규화하는 우회가 이론상 가능하지만, 클라이언트/규칙 작성자가 표기를 통제해야 하며 코드 레벨 수정 전까지는 운영 부담이 크다. README 근거만으로는 정규화 위치가 확정되지 않아 우회 경로도 불확실하다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 50,
+            "rationale": "기능 플래그 타기팅은 결제·계정 자체의 핵심 경로는 아니지만 릴리스 제어와 사용자 세그먼트 노출을 좌우한다. 국가 단위 타기팅 오류는 특정 국가 사용자 전체의 기능 접근에 영향을 줄 수 있어 중간 수준으로 본다."
+          },
+          {
+            "name": "근거 확실성 (evidence_confidence)",
+            "score": 45,
+            "rationale": "제공 근거는 README.md 라인 21(동일 내용 3건 중복)뿐이며 `src/feature_flags/targeting.py`의 실제 비교 연산 코드가 없다. 코드 근거 3건 모두 중복이고 문서 0건, 이력 0건이라 대소문자 정규화 누락의 실제 위치와 범위를 확정할 수 없어 신뢰도가 낮다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "국가 코드 비교가 대소문자를 구분하여 'KR' 규칙과 'kr' 요청이 불일치로 판정되는 논리 오류(ReportedBehaviorMismatch)로, 결정적이며 재현성이 높다. 크래시·데이터 손실·보안 노출은 없으나 국가 타기팅 규칙이 조용히 오판정되어 특정 국가 사용자 집단이 잘못 제외될 수 있다. 핵심 플래그 평가 경로(`src/feature_flags/targeting.py`)에 해당하나 결제·계정 같은 최상위 임계 경로는 아니며, 규칙 표기 통일 등 우회가 이론상 가능하다. 다만 제공 근거가 README.md 라인 21의 중복 3건뿐이고 실제 비교 코드가 없어 근본 원인 위치를 확정할 수 없어 신뢰도가 낮다. 종합적으로 '부분 기능 결함, 우회 존재, 다수 사용자 영향 가능' 구간인 P2 보통(50-69)에 해당하여 58점으로 산정한다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 20
+    }
+  },
+  "workflow": {
+    "id": 20,
+    "project_id": 20,
+    "request_id": "process-bug-20",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 20의 제목은 'kr 사용자가 KR 타기팅에서 제외'이며, 오류 유형은 ReportedBehaviorMismatch로 보고되었다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 설명에는 '국가 코드 비교가 표기 대소문자에 민감합니다'라고 명시되어 있고, 재현 절차는 'KR 규칙과 kr 요청을 비교합니다'이다.",
+            "verified": true
+          },
+          {
+            "fact": "기대 동작은 '일치해야 합니다', 실제 동작은 '불일치로 판정됩니다'로 기록되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "raw_payload의 benchmark_case_id는 'target-country-case-short'이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거는 repository_id 20, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 라인 21 내용뿐이며, 이는 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 설명한다.",
+            "verified": true
+          },
+          {
+            "fact": "이슈 제공 근거에는 문서 0건, 이력 0건이며, `src/feature_flags/targeting.py`의 실제 비교 코드(라인 내용)는 포함되어 있지 않다.",
+            "verified": true
+          },
+          {
+            "fact": "그러므로 대소문자 정규화 누락이 실제로 어떤 함수/라인에서 발생하는지는 제공된 근거만으로 확정할 수 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 21,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-20-README.md-21-1",
+            "observation": "README.md 라인 21은 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 구현 위치로 안내한다. 이는 대소문자 민감 비교가 존재할 후보 모듈을 지시하지만, 실제 비교 연산 코드는 제공되지 않았다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "20",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 21,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-20-README.md-21-2",
+            "observation": "동일 라인 21에 대한 중복 제공 근거로, 동일한 모듈 경로 정보만 포함한다(추가 정보 없음).",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "20",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 21,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-20-README.md-21-3",
+            "observation": "세 번째 중복 근거로, 동일한 `src/feature_flags/targeting.py` 경로 정보만 확인된다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "20",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.45,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md 라인 21이 국가·사용자 타기팅 구현 위치를 `src/feature_flags/targeting.py`로 명시",
+              "버그 설명: '국가 코드 비교가 표기 대소문자에 민감합니다'",
+              "재현 절차: KR 규칙과 kr 요청 비교 시 불일치 판정"
+            ],
+            "confidence": 0.55,
+            "hypothesis": "국가 코드 비교가 대소문자를 구분(case-sensitive)하여 'KR' 규칙과 'kr' 요청이 서로 다른 값으로 취급되고, 타기팅 평가에서 불일치로 판정된다. README가 가리키는 `src/feature_flags/targeting.py`의 국가 타기팅 비교 로직에 대소문자 정규화(예: upper()/casefold)가 누락되었을 가능성이 있다."
+          },
+          {
+            "evidence": [
+              "README.md 라인 21의 타기팅 모듈 설명",
+              "오류 유형: ReportedBehaviorMismatch"
+            ],
+            "confidence": 0.2,
+            "hypothesis": "국가 코드 정규화가 요청 파싱 단계(사용자 속성 로딩)에서만 적용되고 규칙 정의 파싱 단계에는 적용되지 않아, 양쪽 표현이 비대칭적으로 비교된다."
+          }
+        ]
+      },
+      "issue_id": "20",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에는 `src/feature_flags/targeting.py`의 실제 비교 코드가 포함되어 있지 않아(문서 0건, 이력 0건, README 라인 21 안내만 존재), 대소문자 정규화 누락이 실제로 어떤 함수/라인에서 발생하는지 확정할 수 없다.",
+            "mitigation": "1단계에서 코드를 직접 열람해 문제 지점을 확정하기 전에는 수정을 진행하지 않는다. 해당 모듈에서 국가 비교 로직이 발견되지 않으면 가설을 기각하고 조사 범위를 확장한다."
+          },
+          {
+            "risk": "정규화를 규칙 정의 파싱 단계에만 적용하면 요청 파싱 단계와 여전히 비대칭이 남아(가설 2) 동일 증상이 재발할 수 있다.",
+            "mitigation": "양측을 동일 정규화 지점에서 처리하도록 강제하고, 파싱·비교 두 경로 각각에 대한 테스트 케이스를 모두 둔다."
+          },
+          {
+            "risk": "정규화 범위를 잘못 넓히면 대소문자만 다른 것이 아닌 코드(예: 향후 도입될 지역/언어 코드)가 동일시되어 오탐 타기팅이 발생할 수 있다.",
+            "mitigation": "완전 불일치 코드가 불일치로 유지되는지 검증하는 회귀 케이스를 수용 기준에 포함하고, 정규화를 국가 코드 필드에만 한정한다."
+          },
+          {
+            "risk": "국가 코드 정규화가 성능 민감 경로(요청마다 실행되는 타기팅 평가)에 추가되어 지연이 증가할 수 있다.",
+            "mitigation": "규칙 정의 파싱 시점에 1회 정규화하는 방식을 우선 검토하고, 요청 단위 반복 정규화가 필요한 경우 마이크로 벤치마크로 영향도를 측정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 20, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 `src/feature_flags/targeting.py` 파일 전체를 열어 국가 타기팅(country targeting) 비교 연산 라인을 식별한다.",
+            "details": "README.md 라인 21이 지시하는 모듈(`src/feature_flags/targeting.py`)이 유일한 후보 위치다. 규칙(country rule) 정의 파싱 경로와 요청 사용자 속성 로딩 경로를 각각 추적하여, 두 경로 중 어디에 국가 코드 정규화(예: upper()/casefold)가 누락되었는지 라인 단위로 기록한다. 실제 비교 연산 코드는 제공된 근거에 포함되지 않았으므로 코드 열람으로만 확정한다."
+          },
+          {
+            "id": 2,
+            "action": "재현 테스트를 먼저 작성하여 현재 동작을 고정한다.",
+            "details": "benchmark_case_id 'target-country-case-short'에 대응하는 재현 케이스로, 국가 규칙을 'KR'로 정의하고 요청 사용자 국가를 'kr'로 설정했을 때 현재 '불일치로 판정됨'이 재현되는지 확인하는 테스트를 추가한다. 이 시점에는 실패(또는 현재 동작 재현)가 기대 결과다."
+          },
+          {
+            "id": 3,
+            "action": "양측(규칙 정의, 요청 사용자 속성) 국가 코드 비교에 동일한 대소문자 정규화를 적용한다.",
+            "details": "가설 2에서 지적된 비대칭(요청 파싱 단계에만 정규화 적용)을 제거하기 위해, 비교 직전 양쪽 값을 동일한 정규화 함수(예: upper() 또는 casefold)로 통일한다. 규칙 파싱 시점 정규화와 비교 시점 정규화 중 한 방식을 선택하되, 비대칭이 남지 않도록 어느 한 곳에서 반드시 양측을 함께 처리한다."
+          },
+          {
+            "id": 4,
+            "action": "수정 후 재현 테스트와 함께 기존 국가 타기팅 테스트 스위트 전체를 실행하여 회귀 여부를 확인한다.",
+            "details": "'KR'/'kr', 'US'/'us' 등 표기 변형 쌍과 완전 불일치 코드(예: 'KR' vs 'US') 케이스를 모두 포함한다. 완전 불일치가 일치로 오판되지 않는지(과잉 정규화 방지)를 함께 검증한다."
+          },
+          {
+            "id": 5,
+            "action": "변경 파일과 diff를 근거로 기록하고 이슈 20의 상태를 갱신한다.",
+            "details": "변경 대상 파일 경로, 정규화 적용 지점(함수/라인), 테스트 실행 결과를 이슈에 남긴다. 후속 확인 항목으로 대소문자 외 국가 코드 표기 변형(공백, 하이픈 등) 처리 여부를 별도 티켓으로 분리할지 검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "acceptance_criteria": [
+          "`src/feature_flags/targeting.py`에서 국가 코드 비교 지점이 라인 단위로 특정되고, 해당 비교에 대소문자 정규화가 적용(또는 양측 정규화로 대체)되어 있어야 한다.",
+          "재현 케이스 benchmark_case_id 'target-country-case-short'에서 국가 규칙 'KR'과 요청 사용자 'kr'이 '일치해야 합니다'라는 기대 동작대로 일치로 판정된다.",
+          "'KR'/'kr', 'US'/'us' 등 대소문자만 다른 쌍은 모두 일치로 판정되고, 'KR'/'US'처럼 실제로 다른 국가 코드는 불일치로 유지된다.",
+          "국가 타기팅 관련 기존 테스트 스위트가 모두 통과하고, 신규 재현 테스트가 수정 전 실패(또는 현재 동작 재현)·수정 후 통과를 보인다.",
+          "이슈 20에 변경 파일, 정규화 적용 지점, 테스트 실행 결과가 기록되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:55:14.758275Z",
+    "completed_at": "2026-09-28T07:55:39.672228Z",
+    "created_at": "2026-09-28T07:55:14.746372Z",
+    "updated_at": "2026-09-28T07:55:39.673552Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.348
+  }
+}

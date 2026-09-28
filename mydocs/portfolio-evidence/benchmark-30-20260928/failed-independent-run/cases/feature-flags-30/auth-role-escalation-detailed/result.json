@@ -1,0 +1,545 @@
+{
+  "input": {
+    "id": "auth-role-escalation-detailed",
+    "report": {
+      "title": "관리자가 owner 전용 플래그를 수정할 수 있음",
+      "description": "owner만 수행해야 하는 플래그 관리 작업이 admin 역할에도 허용됩니다.",
+      "steps_to_reproduce": [
+        "admin 역할로 로그인합니다.",
+        "owner 전용 플래그 관리 권한을 확인합니다."
+      ],
+      "expected_behavior": "권한 검사가 false를 반환해야 합니다.",
+      "actual_behavior": "admin에게 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 7,
+    "name": "benchmark-20260928T063309Z-033dfb2f-auth-role-escalation-detailed",
+    "description": "Clio Benchmark feature-flags-30: auth-role-escalation-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T06:40:26.726477Z",
+    "updatedAt": "2026-09-28T06:40:26.726477Z"
+  },
+  "clio_repository": {
+    "id": 7,
+    "projectId": 7,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T06:41:04.563723Z",
+    "createdAt": "2026-09-28T06:40:26.744141Z",
+    "updatedAt": "2026-09-28T06:41:04.564125Z"
+  },
+  "bug": {
+    "id": 7,
+    "project_id": 7,
+    "issue_id": 7,
+    "title": "관리자가 owner 전용 플래그를 수정할 수 있음",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T06:41:05.059779Z",
+    "created_at": "2026-09-28T06:41:05.071848Z"
+  },
+  "analysis": {
+    "analysisResultId": 7,
+    "workflowRunId": 7,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "can_manage_flag(role): role.casefold() in {\"owner\", \"admin\"}",
+          "end_line": 14,
+          "location": "src/feature_flags/authorization.py:1-14",
+          "file_path": "src/feature_flags/authorization.py",
+          "source_id": "7",
+          "start_line": 1,
+          "evidence_id": "kn_4240701f19955e96afe31ace21b606e9-1",
+          "observation": "`can_manage_flag`가 owner와 admin 모두를 관리 가능으로 판정하며, 테스트는 can_manage_flag(\"admin\") is False를 기대해 구현과 기대가 불일치한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_4240701f19955e96afe31ace21b606e9",
+          "repository_id": "7",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "can_manage_flag(\"admin\") is False",
+          "end_line": 16,
+          "location": "tests/test_authorization.py:1-16",
+          "file_path": "tests/test_authorization.py",
+          "source_id": "7",
+          "start_line": 1,
+          "evidence_id": "kn_4240701f19955e96afe31ace21b606e9-2",
+          "observation": "admin은 관리 불가, owner는 타 프로젝트 편집 불가를 기대하는 테스트로, 현재 구현이 두 기대 모두와 어긋난다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_4240701f19955e96afe31ace21b606e9",
+          "repository_id": "7",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]",
+          "end_line": 7,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "7",
+          "start_line": 1,
+          "evidence_id": "kn_5c86f5bf7077585d849488208fa4b301-1",
+          "observation": "공개 API가 세 클래스로 고정되어 있어 권한 검사 경로는 authorization 모듈이 담당한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5c86f5bf7077585d849488208fa4b301",
+          "repository_id": "7",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+          "end_line": 19,
+          "location": "README.md:19",
+          "file_path": "README.md",
+          "source_id": "7",
+          "start_line": 19,
+          "evidence_id": "README.md:19@b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "observation": "authorization.py의 책임이 관리자 권한과 프로젝트 범위 검사로 명시되어 이번 이슈의 결함 위치와 직접 관련된다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "7",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "`authorization.py`는 `role.casefold()` 기준으로 권한을 검사하며, `can_manage_flag(role)`는 `role.casefold() in {\"owner\", \"admin\"}`이면 True를 반환해 owner와 admin 모두 관리 가능으로 구현되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "`tests/test_authorization.py`는 `can_manage_flag(\"admin\") is False`(admin은 관리 불가)를 기대하므로 기대 동작과 현재 구현이 일치하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "`can_edit_project_flag(*, user_project_id, target_project_id, role)`는 키워드 전용 인자로 `role.casefold() == \"owner\"`인 경우에만 True를 반환하고, `user_project_id`/`target_project_id`는 시그니처에만 존재하고 비교에 사용되지 않아 프로젝트 범위 검사가 실질적으로 없다.",
+          "verified": true
+        },
+        {
+          "fact": "동일 파일의 테스트는 `can_edit_project_flag(owner, project-alpha -> project-beta) is False`(owner는 타 프로젝트 편집 불가)를 기대한다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context는 재현 절차를 admin 역할 로그인 후 owner 전용 플래그 관리 권한 확인으로, 기대 동작을 권한 검사 False, 실제 동작을 admin에게 true 반환으로 기술한다.",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/authorization.py`는 README 기준 '관리자 권한과 프로젝트 범위 검사' 책임을 갖는 모듈이다.",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/__init__.py`는 `FeatureFlagCache`, `FeatureFlagRepository`, `FeatureFlagService` 세 클래스만 재노출하며 `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 공개 API를 고정한다.",
+          "verified": true
+        },
+        {
+          "fact": "`rollout.py`의 `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`로 구현되어 경계 버킷이 포함되고, `rollout_bucket(user_id)`는 내장 `hash()`를 사용해 PYTHONHASHSEED에 따라 프로세스 간 결과가 안정적이지 않다.",
+          "verified": true
+        },
+        {
+          "fact": "`targeting.py`의 `matches_country`는 단순 문자열 동등 비교라 대소문자 비구분 기대와 어긋나고, `matches_allowlist`는 빈 허용 목록을 무제한으로 해석하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagRepository.delete`는 casefold 없이 원본 키로 pop하고 `list_for_tenant`는 내부 값 전체를 반환해 테넌트 격리 누수가 존재한다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagCache._key`는 `flag_name.casefold()`만 반환하고 `tenant_id`를 사용하지 않아 테넌트 간 캐시 값 오염이 발생한다.",
+          "verified": true
+        },
+        {
+          "fact": "이번 이슈의 권한 결함이 admin에게 true를 반환한다는 실제 동작은 재현 실행 없이 코드와 기대 테스트 근거로만 확인했으며, 테스트 실행 결과 자체는 검증되지 않았다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 7,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.85,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_4240701f19955e96afe31ace21b606e9: can_manage_flag(role)가 {\"owner\", \"admin\"} 포함 여부로 True를 반환",
+            "kn_4240701f19955e96afe31ace21b606e9: tests/test_authorization.py는 can_manage_flag(\"admin\") is False를 기대"
+          ],
+          "confidence": 0.9,
+          "hypothesis": "`src/feature_flags/authorization.py`의 `can_manage_flag(role)`가 `role.casefold() in {\"owner\", \"admin\"}`로 구현되어 admin 역할도 관리 가능으로 판정하므로, admin 역할로 owner 전용 플래그 관리 권한을 검사하면 True가 반환된다. 기대 동작 및 `tests/test_authorization.py`가 요구하는 값은 False이므로 역할 집합에서 `\"admin\"`을 제거하고 owner만 허용해야 한다."
+        },
+        {
+          "evidence": [
+            "kn_5c86f5bf7077585d849488208fa4b301: __init__.py는 세 클래스만 재노출하고 __all__을 고정"
+          ],
+          "confidence": 0.1,
+          "hypothesis": "플래그 관리 권한 서비스 계층(`service.py`)이나 `__init__.py` 공개 API가 역할 검사를 우회하거나 기본 역할을 admin으로 처리해 admin에게 관리 권한이 부여될 수 있다. 다만 공개 API는 `FeatureFlagCache`, `FeatureFlagRepository`, `FeatureFlagService` 세 클래스만 노출하므로 authorization 경로가 직접적인 유력 원인이며, 이 가설은 확인되지 않은 대안이다."
+        }
+      ],
+      "project_id": 7,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "admin의 관리 권한을 제거하면 admin 역할이 수행하던 정당한 관리 흐름이 차단될 수 있다.",
+            "mitigation": "`tests/test_authorization.py`가 명시적으로 admin은 관리 불가를 기대하므로 이를 스펙으로 확정하고, admin 권한이 필요한 별도 시나리오는 후속 이슈로 문서화한다."
+          },
+          {
+            "risk": "`can_edit_project_flag`에 프로젝트 범위 검사를 추가하면 시그니처는 그대로이나 반환값이 바뀌어 기존 호출부가 영향받을 수 있다.",
+            "mitigation": "키워드 전용 시그니처를 유지하고, 공개 API(`__all__`)에는 영향이 없음을 확인하며, 테스트로 양방향(동일 프로젝트/타 프로젝트) 케이스를 검증한다."
+          },
+          {
+            "risk": "본 이슈의 실제 재현 실행이 없어 코드와 기대 테스트 근거만으로 결함을 특정한 상태다.",
+            "mitigation": "1단계에서 테스트를 실제로 실행해 실패를 확인한 뒤 수정하고, 수정 후 같은 테스트로 통과를 검증해 근거를 실행 결과로 대체한다."
+          },
+          {
+            "risk": "`rollout.py`, `targeting.py`, `repository`/`cache`의 인접 결함을 함께 고치려다 범위가 확대될 수 있다.",
+            "mitigation": "7단계에 따라 본 이슈는 authorization 모듈로 범위를 고정하고, 인접 항목은 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 및 기대 동작 기준선 확보",
+            "details": "`tests/test_authorization.py`를 그대로 실행해 `can_manage_flag(\"admin\") is False` 및 `can_edit_project_flag(owner, project-alpha -> project-beta) is False` 두 케이스의 현재 실패 상태를 기록한다. 실제 실행 결과를 근거로 삼아(현재는 코드/테스트 근거만 확인되었고 테스트 실행 결과는 미검증) 회귀 기준선을 만든다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 `can_manage_flag` 역할 집합 수정",
+            "details": "`role.casefold() in {\"owner\", \"admin\"}`에서 `\"admin\"`을 제거해 owner 전용 판정(`role.casefold() == \"owner\"`)으로 좁힌다. `role.casefold()` 기반 정규화는 유지한다."
+          },
+          {
+            "id": 3,
+            "action": "`can_edit_project_flag`에 프로젝트 범위 검사 로직 구현",
+            "details": "키워드 전용 시그니처 `can_edit_project_flag(*, user_project_id, target_project_id, role)`는 유지하되, 현재 사용되지 않는 `user_project_id`와 `target_project_id`를 비교해 동일 프로젝트일 때만 owner에게 True를 반환하도록 한다(현재는 role만 검사해 프로젝트 범위 검사가 사실상 없음). 동일 모듈 내 `can_manage_flag`와의 일관성을 유지한다."
+          },
+          {
+            "id": 4,
+            "action": "공개 API 경계 회귀 확인",
+            "details": "`src/feature_flags/__init__.py`의 `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`는 변경하지 않고, 수정이 세 클래스 재노출 계약을 깨지 않는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "대안 가설 검증 및 기록",
+            "details": "서비스 계층(`service.py`)이나 공개 API가 역할 검사를 우회하거나 기본 역할을 admin으로 처리하는지 확인한다. 근거상 공개 API가 세 클래스만 노출하므로 저신뢰(0.1) 대안 가설로 기록하고, 검증 결과를 남긴다."
+          },
+          {
+            "id": 6,
+            "action": "테스트 실행으로 수정 검증",
+            "details": "`tests/test_authorization.py`를 실행해 두 기대값이 모두 통과하는지 확인한다. 실패 시 반환값과 기대값을 비교해 2~3단계 구현을 조정한다."
+          },
+          {
+            "id": 7,
+            "action": "인접 결함은 별도 이슈로 분리",
+            "details": "이번 이슈 범위 밖으로 확인된 `rollout.py`(`bucket <= percentage` 경계 포함, `hash()` 기반 `rollout_bucket`의 PYTHONHASHSEED 비안정성), `targeting.py`(`matches_country` 대소문자 구분, `matches_allowlist` 빈 목록 미허용), `FeatureFlagRepository.delete`/`list_for_tenant`(casefold 미적용 및 테넌트 격리 누수), `FeatureFlagCache._key`(`tenant_id` 미사용으로 인한 테넌트 간 캐시 오염) 항목은 본 수정에서 건드리지 않고 후속 이슈로 이관한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "acceptance_criteria": [
+          "`tests/test_authorization.py` 실행 시 `can_manage_flag(\"admin\") is False`가 통과한다.",
+          "`tests/test_authorization.py` 실행 시 `can_edit_project_flag(*, user_project_id=\"project-alpha\", target_project_id=\"project-beta\", role=\"owner\") is False`가 통과한다.",
+          "`can_manage_flag(\"owner\")`는 True를 반환하고, 대소문자 변형(예: \"Owner\")도 `casefold()` 정규화로 동일하게 True를 반환한다.",
+          "동일 프로젝트(예: `user_project_id == target_project_id == \"project-alpha\"`)에 대해 owner 역할로 `can_edit_project_flag`를 호출하면 True를 반환한다.",
+          "`src/feature_flags/__init__.py`의 `__all__`이 `[\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 그대로 유지된다.",
+          "수정 대상은 `src/feature_flags/authorization.py`로 한정되며 `rollout.py`, `targeting.py`, `repository`/`cache` 관련 파일에는 동작 변경이 없다.",
+          "기존에 통과하던 `tests/test_authorization.py`의 다른 테스트 케이스가 회귀 없이 유지된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 70,
+            "rationale": "`src/feature_flags/authorization.py`의 `can_manage_flag(role)`는 플래그 관리를 수행하는 모든 호출 경로에서 사용되는 단일 권한 게이트이므로, admin 역할을 가진 모든 사용자가 owner 전용 플래그 관리 작업에 접근 가능해진다. 특정 기능 하나의 오작동이 아니라 권한 판정 계층 전체에 영향을 준다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 80,
+            "rationale": "크래시나 데이터 손상은 아니지만 권한 상승(privilege escalation)에 해당하는 보안 결함이다. owner 전용으로 설계된 플래그 관리 작업이 admin에게 허용되어 최소 권한 원칙이 위반되고, 플래그 조작을 통한 기능 활성화/비활성화로 간접적 서비스 영향까지 가능하다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "`role.casefold() in {\"owner\", \"admin\"}`이라는 결정적 조건식으로 인해 admin 역할이면 100% 재현된다. 타이밍이나 데이터 상태에 의존하지 않고 재현 절차(admin 로그인 후 권한 확인)만으로 항상 True가 반환된다. 다만 실제 재현 실행은 아직 검증되지 않았다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 75,
+            "rationale": "권한 검사 로직 자체가 잘못된 값을 반환하므로 사용자·운영 측에서 우회할 수단이 없다. 회피하려면 역할 집합에서 `\"admin\"`을 제거하는 코드 수정 및 배포가 필요하다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 80,
+            "rationale": "플래그 관리는 릴리스 제어·기능 노출을 좌우하는 핵심 경로이며, 권한 경계 결함은 보안 인시던트로 분류될 수 있다. 다만 결제/계정 데이터 직접 조작이나 전면 장애는 아니므로 P0 최상위 수준까지는 아니다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "owner 전용이어야 하는 플래그 관리 권한이 admin 역할에도 부여되는 권한 상승(privilege escalation) 결함이다. 근본 원인은 `src/feature_flags/authorization.py`의 `can_manage_flag(role)`가 `role.casefold() in {\\\"owner\\\", \\\"admin\\\"}`으로 구현되어 admin을 포함한다는 점이며(confidence 0.9), `tests/test_authorization.py`의 `can_manage_flag(\\\"admin\\\") is False` 기대와 정면으로 충돌한다. 결정적 조건식이라 재현성이 매우 높고, 사용자 측 우회가 불가능하며, 플래그 제어라는 핵심 경로와 보안 경계가 동시에 걸린 문제다. 다만 전면 서비스 중단이나 데이터 유실·손상은 아니고 영향이 특정 역할 조합에 국한되며 실제 테스트 실행 검증이 아직 없다는 점을 감안해 P1 높음 상단(82)으로 산정한다. 추가로 동일 파일의 `can_edit_project_flag`가 `user_project_id`/`target_project_id`를 비교에 사용하지 않아 프로젝트 범위 검사가 실질적으로 부재하므로, 수정 시 `\\\"admin\\\"` 제거와 함께 범위 검사 로직 보강이 병행되어야 한다. 데이터 계층의 테넌트 격리 누수(`FeatureFlagRepository.list_for_tenant`, `FeatureFlagCache._key`의 tenant_id 미사용)는 별도 이슈로 분리 추적을 권장한다.",
+        "risk_score": 82
+      },
+      "workflow_run_id": 7
+    }
+  },
+  "workflow": {
+    "id": 7,
+    "project_id": 7,
+    "request_id": "process-bug-7",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "`authorization.py`는 `role.casefold()` 기준으로 권한을 검사하며, `can_manage_flag(role)`는 `role.casefold() in {\"owner\", \"admin\"}`이면 True를 반환해 owner와 admin 모두 관리 가능으로 구현되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "`tests/test_authorization.py`는 `can_manage_flag(\"admin\") is False`(admin은 관리 불가)를 기대하므로 기대 동작과 현재 구현이 일치하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "`can_edit_project_flag(*, user_project_id, target_project_id, role)`는 키워드 전용 인자로 `role.casefold() == \"owner\"`인 경우에만 True를 반환하고, `user_project_id`/`target_project_id`는 시그니처에만 존재하고 비교에 사용되지 않아 프로젝트 범위 검사가 실질적으로 없다.",
+            "verified": true
+          },
+          {
+            "fact": "동일 파일의 테스트는 `can_edit_project_flag(owner, project-alpha -> project-beta) is False`(owner는 타 프로젝트 편집 불가)를 기대한다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context는 재현 절차를 admin 역할 로그인 후 owner 전용 플래그 관리 권한 확인으로, 기대 동작을 권한 검사 False, 실제 동작을 admin에게 true 반환으로 기술한다.",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/authorization.py`는 README 기준 '관리자 권한과 프로젝트 범위 검사' 책임을 갖는 모듈이다.",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/__init__.py`는 `FeatureFlagCache`, `FeatureFlagRepository`, `FeatureFlagService` 세 클래스만 재노출하며 `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 공개 API를 고정한다.",
+            "verified": true
+          },
+          {
+            "fact": "`rollout.py`의 `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`로 구현되어 경계 버킷이 포함되고, `rollout_bucket(user_id)`는 내장 `hash()`를 사용해 PYTHONHASHSEED에 따라 프로세스 간 결과가 안정적이지 않다.",
+            "verified": true
+          },
+          {
+            "fact": "`targeting.py`의 `matches_country`는 단순 문자열 동등 비교라 대소문자 비구분 기대와 어긋나고, `matches_allowlist`는 빈 허용 목록을 무제한으로 해석하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagRepository.delete`는 casefold 없이 원본 키로 pop하고 `list_for_tenant`는 내부 값 전체를 반환해 테넌트 격리 누수가 존재한다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagCache._key`는 `flag_name.casefold()`만 반환하고 `tenant_id`를 사용하지 않아 테넌트 간 캐시 값 오염이 발생한다.",
+            "verified": true
+          },
+          {
+            "fact": "이번 이슈의 권한 결함이 admin에게 true를 반환한다는 실제 동작은 재현 실행 없이 코드와 기대 테스트 근거로만 확인했으며, 테스트 실행 결과 자체는 검증되지 않았다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "can_manage_flag(role): role.casefold() in {\"owner\", \"admin\"}",
+            "end_line": 14,
+            "location": "src/feature_flags/authorization.py:1-14",
+            "file_path": "src/feature_flags/authorization.py",
+            "source_id": "7",
+            "start_line": 1,
+            "evidence_id": "kn_4240701f19955e96afe31ace21b606e9-1",
+            "observation": "`can_manage_flag`가 owner와 admin 모두를 관리 가능으로 판정하며, 테스트는 can_manage_flag(\"admin\") is False를 기대해 구현과 기대가 불일치한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_4240701f19955e96afe31ace21b606e9",
+            "repository_id": "7",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "can_manage_flag(\"admin\") is False",
+            "end_line": 16,
+            "location": "tests/test_authorization.py:1-16",
+            "file_path": "tests/test_authorization.py",
+            "source_id": "7",
+            "start_line": 1,
+            "evidence_id": "kn_4240701f19955e96afe31ace21b606e9-2",
+            "observation": "admin은 관리 불가, owner는 타 프로젝트 편집 불가를 기대하는 테스트로, 현재 구현이 두 기대 모두와 어긋난다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_4240701f19955e96afe31ace21b606e9",
+            "repository_id": "7",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]",
+            "end_line": 7,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "7",
+            "start_line": 1,
+            "evidence_id": "kn_5c86f5bf7077585d849488208fa4b301-1",
+            "observation": "공개 API가 세 클래스로 고정되어 있어 권한 검사 경로는 authorization 모듈이 담당한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5c86f5bf7077585d849488208fa4b301",
+            "repository_id": "7",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+            "end_line": 19,
+            "location": "README.md:19",
+            "file_path": "README.md",
+            "source_id": "7",
+            "start_line": 19,
+            "evidence_id": "README.md:19@b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "observation": "authorization.py의 책임이 관리자 권한과 프로젝트 범위 검사로 명시되어 이번 이슈의 결함 위치와 직접 관련된다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "7",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.85,
+        "evidence_counts": {
+          "supplied_code": 7,
+          "knowledge_calls": 0,
+          "repository_calls": 0,
+          "supplied_history": 0,
+          "supplied_documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_4240701f19955e96afe31ace21b606e9: can_manage_flag(role)가 {\"owner\", \"admin\"} 포함 여부로 True를 반환",
+              "kn_4240701f19955e96afe31ace21b606e9: tests/test_authorization.py는 can_manage_flag(\"admin\") is False를 기대"
+            ],
+            "confidence": 0.9,
+            "hypothesis": "`src/feature_flags/authorization.py`의 `can_manage_flag(role)`가 `role.casefold() in {\"owner\", \"admin\"}`로 구현되어 admin 역할도 관리 가능으로 판정하므로, admin 역할로 owner 전용 플래그 관리 권한을 검사하면 True가 반환된다. 기대 동작 및 `tests/test_authorization.py`가 요구하는 값은 False이므로 역할 집합에서 `\"admin\"`을 제거하고 owner만 허용해야 한다."
+          },
+          {
+            "evidence": [
+              "kn_5c86f5bf7077585d849488208fa4b301: __init__.py는 세 클래스만 재노출하고 __all__을 고정"
+            ],
+            "confidence": 0.1,
+            "hypothesis": "플래그 관리 권한 서비스 계층(`service.py`)이나 `__init__.py` 공개 API가 역할 검사를 우회하거나 기본 역할을 admin으로 처리해 admin에게 관리 권한이 부여될 수 있다. 다만 공개 API는 `FeatureFlagCache`, `FeatureFlagRepository`, `FeatureFlagService` 세 클래스만 노출하므로 authorization 경로가 직접적인 유력 원인이며, 이 가설은 확인되지 않은 대안이다."
+          }
+        ]
+      },
+      "issue_id": "7",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "admin의 관리 권한을 제거하면 admin 역할이 수행하던 정당한 관리 흐름이 차단될 수 있다.",
+            "mitigation": "`tests/test_authorization.py`가 명시적으로 admin은 관리 불가를 기대하므로 이를 스펙으로 확정하고, admin 권한이 필요한 별도 시나리오는 후속 이슈로 문서화한다."
+          },
+          {
+            "risk": "`can_edit_project_flag`에 프로젝트 범위 검사를 추가하면 시그니처는 그대로이나 반환값이 바뀌어 기존 호출부가 영향받을 수 있다.",
+            "mitigation": "키워드 전용 시그니처를 유지하고, 공개 API(`__all__`)에는 영향이 없음을 확인하며, 테스트로 양방향(동일 프로젝트/타 프로젝트) 케이스를 검증한다."
+          },
+          {
+            "risk": "본 이슈의 실제 재현 실행이 없어 코드와 기대 테스트 근거만으로 결함을 특정한 상태다.",
+            "mitigation": "1단계에서 테스트를 실제로 실행해 실패를 확인한 뒤 수정하고, 수정 후 같은 테스트로 통과를 검증해 근거를 실행 결과로 대체한다."
+          },
+          {
+            "risk": "`rollout.py`, `targeting.py`, `repository`/`cache`의 인접 결함을 함께 고치려다 범위가 확대될 수 있다.",
+            "mitigation": "7단계에 따라 본 이슈는 authorization 모듈로 범위를 고정하고, 인접 항목은 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 및 기대 동작 기준선 확보",
+            "details": "`tests/test_authorization.py`를 그대로 실행해 `can_manage_flag(\"admin\") is False` 및 `can_edit_project_flag(owner, project-alpha -> project-beta) is False` 두 케이스의 현재 실패 상태를 기록한다. 실제 실행 결과를 근거로 삼아(현재는 코드/테스트 근거만 확인되었고 테스트 실행 결과는 미검증) 회귀 기준선을 만든다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 `can_manage_flag` 역할 집합 수정",
+            "details": "`role.casefold() in {\"owner\", \"admin\"}`에서 `\"admin\"`을 제거해 owner 전용 판정(`role.casefold() == \"owner\"`)으로 좁힌다. `role.casefold()` 기반 정규화는 유지한다."
+          },
+          {
+            "id": 3,
+            "action": "`can_edit_project_flag`에 프로젝트 범위 검사 로직 구현",
+            "details": "키워드 전용 시그니처 `can_edit_project_flag(*, user_project_id, target_project_id, role)`는 유지하되, 현재 사용되지 않는 `user_project_id`와 `target_project_id`를 비교해 동일 프로젝트일 때만 owner에게 True를 반환하도록 한다(현재는 role만 검사해 프로젝트 범위 검사가 사실상 없음). 동일 모듈 내 `can_manage_flag`와의 일관성을 유지한다."
+          },
+          {
+            "id": 4,
+            "action": "공개 API 경계 회귀 확인",
+            "details": "`src/feature_flags/__init__.py`의 `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`는 변경하지 않고, 수정이 세 클래스 재노출 계약을 깨지 않는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "대안 가설 검증 및 기록",
+            "details": "서비스 계층(`service.py`)이나 공개 API가 역할 검사를 우회하거나 기본 역할을 admin으로 처리하는지 확인한다. 근거상 공개 API가 세 클래스만 노출하므로 저신뢰(0.1) 대안 가설로 기록하고, 검증 결과를 남긴다."
+          },
+          {
+            "id": 6,
+            "action": "테스트 실행으로 수정 검증",
+            "details": "`tests/test_authorization.py`를 실행해 두 기대값이 모두 통과하는지 확인한다. 실패 시 반환값과 기대값을 비교해 2~3단계 구현을 조정한다."
+          },
+          {
+            "id": 7,
+            "action": "인접 결함은 별도 이슈로 분리",
+            "details": "이번 이슈 범위 밖으로 확인된 `rollout.py`(`bucket <= percentage` 경계 포함, `hash()` 기반 `rollout_bucket`의 PYTHONHASHSEED 비안정성), `targeting.py`(`matches_country` 대소문자 구분, `matches_allowlist` 빈 목록 미허용), `FeatureFlagRepository.delete`/`list_for_tenant`(casefold 미적용 및 테넌트 격리 누수), `FeatureFlagCache._key`(`tenant_id` 미사용으로 인한 테넌트 간 캐시 오염) 항목은 본 수정에서 건드리지 않고 후속 이슈로 이관한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "acceptance_criteria": [
+          "`tests/test_authorization.py` 실행 시 `can_manage_flag(\"admin\") is False`가 통과한다.",
+          "`tests/test_authorization.py` 실행 시 `can_edit_project_flag(*, user_project_id=\"project-alpha\", target_project_id=\"project-beta\", role=\"owner\") is False`가 통과한다.",
+          "`can_manage_flag(\"owner\")`는 True를 반환하고, 대소문자 변형(예: \"Owner\")도 `casefold()` 정규화로 동일하게 True를 반환한다.",
+          "동일 프로젝트(예: `user_project_id == target_project_id == \"project-alpha\"`)에 대해 owner 역할로 `can_edit_project_flag`를 호출하면 True를 반환한다.",
+          "`src/feature_flags/__init__.py`의 `__all__`이 `[\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 그대로 유지된다.",
+          "수정 대상은 `src/feature_flags/authorization.py`로 한정되며 `rollout.py`, `targeting.py`, `repository`/`cache` 관련 파일에는 동작 변경이 없다.",
+          "기존에 통과하던 `tests/test_authorization.py`의 다른 테스트 케이스가 회귀 없이 유지된다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T06:41:06.135640Z",
+    "completed_at": "2026-09-28T06:41:35.275077Z",
+    "created_at": "2026-09-28T06:41:06.119565Z",
+    "updated_at": "2026-09-28T06:41:35.277590Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.434
+  }
+}

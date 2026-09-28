@@ -1,0 +1,377 @@
+{
+  "input": {
+    "id": "auth-role-escalation-short",
+    "report": {
+      "title": "owner 전용 권한에 admin 포함",
+      "description": "admin 사용자가 소유자 전용 기능에 접근할 수 있습니다.",
+      "steps_to_reproduce": [
+        "admin 역할로 관리 가능 여부를 조회합니다."
+      ],
+      "expected_behavior": "접근이 거부되어야 합니다.",
+      "actual_behavior": "접근이 허용됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 8,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-role-escalation-short",
+    "description": "Clio Benchmark feature-flags-30: auth-role-escalation-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:41:56.615233Z",
+    "updatedAt": "2026-09-28T07:41:56.615233Z"
+  },
+  "clio_repository": {
+    "id": 8,
+    "projectId": 8,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:42:36.029248Z",
+    "createdAt": "2026-09-28T07:41:56.636511Z",
+    "updatedAt": "2026-09-28T07:42:36.031409Z"
+  },
+  "bug": {
+    "id": 8,
+    "project_id": 8,
+    "issue_id": 8,
+    "title": "owner 전용 권한에 admin 포함",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:42:37.006923Z",
+    "created_at": "2026-09-28T07:42:37.016859Z"
+  },
+  "analysis": {
+    "analysisResultId": 8,
+    "workflowRunId": 8,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": "8",
+          "start_line": 3,
+          "evidence_id": "code-0",
+          "observation": "프로젝트가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'임을 확인했다. 권한 매트릭스나 역할 비교 로직은 이 근거에 포함되지 않아 admin 역할 포함 여부를 직접 검증할 수 없다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "8",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 8은 project_id=8에서 admin 사용자가 소유자 전용 기능에 접근 가능하다고 보고된 ReportedBehaviorMismatch이며, 기대 동작은 '접근이 거부되어야 합니다', 실제 동작은 '접근이 허용됩니다'이다.",
+          "verified": true
+        },
+        {
+          "fact": "raw_payload의 benchmark_case_id는 auth-role-escalation-short로, 역할 상승(role escalation) 유형의 접근 제어 결함을 가리킨다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거는 저장소 8의 README.md 3번째 줄 하나뿐이며, 해당 내용은 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.'라는 프로젝트 설명이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 근거에는 역할(role) 비교나 권한 판정을 수행하는 소스 코드가 포함되어 있지 않아, admin 포함 여부를 결정하는 실제 조건식을 검증할 수 없다.",
+          "verified": true
+        },
+        {
+          "fact": "stack_trace와 이력(history)은 비어 있어 실패 지점의 호출 경로 정보가 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 8,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.2,
+      "hypotheses": [
+        {
+          "evidence": [
+            "저장소 8의 README.md는 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'라는 범위만 기술하고 권한 매트릭스를 명시하지 않아, 역할 기반 접근 제어 코드의 조건문을 직접 확인할 수 없다 (repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path=README.md, line=3).",
+            "제공된 근거에는 owner 전용 검사를 수행하는 실제 Python 모듈/함수가 포함되어 있지 않다."
+          ],
+          "confidence": 0.45,
+          "hypothesis": "권한 판정 로직에서 admin 역할을 owner 전용 권한 검사에 함께 포함시키는 조건(예: role in (\"owner\", \"admin\"))이 있어, admin 사용자가 소유자 전용 기능에 접근이 허용된다."
+        },
+        {
+          "evidence": [
+            "README.md가 '테넌트별 기능 플래그 조회'를 라이브러리의 핵심 기능으로 설명하므로, 문제의 접근 판정이 기능 플래그 조회 API에서 발생했을 가능성이 있다 (repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path=README.md, line=3).",
+            "해당 조회 API의 구현 코드는 제공된 근거에 없어 판정 주체를 특정할 수 없다."
+          ],
+          "confidence": 0.2,
+          "hypothesis": "tenant 단위 기능 플래그 조회 경로에서 admin 역할이 테넌트 소유자와 동일한 스코프로 취급되어, 기능 플래그 조회 권한 검사가 admin을 우회 허용한다."
+        }
+      ],
+      "project_id": 8,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거가 README.md:3 한 줄뿐이라 실제 권한 판정 코드 위치를 특정하지 못할 수 있다.",
+            "mitigation": "리포지토리 트리와 모듈 목록을 우선 수집하고, 키워드 기반 검색으로 후보를 좁힌 뒤 후보별 메타데이터를 기록한다. 근거 부족 시 가설을 확정하지 않고 추가 조사 필요 항목으로 남긴다."
+          },
+          {
+            "risk": "역할 조건을 좁히는 과정에서 admin이 정당하게 보유해야 하는 권한까지 차단해 기능 회귀가 발생할 수 있다.",
+            "mitigation": "admin 허용이 필요한 경로를 별도 스코프/플래그로 분리하고, owner 접근 허용 테스트를 회귀 방지 세트에 포함한다."
+          },
+          {
+            "risk": "stack_trace와 history가 비어 있어 실패 지점의 호출 경로를 확인하지 못한 상태에서 수정이 이루어질 수 있다.",
+            "mitigation": "판정 함수까지의 호출 경로를 재현 스크립트에서 직접 로깅하여 호출 경로 정보를 확보한 뒤 수정한다."
+          },
+          {
+            "risk": "가설 2(테넌트 소유자와 admin의 동일 스코프 취급)가 실제 원인일 경우 가설 1 기반 수정만으로는 결함이 해소되지 않을 수 있다.",
+            "mitigation": "두 가설을 독립적으로 검증하고, 가설 2가 배제되지 않으면 테넌트 스코프 판정 로직을 별도 단계로 추가 조사한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 판정 코드 검색 범위 확정",
+            "details": "저장소 8 (commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520)에서 역할(role) 비교 및 접근 제어를 수행하는 소스를 식별한다. 검색 키워드: \"role\", \"admin\", \"owner\", \"permission\", \"authorize\", \"check_access\", \"feature_flag\", \"tenant\". 현재 확보된 근거는 README.md:3 ('테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.') 하나뿐이므로, 우선 리포지토리 트리와 모듈 목록을 수집해 실제 판정 주체를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "기능 플래그 조회 경로의 호출 체인 재현",
+            "details": "benchmark_case_id=auth-role-escalation-short 시나리오를 재현하는 최소 스크립트를 작성한다. project_id=8에서 admin 사용자가 소유자(owner) 전용 기능에 접근하는 흐름을 그대로 호출하고, 판정 함수까지의 호출 경로를 로깅한다. stack_trace와 history가 비어 있으므로 호출 경로 정보는 이 단계에서 직접 수집한다."
+          },
+          {
+            "id": 3,
+            "action": "admin 포함 조건문 후보 식별 및 코드 근거 수집",
+            "details": "가설 1(role in (\"owner\", \"admin\") 형태의 조건문)과 가설 2(테넌트 소유자와 admin이 동일 스코프로 취급되어 우회 허용)를 각각 검증할 수 있는 코드 위치를 파일 경로/라인 단위로 수집한다. 각 후보마다 repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path, line 메타데이터를 기록한다."
+          },
+          {
+            "id": 4,
+            "action": "판정 로직 수정 및 회귀 방지 테스트 추가",
+            "details": "소유자 전용 검사에서 admin이 명시적으로 허용되지 않도록 판정 조건을 분리하고(예: owner 전용 검사는 role == \"owner\"로 한정, admin 허용이 필요한 경우 별도 플래그/스코프로 분기), admin 접근 거부와 정당한 owner 접근 허용을 함께 검증하는 테스트를 추가한다. 근거에서 확인되지 않은 추정은 코드 주석에 근거 메타데이터와 함께 남긴다."
+          },
+          {
+            "id": 5,
+            "action": "검증 결과와 잔여 불확실성 정리",
+            "details": "재현 스크립트가 수정 전에는 '접근이 허용됩니다', 수정 후에는 '접근이 거부되어야 합니다'를 반환하는지 확인하고, 가설 2가 배제되었는지 또는 별도 결함으로 남았는지 판정 결과를 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "8",
+        "acceptance_criteria": [
+          "benchmark_case_id=auth-role-escalation-short 시나리오에서 project_id=8의 admin 사용자가 소유자(owner) 전용 기능 접근 시 '접근이 거부되어야 합니다'가 반환된다.",
+          "동일 시나리오에서 정당한 owner 역할 사용자의 접근은 계속 허용되어 기존 기능 회귀가 없다.",
+          "역할 판정 조건문이 파일 경로와 라인 단위로 특정되고, 해당 위치에 repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520 메타데이터가 기록된다.",
+          "관리자 접근 거부 및 소유자 접근 허용을 검증하는 자동화 테스트가 추가되어 통과한다.",
+          "가설 1과 가설 2 각각에 대해 채택/배제 판정과 그 근거 코드 위치가 문서화된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 65,
+            "rationale": "admin 역할을 보유한 모든 사용자가 소유자(owner) 전용 기능에 접근 가능하게 되어, 테넌트별 기능 플래그 조회를 제공하는 라이브러리(project_id=8)의 권한 경계가 무력화된다. 다만 영향 대상이 admin 역할 보유자로 한정되고 일반 사용자 전체로 확산되는 정황은 근거에 없다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 70,
+            "rationale": "benchmark_case_id=auth-role-escalation-short가 지시하듯 역할 상승(role escalation) 계열의 접근 제어 결함이다. crash나 데이터 손상은 아니지만 인가 경계 위반으로 권한 상승에 준하는 보안 노출에 해당한다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 80,
+            "rationale": "'1. admin 역할로 관리 가능 여부를 조회합니다.' 단일 단계로 100% 결정론적으로 재현되며, 간헐성이나 타이밍 의존 조건은 보고되지 않았다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 65,
+            "rationale": "서버 측 권한 판정 자체가 admin을 허용하는 것으로 보여 사용자 측 우회는 사실상 불가능하다. 다만 실제 조건식(role in (\"owner\", \"admin\") 등)이 근거에 포함되지 않아 확정할 수 없어 상한을 다소 낮췄다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 75,
+            "rationale": "접근 제어(인가)는 결제·계정과 함께 핵심 신뢰 경로다. 소유자 전용 기능이 admin에게 개방되면 테넌트 격리와 권한 위임 계약이 깨지며, 멀티테넌트 환경에서는 규정 준수 리스크로 직결된다."
+          },
+          {
+            "name": "근거 충분성 (evidence_confidence)",
+            "score": 25,
+            "rationale": "제공된 근거는 README.md:3 한 줄('테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.')뿐이며, stack_trace와 history가 비어 있어 실제 역할 비교 코드를 검증할 수 없다. 이는 위험도 자체가 아니라 평가 확신도를 낮추는 요인이다(analysis.confidence=0.2)."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "이슈 8은 project_id=8에서 admin 사용자가 소유자 전용 기능에 접근 가능하다고 보고된 ReportedBehaviorMismatch로, 기대 동작은 '접근이 거부되어야 합니다', 실제 동작은 '접근이 허용됩니다'이다. raw_payload의 benchmark_case_id=auth-role-escalation-short가 가리키듯 인가 경계 위반(역할 상승) 유형이며, 단일 단계로 결정론적으로 재현된다. 접근 제어는 결제·계정과 나란히 핵심 신뢰 경로이므로 비즈니스 임계성이 높고, admin 역할 보유자를 통해 테넌트 격리 계약이 훼손될 수 있어 P1(높음) 밴드(70-84)로 판단했다. 다만 근거가 README.md:3 한 줄에 불과하고 역할 비교 조건식(예: role in (\\\"owner\\\", \\\"admin\\\"))을 확인할 수 없어, P0(85-100)로 올리기에는 확신도가 부족하다(analysis.confidence=0.2, root_cause_hypotheses 최고 confidence 0.45). 코드 근거가 확보되어 조건식이 실제로 admin을 포함하는 것으로 확인되면 P0 승격을 재검토해야 한다.",
+        "risk_score": 72
+      },
+      "workflow_run_id": 8
+    }
+  },
+  "workflow": {
+    "id": 8,
+    "project_id": 8,
+    "request_id": "process-bug-8",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 8은 project_id=8에서 admin 사용자가 소유자 전용 기능에 접근 가능하다고 보고된 ReportedBehaviorMismatch이며, 기대 동작은 '접근이 거부되어야 합니다', 실제 동작은 '접근이 허용됩니다'이다.",
+            "verified": true
+          },
+          {
+            "fact": "raw_payload의 benchmark_case_id는 auth-role-escalation-short로, 역할 상승(role escalation) 유형의 접근 제어 결함을 가리킨다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거는 저장소 8의 README.md 3번째 줄 하나뿐이며, 해당 내용은 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.'라는 프로젝트 설명이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 근거에는 역할(role) 비교나 권한 판정을 수행하는 소스 코드가 포함되어 있지 않아, admin 포함 여부를 결정하는 실제 조건식을 검증할 수 없다.",
+            "verified": true
+          },
+          {
+            "fact": "stack_trace와 이력(history)은 비어 있어 실패 지점의 호출 경로 정보가 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "8",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": "8",
+            "start_line": 3,
+            "evidence_id": "code-0",
+            "observation": "프로젝트가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'임을 확인했다. 권한 매트릭스나 역할 비교 로직은 이 근거에 포함되지 않아 admin 역할 포함 여부를 직접 검증할 수 없다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "8",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.2,
+        "evidence_counts": {
+          "code": 1,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "저장소 8의 README.md는 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'라는 범위만 기술하고 권한 매트릭스를 명시하지 않아, 역할 기반 접근 제어 코드의 조건문을 직접 확인할 수 없다 (repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path=README.md, line=3).",
+              "제공된 근거에는 owner 전용 검사를 수행하는 실제 Python 모듈/함수가 포함되어 있지 않다."
+            ],
+            "confidence": 0.45,
+            "hypothesis": "권한 판정 로직에서 admin 역할을 owner 전용 권한 검사에 함께 포함시키는 조건(예: role in (\"owner\", \"admin\"))이 있어, admin 사용자가 소유자 전용 기능에 접근이 허용된다."
+          },
+          {
+            "evidence": [
+              "README.md가 '테넌트별 기능 플래그 조회'를 라이브러리의 핵심 기능으로 설명하므로, 문제의 접근 판정이 기능 플래그 조회 API에서 발생했을 가능성이 있다 (repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path=README.md, line=3).",
+              "해당 조회 API의 구현 코드는 제공된 근거에 없어 판정 주체를 특정할 수 없다."
+            ],
+            "confidence": 0.2,
+            "hypothesis": "tenant 단위 기능 플래그 조회 경로에서 admin 역할이 테넌트 소유자와 동일한 스코프로 취급되어, 기능 플래그 조회 권한 검사가 admin을 우회 허용한다."
+          }
+        ]
+      },
+      "issue_id": "8",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거가 README.md:3 한 줄뿐이라 실제 권한 판정 코드 위치를 특정하지 못할 수 있다.",
+            "mitigation": "리포지토리 트리와 모듈 목록을 우선 수집하고, 키워드 기반 검색으로 후보를 좁힌 뒤 후보별 메타데이터를 기록한다. 근거 부족 시 가설을 확정하지 않고 추가 조사 필요 항목으로 남긴다."
+          },
+          {
+            "risk": "역할 조건을 좁히는 과정에서 admin이 정당하게 보유해야 하는 권한까지 차단해 기능 회귀가 발생할 수 있다.",
+            "mitigation": "admin 허용이 필요한 경로를 별도 스코프/플래그로 분리하고, owner 접근 허용 테스트를 회귀 방지 세트에 포함한다."
+          },
+          {
+            "risk": "stack_trace와 history가 비어 있어 실패 지점의 호출 경로를 확인하지 못한 상태에서 수정이 이루어질 수 있다.",
+            "mitigation": "판정 함수까지의 호출 경로를 재현 스크립트에서 직접 로깅하여 호출 경로 정보를 확보한 뒤 수정한다."
+          },
+          {
+            "risk": "가설 2(테넌트 소유자와 admin의 동일 스코프 취급)가 실제 원인일 경우 가설 1 기반 수정만으로는 결함이 해소되지 않을 수 있다.",
+            "mitigation": "두 가설을 독립적으로 검증하고, 가설 2가 배제되지 않으면 테넌트 스코프 판정 로직을 별도 단계로 추가 조사한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 판정 코드 검색 범위 확정",
+            "details": "저장소 8 (commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520)에서 역할(role) 비교 및 접근 제어를 수행하는 소스를 식별한다. 검색 키워드: \"role\", \"admin\", \"owner\", \"permission\", \"authorize\", \"check_access\", \"feature_flag\", \"tenant\". 현재 확보된 근거는 README.md:3 ('테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.') 하나뿐이므로, 우선 리포지토리 트리와 모듈 목록을 수집해 실제 판정 주체를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "기능 플래그 조회 경로의 호출 체인 재현",
+            "details": "benchmark_case_id=auth-role-escalation-short 시나리오를 재현하는 최소 스크립트를 작성한다. project_id=8에서 admin 사용자가 소유자(owner) 전용 기능에 접근하는 흐름을 그대로 호출하고, 판정 함수까지의 호출 경로를 로깅한다. stack_trace와 history가 비어 있으므로 호출 경로 정보는 이 단계에서 직접 수집한다."
+          },
+          {
+            "id": 3,
+            "action": "admin 포함 조건문 후보 식별 및 코드 근거 수집",
+            "details": "가설 1(role in (\"owner\", \"admin\") 형태의 조건문)과 가설 2(테넌트 소유자와 admin이 동일 스코프로 취급되어 우회 허용)를 각각 검증할 수 있는 코드 위치를 파일 경로/라인 단위로 수집한다. 각 후보마다 repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520, path, line 메타데이터를 기록한다."
+          },
+          {
+            "id": 4,
+            "action": "판정 로직 수정 및 회귀 방지 테스트 추가",
+            "details": "소유자 전용 검사에서 admin이 명시적으로 허용되지 않도록 판정 조건을 분리하고(예: owner 전용 검사는 role == \"owner\"로 한정, admin 허용이 필요한 경우 별도 플래그/스코프로 분기), admin 접근 거부와 정당한 owner 접근 허용을 함께 검증하는 테스트를 추가한다. 근거에서 확인되지 않은 추정은 코드 주석에 근거 메타데이터와 함께 남긴다."
+          },
+          {
+            "id": 5,
+            "action": "검증 결과와 잔여 불확실성 정리",
+            "details": "재현 스크립트가 수정 전에는 '접근이 허용됩니다', 수정 후에는 '접근이 거부되어야 합니다'를 반환하는지 확인하고, 가설 2가 배제되었는지 또는 별도 결함으로 남았는지 판정 결과를 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "8",
+        "acceptance_criteria": [
+          "benchmark_case_id=auth-role-escalation-short 시나리오에서 project_id=8의 admin 사용자가 소유자(owner) 전용 기능 접근 시 '접근이 거부되어야 합니다'가 반환된다.",
+          "동일 시나리오에서 정당한 owner 역할 사용자의 접근은 계속 허용되어 기존 기능 회귀가 없다.",
+          "역할 판정 조건문이 파일 경로와 라인 단위로 특정되고, 해당 위치에 repository_id=8, commit=b30e31e3c83d0faf4e27a38a29498b859d8f7520 메타데이터가 기록된다.",
+          "관리자 접근 거부 및 소유자 접근 허용을 검증하는 자동화 테스트가 추가되어 통과한다.",
+          "가설 1과 가설 2 각각에 대해 채택/배제 판정과 그 근거 코드 위치가 문서화된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:42:37.605535Z",
+    "completed_at": "2026-09-28T07:43:00.778023Z",
+    "created_at": "2026-09-28T07:42:37.593671Z",
+    "updated_at": "2026-09-28T07:43:00.779794Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 24.347
+  }
+}

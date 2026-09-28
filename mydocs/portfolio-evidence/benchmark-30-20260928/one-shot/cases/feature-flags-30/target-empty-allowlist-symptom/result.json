@@ -1,0 +1,349 @@
+{
+  "input": {
+    "id": "target-empty-allowlist-symptom",
+    "report": {
+      "title": "allowlist를 비우자 기능이 전체 비활성화됨",
+      "description": "제한 해제를 위해 목록을 비웠지만 기능 노출이 전부 사라졌습니다.",
+      "steps_to_reproduce": [
+        "기존 allowlist 항목을 모두 제거합니다.",
+        "임의 사용자의 타기팅 결과를 확인합니다."
+      ],
+      "expected_behavior": "목록 제한이 없어져 사용자가 포함되어야 합니다.",
+      "actual_behavior": "사용자가 계속 제외됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_empty_allowlist_means_unrestricted"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 24,
+    "name": "benchmark-20260928T073431Z-64ae54ac-target-empty-allowlist-symptom",
+    "description": "Clio Benchmark feature-flags-30: target-empty-allowlist-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:58:48.897840Z",
+    "updatedAt": "2026-09-28T07:58:48.897840Z"
+  },
+  "clio_repository": {
+    "id": 24,
+    "projectId": 24,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:59:22.640632Z",
+    "createdAt": "2026-09-28T07:58:48.907043Z",
+    "updatedAt": "2026-09-28T07:59:22.641031Z"
+  },
+  "bug": {
+    "id": 24,
+    "project_id": 24,
+    "issue_id": 24,
+    "title": "allowlist를 비우자 기능이 전체 비활성화됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:59:23.386439Z",
+    "created_at": "2026-09-28T07:59:23.392672Z"
+  },
+  "analysis": {
+    "analysisResultId": 24,
+    "workflowRunId": 24,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [],
+      "findings": [
+        {
+          "fact": "제공된 evidence에는 code 근거가 0건이며, allowlist 처리 로직을 확인할 수 있는 snapshot 인용이 없다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 메시지는 allowlist 목록을 비운 뒤 모든 사용자가 계속 제외된다는 ReporteBehaviorMismatch 보고이며, 스택 트레이스는 비어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "raw_payload의 benchmark_case_id는 target-empty-allowlist-symptom이며, 저장소 식별자나 commit 정보는 제공되지 않았다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 24,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.25,
+      "hypotheses": [
+        {
+          "evidence": [
+            "제공된 code evidence 0건으로 로직 미확인",
+            "증상: 목록 제거 후 사용자 포함이 아닌 계속 제외"
+          ],
+          "confidence": 0.55,
+          "hypothesis": "allowlist 목록이 비어 있을 때 \"제한 없음\"으로 해석하지 않고 \"허용 항목 0개 = 모두 거부\"로 해석하는 필터링 로직(예: 목록 순회 후 기본 거부-반환) 때문에 모든 사용자가 제외된다. 제한 해제를 위한 빈 목록 처리가 별도로 구현되지 않았을 가능성이 크다."
+        },
+        {
+          "evidence": [
+            "stack_trace가 비어 있어 실패 지점 미확인",
+            "ReporteBehaviorMismatch 유형의 사용자 보고"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "allowlist 로딩 단계에서 빈 목록이 null/빈 컬렉션으로 처리되며, 빈 값 분기 없이 바로 판정 함수로 전달되어 항상 불일치(false)로 판정된다."
+        },
+        {
+          "evidence": [
+            "재현 절차에 재로딩/재시작 단계가 명시되지 않음"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "allowlist 항목 제거 후 캐시/구성 재로딩이 이루어지지 않아 이전 상태가 아닌 비정상 기본값(전체 거부)으로 남아 있을 수 있다."
+        }
+      ],
+      "project_id": 24,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "코드 evidence가 0건이고 저장소 식별자·commit 정보가 없어 실제 구현 로직을 확인하지 못한 채 수정이 추정에 의존할 수 있다.",
+            "mitigation": "1단계에서 snapshot과 commit hash를 확보할 때까지 구현 단계(3~4단계)를 착수하지 않고, 확보 실패 시 분석 보강을 요청한다."
+          },
+          {
+            "risk": "빈 allowlist를 '제한 없음'으로 해석할 경우 의도치 않은 접근 허용(보안 회귀)이 발생할 수 있다.",
+            "mitigation": "제품 요구사항을 명확히 확인하고, 기본값 정책을 테스트로 고정하며, 필요 시 경고 로그를 남긴다."
+          },
+          {
+            "risk": "hypothesis 3과 같이 재로딩/재시작 단계가 미문서화되어 재현 및 완화 검증이 불완전할 수 있다.",
+            "mitigation": "재현 절차와 수정 후 검증 절차에 재로딩·재시작 단계를 명시적으로 문서화하고 테스트로 커버한다."
+          },
+          {
+            "risk": "단일 수정이 다른 allowlist 사용 경로(캐시, 구성 로딩, 판정 함수 호출부)에 영향을 줄 수 있다.",
+            "mitigation": "영향 범위를 사전 조사하고 회귀 테스트 스위트로 다중 시나리오를 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "allowlist 처리 로직의 실제 구현 위치와 스냅샷을 확보한다.",
+            "details": "제공된 evidence에 code 근거가 0건이고 저장소 식별자/commit 정보가 없으므로, benchmark_case_id 'target-empty-allowlist-symptom'에 대응하는 저장소를 특정한 뒤 allowlist 로딩·판정·캐시 재로딩 경로를 포함하는 코드 스냅샷과 commit hash를 수집한다. 인용 없는 추정은 배제한다."
+          },
+          {
+            "id": 2,
+            "action": "빈 allowlist 입력에 대한 현재 동작을 재현하는 테스트를 작성한다.",
+            "details": "allowlist 목록이 빈 리스트/빈 컬렉션/null인 각 경우에 대해 판정 함수가 반환하는 값을 검증하는 단위 테스트를 추가하고, 제거 후 재시작(또는 재로딩) 절차를 포함한 재현 스크립트를 작성한다. 재현 절차에 재로딩/재시작 단계를 명시적으로 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "빈 목록 분기 처리를 구현한다.",
+            "details": "hypothesis 1(목록 순회 후 기본 거부-반환으로 인해 빈 목록이 '모두 거부'로 해석됨)과 hypothesis 2(빈 목록이 null/빈 컬렉션으로 전달되어 항상 불일치로 판정됨)를 코드 상에서 확인하고, 빈 목록을 '제한 없음(허용)'으로 해석할 것인지 '허용 항목 0개=모두 거부'로 해석할 것인지 제품 요구사항에 맞게 명시적으로 분기 처리한다. 판정 함수 진입부에 빈 값 판정 분기를 두고 매직값/암묵적 기본값을 제거한다."
+          },
+          {
+            "id": 4,
+            "action": "설정 재로딩 경로를 점검하고 캐시 무효화를 보장한다.",
+            "details": "hypothesis 3(항목 제거 후 캐시/구성 재로딩 미이행으로 이전이 아닌 비정상 기본값이 잔존)을 검증하기 위해 구성 변경 후 캐시 무효화·재로딩·재시작 단계를 테스트로 커버하고, 문서화된 절차 없이 이전 상태가 남지 않도록 한다."
+          },
+          {
+            "id": 5,
+            "action": "수정 사항을 검증하고 회귀 테스트를 실행한다.",
+            "details": "빈 목록, 단일 항목, 다수 항목, 항목 제거 후 재로딩 시나리오를 모두 포함하는 테스트 스위트를 실행하고, ReporteBehaviorMismatch 유형 보고가 재발하지 않음을 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "원인 확정 근거를 기록하고 결과를 보고한다.",
+            "details": "hypothesis 1/2/3 중 실제 원인 확정에 사용된 코드 인용(파일 경로, 함수, commit hash)을 남기고, 기존 confidence 0.25 및 근거 부족(code evidence 0건) 사항을 해소한 근거 목록을 함께 보고한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "acceptance_criteria": [
+          "allowlist 처리 로직의 실제 구현 스냅샷과 commit hash가 인용으로 확보되어 있다.",
+          "빈 allowlist 목록(빈 리스트/빈 컬렉션/null)에 대한 판정 동작이 테스트로 명시적으로 검증된다.",
+          "allowlist 항목 제거 후 재로딩(또는 재시작) 시 이전 상태가 아닌 비정상 기본값(전체 거부)이 잔존하지 않는다.",
+          "빈 목록, 단일 항목, 다수 항목, 항목 제거 후 재로딩 시나리오에 대한 테스트가 모두 통과한다(회귀 테스트 포함).",
+          "'target-empty-allowlist-symptom' 시나리오에서 모든 사용자가 계속 제외되는 현상이 재현되지 않는다.",
+          "수정 근거로 채택된 hypothesis와 코드 인용이 결과 보고에 기록된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 62,
+            "rationale": "allowlist를 비우면 타기팅/기능 노출 대상이 0명이 되어 allowlist 기반 기능 전체가 비활성화된다. 특정 사용자 1명이 아니라 해당 기능을 사용하는 전 사용자·전 플로우에 영향이 미친다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 45,
+            "rationale": "크래시나 데이터 손실/손상은 아니고 접근 판정이 항상 false(전체 거부)로 귀결되는 기능 비활성화다. 보안 노출(exposure)은 아니지만 반대 방향(과차단)의 정책 오작동이다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 75,
+            "rationale": "재현 절차가 명확하다: '1) 기존 allowlist 항목을 모두 제거 2) 임의 사용자의 타기팅 결과 확인'. 목록을 비우는 모든 구성에서 결정적으로 재현되며, 재현에 특수 조건이 필요 없다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 52,
+            "rationale": "'제한 없음'을 표현할 방법이 없어 더미 값 삽입이나 전체 허용용 sentinel 항목 같은 편법이 필요하다. 목록을 비우는 정상적 해제 경로가 막혀 있어 우회가 쉽지 않다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 45,
+            "rationale": "결제/계정 코어 경로 자체는 아니지만 타기팅/기능 노출 제어는 제품 동작의 핵심 구성이며, 제한 해제 요청이 기능 전체 중단으로 이어지는 운영 영향이 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "allowlist 목록을 비우면 '제한 없음'이 아니라 '모두 거부'로 해석되어 기능 노출이 전부 사라지는 ReporteBehaviorMismatch 건이다. 재현 절차가 명확하고 목록을 비우는 모든 구성에서 결정적으로 발생하며(빈 목록 분기 부재 가설, confidence 0.55), 영향은 특정 사용자가 아닌 해당 기능 전 사용자·전 플로우에 미친다. 다만 크래시·데이터 손실·보안 침해가 아니고 접근 판정이 과차단으로 귀결되는 형태이며, code evidence 0건·stack_trace 비어 있어 근본 원인이 미확정(confidence 0.25)이라는 점, 더미 항목 삽입 같은 편법 우회가 이론상 가능하다는 점을 반영해 상단 P2가 아닌 P2 중간 구간으로 산정한다. 상대적으로 저위험인 손상/손실 요소가 없다는 점에서 P1(70-84)에는 못 미친다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 24
+    }
+  },
+  "workflow": {
+    "id": 24,
+    "project_id": 24,
+    "request_id": "process-bug-24",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "제공된 evidence에는 code 근거가 0건이며, allowlist 처리 로직을 확인할 수 있는 snapshot 인용이 없다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 메시지는 allowlist 목록을 비운 뒤 모든 사용자가 계속 제외된다는 ReporteBehaviorMismatch 보고이며, 스택 트레이스는 비어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "raw_payload의 benchmark_case_id는 target-empty-allowlist-symptom이며, 저장소 식별자나 commit 정보는 제공되지 않았다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "citations": [],
+        "confidence": 0.25,
+        "evidence_counts": {
+          "code": 0,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "제공된 code evidence 0건으로 로직 미확인",
+              "증상: 목록 제거 후 사용자 포함이 아닌 계속 제외"
+            ],
+            "confidence": 0.55,
+            "hypothesis": "allowlist 목록이 비어 있을 때 \"제한 없음\"으로 해석하지 않고 \"허용 항목 0개 = 모두 거부\"로 해석하는 필터링 로직(예: 목록 순회 후 기본 거부-반환) 때문에 모든 사용자가 제외된다. 제한 해제를 위한 빈 목록 처리가 별도로 구현되지 않았을 가능성이 크다."
+          },
+          {
+            "evidence": [
+              "stack_trace가 비어 있어 실패 지점 미확인",
+              "ReporteBehaviorMismatch 유형의 사용자 보고"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "allowlist 로딩 단계에서 빈 목록이 null/빈 컬렉션으로 처리되며, 빈 값 분기 없이 바로 판정 함수로 전달되어 항상 불일치(false)로 판정된다."
+          },
+          {
+            "evidence": [
+              "재현 절차에 재로딩/재시작 단계가 명시되지 않음"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "allowlist 항목 제거 후 캐시/구성 재로딩이 이루어지지 않아 이전 상태가 아닌 비정상 기본값(전체 거부)으로 남아 있을 수 있다."
+          }
+        ]
+      },
+      "issue_id": "24",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "코드 evidence가 0건이고 저장소 식별자·commit 정보가 없어 실제 구현 로직을 확인하지 못한 채 수정이 추정에 의존할 수 있다.",
+            "mitigation": "1단계에서 snapshot과 commit hash를 확보할 때까지 구현 단계(3~4단계)를 착수하지 않고, 확보 실패 시 분석 보강을 요청한다."
+          },
+          {
+            "risk": "빈 allowlist를 '제한 없음'으로 해석할 경우 의도치 않은 접근 허용(보안 회귀)이 발생할 수 있다.",
+            "mitigation": "제품 요구사항을 명확히 확인하고, 기본값 정책을 테스트로 고정하며, 필요 시 경고 로그를 남긴다."
+          },
+          {
+            "risk": "hypothesis 3과 같이 재로딩/재시작 단계가 미문서화되어 재현 및 완화 검증이 불완전할 수 있다.",
+            "mitigation": "재현 절차와 수정 후 검증 절차에 재로딩·재시작 단계를 명시적으로 문서화하고 테스트로 커버한다."
+          },
+          {
+            "risk": "단일 수정이 다른 allowlist 사용 경로(캐시, 구성 로딩, 판정 함수 호출부)에 영향을 줄 수 있다.",
+            "mitigation": "영향 범위를 사전 조사하고 회귀 테스트 스위트로 다중 시나리오를 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "allowlist 처리 로직의 실제 구현 위치와 스냅샷을 확보한다.",
+            "details": "제공된 evidence에 code 근거가 0건이고 저장소 식별자/commit 정보가 없으므로, benchmark_case_id 'target-empty-allowlist-symptom'에 대응하는 저장소를 특정한 뒤 allowlist 로딩·판정·캐시 재로딩 경로를 포함하는 코드 스냅샷과 commit hash를 수집한다. 인용 없는 추정은 배제한다."
+          },
+          {
+            "id": 2,
+            "action": "빈 allowlist 입력에 대한 현재 동작을 재현하는 테스트를 작성한다.",
+            "details": "allowlist 목록이 빈 리스트/빈 컬렉션/null인 각 경우에 대해 판정 함수가 반환하는 값을 검증하는 단위 테스트를 추가하고, 제거 후 재시작(또는 재로딩) 절차를 포함한 재현 스크립트를 작성한다. 재현 절차에 재로딩/재시작 단계를 명시적으로 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "빈 목록 분기 처리를 구현한다.",
+            "details": "hypothesis 1(목록 순회 후 기본 거부-반환으로 인해 빈 목록이 '모두 거부'로 해석됨)과 hypothesis 2(빈 목록이 null/빈 컬렉션으로 전달되어 항상 불일치로 판정됨)를 코드 상에서 확인하고, 빈 목록을 '제한 없음(허용)'으로 해석할 것인지 '허용 항목 0개=모두 거부'로 해석할 것인지 제품 요구사항에 맞게 명시적으로 분기 처리한다. 판정 함수 진입부에 빈 값 판정 분기를 두고 매직값/암묵적 기본값을 제거한다."
+          },
+          {
+            "id": 4,
+            "action": "설정 재로딩 경로를 점검하고 캐시 무효화를 보장한다.",
+            "details": "hypothesis 3(항목 제거 후 캐시/구성 재로딩 미이행으로 이전이 아닌 비정상 기본값이 잔존)을 검증하기 위해 구성 변경 후 캐시 무효화·재로딩·재시작 단계를 테스트로 커버하고, 문서화된 절차 없이 이전 상태가 남지 않도록 한다."
+          },
+          {
+            "id": 5,
+            "action": "수정 사항을 검증하고 회귀 테스트를 실행한다.",
+            "details": "빈 목록, 단일 항목, 다수 항목, 항목 제거 후 재로딩 시나리오를 모두 포함하는 테스트 스위트를 실행하고, ReporteBehaviorMismatch 유형 보고가 재발하지 않음을 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "원인 확정 근거를 기록하고 결과를 보고한다.",
+            "details": "hypothesis 1/2/3 중 실제 원인 확정에 사용된 코드 인용(파일 경로, 함수, commit hash)을 남기고, 기존 confidence 0.25 및 근거 부족(code evidence 0건) 사항을 해소한 근거 목록을 함께 보고한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "acceptance_criteria": [
+          "allowlist 처리 로직의 실제 구현 스냅샷과 commit hash가 인용으로 확보되어 있다.",
+          "빈 allowlist 목록(빈 리스트/빈 컬렉션/null)에 대한 판정 동작이 테스트로 명시적으로 검증된다.",
+          "allowlist 항목 제거 후 재로딩(또는 재시작) 시 이전 상태가 아닌 비정상 기본값(전체 거부)이 잔존하지 않는다.",
+          "빈 목록, 단일 항목, 다수 항목, 항목 제거 후 재로딩 시나리오에 대한 테스트가 모두 통과한다(회귀 테스트 포함).",
+          "'target-empty-allowlist-symptom' 시나리오에서 모든 사용자가 계속 제외되는 현상이 재현되지 않는다.",
+          "수정 근거로 채택된 hypothesis와 코드 인용이 결과 보고에 기록된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:59:24.187184Z",
+    "completed_at": "2026-09-28T07:59:47.259668Z",
+    "created_at": "2026-09-28T07:59:24.173534Z",
+    "updated_at": "2026-09-28T07:59:47.260263Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 24.472
+  }
+}

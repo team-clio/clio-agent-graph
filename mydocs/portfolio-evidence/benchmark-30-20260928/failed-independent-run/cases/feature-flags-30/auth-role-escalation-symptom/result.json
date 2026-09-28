@@ -1,0 +1,651 @@
+{
+  "input": {
+    "id": "auth-role-escalation-symptom",
+    "report": {
+      "title": "일반 관리자가 중요 플래그를 변경",
+      "description": "조직 소유자가 아닌 관리자 계정에서 중요 플래그 편집 버튼이 활성화됩니다.",
+      "steps_to_reproduce": [
+        "admin 계정으로 권한을 평가합니다.",
+        "플래그 관리 가능 결과를 확인합니다."
+      ],
+      "expected_behavior": "소유자가 아니므로 false여야 합니다.",
+      "actual_behavior": "true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 9,
+    "name": "benchmark-20260928T063309Z-033dfb2f-auth-role-escalation-symptom",
+    "description": "Clio Benchmark feature-flags-30: auth-role-escalation-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T06:42:40.187278Z",
+    "updatedAt": "2026-09-28T06:42:40.187278Z"
+  },
+  "clio_repository": {
+    "id": 9,
+    "projectId": 9,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T06:43:15.115568Z",
+    "createdAt": "2026-09-28T06:42:40.205549Z",
+    "updatedAt": "2026-09-28T06:43:15.115957Z"
+  },
+  "bug": {
+    "id": 9,
+    "project_id": 9,
+    "issue_id": 9,
+    "title": "일반 관리자가 중요 플래그를 변경",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T06:43:16.574961Z",
+    "created_at": "2026-09-28T06:43:16.589972Z"
+  },
+  "analysis": {
+    "analysisResultId": 9,
+    "workflowRunId": 9,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 7,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "authorization 모듈이 관리자 권한과 프로젝트 범위 검사를 담당하며, 최상위 `__init__`이 `FeatureFlagService` 등을 공개 API로 노출함을 확인.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_d2e61f8aba95571da8f88589e962f4b3",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 14,
+          "location": "src/feature_flags/authorization.py:1-14",
+          "file_path": "src/feature_flags/authorization.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`can_manage_flag(role)`는 `role.casefold()`가 {owner, admin}에 포함될 때만 True를 반환하고, `can_edit_project_flag`는 owner만 True이며 `target_project_id`를 사용하지 않음.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_08eb79cef27155db85f110cfb5799ed7",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 16,
+          "location": "tests/test_authorization.py:1-16",
+          "file_path": "tests/test_authorization.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`test_admin_cannot_manage_owner_only_flag`는 admin 역할이 관리 가능하다는 기대와 충돌하며, `test_owner_cannot_edit_another_project`는 owner가 다른 프로젝트를 편집할 수 없어야 함을 명시.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_08eb79cef27155db85f110cfb5799ed7",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 27,
+          "location": "src/feature_flags/repository.py:1-27",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`delete`는 `flag_name` 정규화를 누락했고, 정규화 규칙(대소문자 무시)과 테넌트 스코프가 모든 접근 경로에 일관 적용되어야 한다는 요구사항의 근거.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_2348605b384555e488e89d753f1cbe58",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagCache._key`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 포함하지 않아 테넌트별 캐시 격리가 깨진다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_3837439b6a345d58b77f5e068b01c609",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 40,
+          "location": "src/feature_flags/service.py:1-40",
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "9",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagService.is_enabled`는 None 체크로 캐시를 처리하지만, `LegacyFeatureFlagService`는 `if cached:`를 사용하여 캐시된 False를 미스로 취급하는 회귀 버그를 가짐.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5131b79424ff5feab22b8d1240b069cd",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "README.md:3@b30e31e",
+          "observation": "서비스가 테넌트별 기능 플래그 조회 라이브러리임을 확인.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": "README.md:16",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "README.md:16@b30e31e",
+          "observation": "`repository.py`가 테넌트별 플래그 저장소임을 확인.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": "README.md:18",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "README.md:18@b30e31e",
+          "observation": "`service.py`가 플래그 조회 서비스임을 확인.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "feature-flags-service는 테넌트별 기능 플래그 조회를 제공하는 Python 라이브러리(버전 0.1.0)이며, 프로덕션 용도가 아닌 Clio Benchmark 분석 대상 fixture다.",
+          "verified": true
+        },
+        {
+          "fact": "`authorization` 모듈은 관리자 권한과 프로젝트 범위 검사를 담당하며, `can_manage_flag(role)`는 `role.casefold()`가 {owner, admin}에 포함될 때만 True를 반환한다.",
+          "verified": true
+        },
+        {
+          "fact": "권한 규칙 문서는 `can_manage_flag` 구현과 `test_admin_cannot_manage_owner_only_flag`(admin은 owner 전용 플래그를 관리할 수 없어야 함) 기대가 충돌하며, 권한 구현과 기대 동작 간 불일치가 존재한다고 명시한다.",
+          "verified": true
+        },
+        {
+          "fact": "`can_edit_project_flag(user_project_id, target_project_id, role)`는 `role.casefold() == 'owner'`인 경우에만 True를 반환하고 `target_project_id`를 사용하지 않아 프로젝트 범위 검사가 실질적으로 동작하지 않으며, `test_owner_cannot_edit_another_project`는 owner가 다른 프로젝트를 편집할 수 없어야 함을 명시한다.",
+          "verified": true
+        },
+        {
+          "fact": "리포트의 재현 절차는 admin 계정으로 권한 평가 후 플래그 관리 가능 결과 확인이며, 기대 동작은 소유자가 아니므로 false, 실제 동작은 true 반환이다.",
+          "verified": true
+        },
+        {
+          "fact": "리포트 stack_trace는 빈 배열이고 raw_payload는 {\"benchmark_case_id\": \"auth-role-escalation-symptom\"}로, 발생 시각은 2026-09-28T06:43:16.574961Z다.",
+          "verified": true
+        },
+        {
+          "fact": "문서에는 admin 역할의 True 반환을 UI 버튼 활성화로 직접 연결하는 코드 경로(프론트엔드/엔드포인트) 근거가 제공되지 않아, 증상과 서버 응답 간 연결은 추정에 해당한다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 9,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.8,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_08eb79cef27155db85f110cfb5799ed7: can_manage_flag는 role.casefold()가 {owner, admin}에 포함될 때만 True를 반환하며, test_admin_cannot_manage_owner_only_flag 기대와 충돌",
+            "kn_d2e61f8aba95571da8f88589e962f4b3: authorization 모듈은 관리자 권한과 프로젝트 범위 검사를 담당",
+            "bug_context 실제 동작: true 반환 / 기대 동작: false"
+          ],
+          "confidence": 0.86,
+          "hypothesis": "`authorization.can_manage_flag(role)`가 `role.casefold()`를 {owner, admin} 집합과 비교하도록 구현되어, 조직 소유자가 아닌 admin 역할에도 관리 가능(True)을 반환하기 때문에 '중요 플래그 편집 버튼'이 활성화된다. 규칙 문서는 이 함수가 owner/admin 모두에 대해 True를 반환하는 현재 구현과 `test_admin_cannot_manage_owner_only_flag` 기대(admin은 관리 불가) 간 충돌을 명시한다."
+        },
+        {
+          "evidence": [
+            "kn_08eb79cef27155db85f110cfb5799ed7: can_edit_project_flag는 role == 'owner'일 때만 True, target_project_id 미사용, test_owner_cannot_edit_another_project는 다른 프로젝트 편집 불가를 요구"
+          ],
+          "confidence": 0.35,
+          "hypothesis": "`can_edit_project_flag(user_project_id, target_project_id, role)`가 `role.casefold() == 'owner'`만 검사하고 `target_project_id`(프로젝트 범위)를 실제로 사용하지 않아, 프로젝트 범위 검사가 우회되어 관리 UI가 편집 허용으로 판단할 수 있다(다만 이 함수는 owner에게만 True를 반환하므로 단독으로는 admin의 True를 설명하지 못한다)."
+        }
+      ],
+      "project_id": 9,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "admin의 owner 전용 플래그 관리 권한을 제거하면서 admin이 관리해야 하는 일반 플래그 접근까지 함께 차단될 수 있다.",
+            "mitigation": "플래그 스코프(owner 전용 vs 일반)를 구분하는 판정을 도입하거나, 기존 admin 허용 케이스에 대한 테스트를 추가해 회귀를 확인한다."
+          },
+          {
+            "risk": "`can_manage_flag` 시그니처 변경 시 `src/feature_flags/__init__.py`의 공개 API 등 기존 호출부가 깨질 수 있다.",
+            "mitigation": "호출부를 먼저 검색해 영향 범위를 확인하고, 시그니처 변경이 필요하면 하위 호환 기본값을 제공한다."
+          },
+          {
+            "risk": "admin True 반환과 UI 버튼 활성화 연결은 문서 근거가 없는 추정이며, 다른 경로로 권한이 부여될 수 있다.",
+            "mitigation": "`authorization` 소비 지점을 코드에서 직접 확인하고 연결 여부를 이슈에 명시한 뒤, 연결이 확인된 경우에만 UI 동작을 검증 항목으로 확정한다."
+          },
+          {
+            "risk": "`can_edit_project_flag`의 프로젝트 범위 검사 추가가 동일 프로젝트 편집의 정상 케이스를 잘못 차단(false negative)할 수 있다.",
+            "mitigation": "`user_project_id == target_project_id`인 owner 케이스의 양성 테스트를 함께 작성해 정상 동작을 보장한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 규칙의 기준 동작(spec)을 확정한다",
+            "details": "`tests/test_authorization.py`의 `test_admin_cannot_manage_owner_only_flag`(admin은 owner 전용 플래그를 관리할 수 없어야 함)와 `test_owner_cannot_edit_another_project`(owner는 다른 프로젝트를 편집할 수 없어야 함) 기대가 규범이며, 권한 규칙 문서와 `src/feature_flags/authorization.py`의 현재 구현(`role.casefold()`가 {owner, admin}에 포함될 때 True) 간 충돌이 존재함을 기록한다. 리포터의 기대 동작(false)을 정답으로 확정하고 근거를 이슈에 남긴다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 `can_manage_flag(role)`를 기대 동작에 맞게 수정한다",
+            "details": "owner 전용 플래그 관리 판정에서 admin을 True로 반환하지 않도록 한다. 정규화는 기존 규칙(대소문자 무시)을 유지하되, 반환 집합에서 admin을 제거하거나 플래그 스코프(owner 전용 vs 일반)를 구분하는 인자를 도입한다. 플래그 스코프 구분을 도입하는 경우 owner 전용 플래그에 대한 admin 판정은 False여야 한다."
+          },
+          {
+            "id": 3,
+            "action": "`can_edit_project_flag(user_project_id, target_project_id, role)`에 프로젝트 범위 검사를 실제로 적용한다",
+            "details": "현재는 `role.casefold() == 'owner'`만 검사하고 `target_project_id`를 사용하지 않아 `test_owner_cannot_edit_another_project`가 요구하는 프로젝트 범위 검사가 실질적으로 동작하지 않는다. `user_project_id != target_project_id`인 경우 False를 반환하도록 수정한다."
+          },
+          {
+            "id": 4,
+            "action": "`src/feature_flags/authorization.py` 수정 결과를 테스트로 검증한다",
+            "details": "`tests/test_authorization.py`의 `test_admin_cannot_manage_owner_only_flag`와 `test_owner_cannot_edit_another_project`를 실행해 통과를 확인한다. admin/owner/그 외 역할, 동일 프로젝트/타 프로젝트 조합의 케이스를 추가로 커버한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차(admin 계정으로 권한 평가 후 플래그 관리 가능 결과 확인)를 수정 후 다시 수행한다",
+            "details": "리포트의 재현 절차에 따라 admin 역할로 권한을 평가했을 때 관리 가능 결과가 false로 반환되는지 확인한다. 관련 fixture `{\"benchmark_case_id\": \"auth-role-escalation-symptom\"}`에 대해 기대 동작과 실제 동작이 일치하는지 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "UI 버튼 활성화 연결 경로를 확인한다 (증거 미제공 항목)",
+            "details": "문서에는 admin 역할의 True 반환이 UI 버튼 활성화로 직접 연결되는 코드 경로(프론트엔드/엔드포인트) 근거가 제공되지 않아 이는 추정에 해당한다. `authorization`을 호출하는 소비 지점을 코드베이스에서 검색해 관리 UI가 동일 판정 함수를 사용하는지 확인하고, 사용한다면 이번 수정으로 버튼도 비활성화되는지 검증한다. 사용 여부를 이슈에 명확히 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "acceptance_criteria": [
+          "`tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag`가 통과한다(admin 역할은 owner 전용 플래그에 대해 False를 반환).",
+          "`tests/test_authorization.py::test_owner_cannot_edit_another_project`가 통과한다(owner가 다른 프로젝트를 편집할 때 False를 반환).",
+          "admin 계정으로 권한 평가 시 플래그 관리 가능 결과가 false로 반환되어, 리포트의 기대 동작(false)과 실제 동작이 일치한다.",
+          "`can_manage_flag`의 권한 규칙 문서와 구현 간 명시된 충돌이 해소되어, 문서·테스트·구현이 동일한 판정을 기술한다.",
+          "대소문자 무시 정규화(`role.casefold()`) 등 기존 정규화 규칙이 수정 후에도 유지된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 70,
+            "rationale": "`can_manage_flag(role)`가 {owner, admin}을 모두 허용하므로 admin 역할을 보유한 모든 계정/조직에서 중요(owner 전용) 플래그 편집 경로가 열린다. 다만 영향은 admin 역할 보유자로 한정되고, 프론트엔드/엔드포인트까지 연결되는 코드 경로 근거가 문서에 없어(unverified fact) 실제 UI 전파 범위는 추정에 해당한다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 75,
+            "rationale": "크래시나 데이터 손상은 아니지만 권한 경계 위반(privilege escalation 성격)으로, 소유자 전용 자원에 대한 무단 변경이 가능해진다. `can_edit_project_flag(user_project_id, target_project_id, role)`가 `target_project_id`를 사용하지 않아 테넌트/프로젝트 범위 검사가 실질적으로 무력화된 점도 보안 노출로 직결된다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 80,
+            "rationale": "재현 절차가 'admin 계정으로 권한 평가 → 플래그 관리 가능 결과 확인'으로 결정적이며, 반환값이 항상 true로 고정되는 로직 오류이므로 재현성이 매우 높다. 테스트 `test_admin_cannot_manage_owner_only_flag`가 실패하는 형태로 상시 관측 가능하다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 65,
+            "rationale": "서버 측 권한 판정이 잘못되어 클라이언트 단에서 회피할 수 없고, admin에게 owner 전용 플래그 권한을 부여하지 않도록 역할을 수동 관리하는 운영적 우회만 가능하다. 코드 수정 전까지 근본적 우회책이 없다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 72,
+            "rationale": "`authorization` 모듈은 관리자 권한과 프로젝트 범위 검사를 담당하는 보안 핵심 경로이며, 규칙 문서와 테스트 기대 간 충돌이 명시적으로 확인된 상태다. 결제/계정 자체보다는 권한·플래그 관리 영역이나, 잘못된 플래그 변경은 테넌트별 기능 노출을 좌우할 수 있다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "권한 검사 로직 결함으로 admin 역할이 owner 전용 플래그를 관리 가능(True)으로 판정하는 권한 상승(role escalation) 이슈로, P1(높음) 구간에 해당한다(78점). 근본 원인은 `src/feature_flags/authorization.py`의 `can_manage_flag(role)`가 `role.casefold()`를 {owner, admin} 집합과 비교하는 구현으로, 규칙 문서 및 `tests/test_authorization.py`의 `test_admin_cannot_manage_owner_only_flag` 기대(admin은 관리 불가)와 정면 충돌한다(confidence 0.86). 추가로 `can_edit_project_flag(user_project_id, target_project_id, role)`가 `target_project_id`를 사용하지 않아 프로젝트 범위 검사가 무력화되어 있고, `test_owner_cannot_edit_another_project` 기대도 위반된다. 발생 경로가 결정적이고 재현성이 높아 실사용 환경에서 상시 노출된다. 다만 (1) `feature-flags-service`가 프로덕션 용도가 아닌 Clio Benchmark 분석 대상 fixture(버전 0.1.0)이고, (2) stack_trace가 빈 배열이며 raw_payload가 `{\"benchmark_case_id\": \"auth-role-escalation-symptom\"}`인 합성/증상 케이스이며, (3) admin의 True 반환을 실제 UI 버튼 활성화로 연결하는 프론트엔드/엔드포인트 코드 경로 근거가 문서에 없어(unverified), 데이터 손실·전면 장애 수준의 P0(85-100)까지는 올리지 않고 권한 경계 위반에 해당하는 상위 P1로 산정한다. 권장 조치: `can_manage_flag`를 owner 전용으로 좁히고, `can_edit_project_flag`에서 `target_project_id` 기반 프로젝트 범위 검사를 실제 수행하며, `test_admin_cannot_manage_owner_only_flag`·`test_owner_cannot_edit_another_project`를 회귀 게이트로 사용.",
+        "risk_score": 78
+      },
+      "workflow_run_id": 9
+    }
+  },
+  "workflow": {
+    "id": 9,
+    "project_id": 9,
+    "request_id": "process-bug-9",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "feature-flags-service는 테넌트별 기능 플래그 조회를 제공하는 Python 라이브러리(버전 0.1.0)이며, 프로덕션 용도가 아닌 Clio Benchmark 분석 대상 fixture다.",
+            "verified": true
+          },
+          {
+            "fact": "`authorization` 모듈은 관리자 권한과 프로젝트 범위 검사를 담당하며, `can_manage_flag(role)`는 `role.casefold()`가 {owner, admin}에 포함될 때만 True를 반환한다.",
+            "verified": true
+          },
+          {
+            "fact": "권한 규칙 문서는 `can_manage_flag` 구현과 `test_admin_cannot_manage_owner_only_flag`(admin은 owner 전용 플래그를 관리할 수 없어야 함) 기대가 충돌하며, 권한 구현과 기대 동작 간 불일치가 존재한다고 명시한다.",
+            "verified": true
+          },
+          {
+            "fact": "`can_edit_project_flag(user_project_id, target_project_id, role)`는 `role.casefold() == 'owner'`인 경우에만 True를 반환하고 `target_project_id`를 사용하지 않아 프로젝트 범위 검사가 실질적으로 동작하지 않으며, `test_owner_cannot_edit_another_project`는 owner가 다른 프로젝트를 편집할 수 없어야 함을 명시한다.",
+            "verified": true
+          },
+          {
+            "fact": "리포트의 재현 절차는 admin 계정으로 권한 평가 후 플래그 관리 가능 결과 확인이며, 기대 동작은 소유자가 아니므로 false, 실제 동작은 true 반환이다.",
+            "verified": true
+          },
+          {
+            "fact": "리포트 stack_trace는 빈 배열이고 raw_payload는 {\"benchmark_case_id\": \"auth-role-escalation-symptom\"}로, 발생 시각은 2026-09-28T06:43:16.574961Z다.",
+            "verified": true
+          },
+          {
+            "fact": "문서에는 admin 역할의 True 반환을 UI 버튼 활성화로 직접 연결하는 코드 경로(프론트엔드/엔드포인트) 근거가 제공되지 않아, 증상과 서버 응답 간 연결은 추정에 해당한다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 7,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "authorization 모듈이 관리자 권한과 프로젝트 범위 검사를 담당하며, 최상위 `__init__`이 `FeatureFlagService` 등을 공개 API로 노출함을 확인.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_d2e61f8aba95571da8f88589e962f4b3",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 14,
+            "location": "src/feature_flags/authorization.py:1-14",
+            "file_path": "src/feature_flags/authorization.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`can_manage_flag(role)`는 `role.casefold()`가 {owner, admin}에 포함될 때만 True를 반환하고, `can_edit_project_flag`는 owner만 True이며 `target_project_id`를 사용하지 않음.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_08eb79cef27155db85f110cfb5799ed7",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 16,
+            "location": "tests/test_authorization.py:1-16",
+            "file_path": "tests/test_authorization.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`test_admin_cannot_manage_owner_only_flag`는 admin 역할이 관리 가능하다는 기대와 충돌하며, `test_owner_cannot_edit_another_project`는 owner가 다른 프로젝트를 편집할 수 없어야 함을 명시.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_08eb79cef27155db85f110cfb5799ed7",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 27,
+            "location": "src/feature_flags/repository.py:1-27",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`delete`는 `flag_name` 정규화를 누락했고, 정규화 규칙(대소문자 무시)과 테넌트 스코프가 모든 접근 경로에 일관 적용되어야 한다는 요구사항의 근거.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_2348605b384555e488e89d753f1cbe58",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 16,
+            "location": "src/feature_flags/cache.py:1-16",
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagCache._key`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 포함하지 않아 테넌트별 캐시 격리가 깨진다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_3837439b6a345d58b77f5e068b01c609",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 40,
+            "location": "src/feature_flags/service.py:1-40",
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "9",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagService.is_enabled`는 None 체크로 캐시를 처리하지만, `LegacyFeatureFlagService`는 `if cached:`를 사용하여 캐시된 False를 미스로 취급하는 회귀 버그를 가짐.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5131b79424ff5feab22b8d1240b069cd",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "README.md:3@b30e31e",
+            "observation": "서비스가 테넌트별 기능 플래그 조회 라이브러리임을 확인.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+            "end_line": 16,
+            "location": "README.md:16",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "README.md:16@b30e31e",
+            "observation": "`repository.py`가 테넌트별 플래그 저장소임을 확인.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": "README.md:18",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "README.md:18@b30e31e",
+            "observation": "`service.py`가 플래그 조회 서비스임을 확인.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.8,
+        "evidence_counts": {
+          "code": 6,
+          "history": 0,
+          "documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_08eb79cef27155db85f110cfb5799ed7: can_manage_flag는 role.casefold()가 {owner, admin}에 포함될 때만 True를 반환하며, test_admin_cannot_manage_owner_only_flag 기대와 충돌",
+              "kn_d2e61f8aba95571da8f88589e962f4b3: authorization 모듈은 관리자 권한과 프로젝트 범위 검사를 담당",
+              "bug_context 실제 동작: true 반환 / 기대 동작: false"
+            ],
+            "confidence": 0.86,
+            "hypothesis": "`authorization.can_manage_flag(role)`가 `role.casefold()`를 {owner, admin} 집합과 비교하도록 구현되어, 조직 소유자가 아닌 admin 역할에도 관리 가능(True)을 반환하기 때문에 '중요 플래그 편집 버튼'이 활성화된다. 규칙 문서는 이 함수가 owner/admin 모두에 대해 True를 반환하는 현재 구현과 `test_admin_cannot_manage_owner_only_flag` 기대(admin은 관리 불가) 간 충돌을 명시한다."
+          },
+          {
+            "evidence": [
+              "kn_08eb79cef27155db85f110cfb5799ed7: can_edit_project_flag는 role == 'owner'일 때만 True, target_project_id 미사용, test_owner_cannot_edit_another_project는 다른 프로젝트 편집 불가를 요구"
+            ],
+            "confidence": 0.35,
+            "hypothesis": "`can_edit_project_flag(user_project_id, target_project_id, role)`가 `role.casefold() == 'owner'`만 검사하고 `target_project_id`(프로젝트 범위)를 실제로 사용하지 않아, 프로젝트 범위 검사가 우회되어 관리 UI가 편집 허용으로 판단할 수 있다(다만 이 함수는 owner에게만 True를 반환하므로 단독으로는 admin의 True를 설명하지 못한다)."
+          }
+        ]
+      },
+      "issue_id": "9",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "admin의 owner 전용 플래그 관리 권한을 제거하면서 admin이 관리해야 하는 일반 플래그 접근까지 함께 차단될 수 있다.",
+            "mitigation": "플래그 스코프(owner 전용 vs 일반)를 구분하는 판정을 도입하거나, 기존 admin 허용 케이스에 대한 테스트를 추가해 회귀를 확인한다."
+          },
+          {
+            "risk": "`can_manage_flag` 시그니처 변경 시 `src/feature_flags/__init__.py`의 공개 API 등 기존 호출부가 깨질 수 있다.",
+            "mitigation": "호출부를 먼저 검색해 영향 범위를 확인하고, 시그니처 변경이 필요하면 하위 호환 기본값을 제공한다."
+          },
+          {
+            "risk": "admin True 반환과 UI 버튼 활성화 연결은 문서 근거가 없는 추정이며, 다른 경로로 권한이 부여될 수 있다.",
+            "mitigation": "`authorization` 소비 지점을 코드에서 직접 확인하고 연결 여부를 이슈에 명시한 뒤, 연결이 확인된 경우에만 UI 동작을 검증 항목으로 확정한다."
+          },
+          {
+            "risk": "`can_edit_project_flag`의 프로젝트 범위 검사 추가가 동일 프로젝트 편집의 정상 케이스를 잘못 차단(false negative)할 수 있다.",
+            "mitigation": "`user_project_id == target_project_id`인 owner 케이스의 양성 테스트를 함께 작성해 정상 동작을 보장한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 규칙의 기준 동작(spec)을 확정한다",
+            "details": "`tests/test_authorization.py`의 `test_admin_cannot_manage_owner_only_flag`(admin은 owner 전용 플래그를 관리할 수 없어야 함)와 `test_owner_cannot_edit_another_project`(owner는 다른 프로젝트를 편집할 수 없어야 함) 기대가 규범이며, 권한 규칙 문서와 `src/feature_flags/authorization.py`의 현재 구현(`role.casefold()`가 {owner, admin}에 포함될 때 True) 간 충돌이 존재함을 기록한다. 리포터의 기대 동작(false)을 정답으로 확정하고 근거를 이슈에 남긴다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 `can_manage_flag(role)`를 기대 동작에 맞게 수정한다",
+            "details": "owner 전용 플래그 관리 판정에서 admin을 True로 반환하지 않도록 한다. 정규화는 기존 규칙(대소문자 무시)을 유지하되, 반환 집합에서 admin을 제거하거나 플래그 스코프(owner 전용 vs 일반)를 구분하는 인자를 도입한다. 플래그 스코프 구분을 도입하는 경우 owner 전용 플래그에 대한 admin 판정은 False여야 한다."
+          },
+          {
+            "id": 3,
+            "action": "`can_edit_project_flag(user_project_id, target_project_id, role)`에 프로젝트 범위 검사를 실제로 적용한다",
+            "details": "현재는 `role.casefold() == 'owner'`만 검사하고 `target_project_id`를 사용하지 않아 `test_owner_cannot_edit_another_project`가 요구하는 프로젝트 범위 검사가 실질적으로 동작하지 않는다. `user_project_id != target_project_id`인 경우 False를 반환하도록 수정한다."
+          },
+          {
+            "id": 4,
+            "action": "`src/feature_flags/authorization.py` 수정 결과를 테스트로 검증한다",
+            "details": "`tests/test_authorization.py`의 `test_admin_cannot_manage_owner_only_flag`와 `test_owner_cannot_edit_another_project`를 실행해 통과를 확인한다. admin/owner/그 외 역할, 동일 프로젝트/타 프로젝트 조합의 케이스를 추가로 커버한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차(admin 계정으로 권한 평가 후 플래그 관리 가능 결과 확인)를 수정 후 다시 수행한다",
+            "details": "리포트의 재현 절차에 따라 admin 역할로 권한을 평가했을 때 관리 가능 결과가 false로 반환되는지 확인한다. 관련 fixture `{\"benchmark_case_id\": \"auth-role-escalation-symptom\"}`에 대해 기대 동작과 실제 동작이 일치하는지 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "UI 버튼 활성화 연결 경로를 확인한다 (증거 미제공 항목)",
+            "details": "문서에는 admin 역할의 True 반환이 UI 버튼 활성화로 직접 연결되는 코드 경로(프론트엔드/엔드포인트) 근거가 제공되지 않아 이는 추정에 해당한다. `authorization`을 호출하는 소비 지점을 코드베이스에서 검색해 관리 UI가 동일 판정 함수를 사용하는지 확인하고, 사용한다면 이번 수정으로 버튼도 비활성화되는지 검증한다. 사용 여부를 이슈에 명확히 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "acceptance_criteria": [
+          "`tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag`가 통과한다(admin 역할은 owner 전용 플래그에 대해 False를 반환).",
+          "`tests/test_authorization.py::test_owner_cannot_edit_another_project`가 통과한다(owner가 다른 프로젝트를 편집할 때 False를 반환).",
+          "admin 계정으로 권한 평가 시 플래그 관리 가능 결과가 false로 반환되어, 리포트의 기대 동작(false)과 실제 동작이 일치한다.",
+          "`can_manage_flag`의 권한 규칙 문서와 구현 간 명시된 충돌이 해소되어, 문서·테스트·구현이 동일한 판정을 기술한다.",
+          "대소문자 무시 정규화(`role.casefold()`) 등 기존 정규화 규칙이 수정 후에도 유지된다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T06:43:17.673099Z",
+    "completed_at": "2026-09-28T06:43:47.836253Z",
+    "created_at": "2026-09-28T06:43:17.659672Z",
+    "updated_at": "2026-09-28T06:43:47.837497Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 32.448
+  }
+}

@@ -1,0 +1,560 @@
+{
+  "input": {
+    "id": "rollout-boundary-symptom",
+    "report": {
+      "title": "0% rollout에서도 일부 사용자가 활성화됨",
+      "description": "rollout 비율의 상한 경계가 포함되어 예상보다 많은 사용자가 활성화됩니다.",
+      "steps_to_reproduce": [
+        "경계와 동일한 bucket을 전달합니다.",
+        "rollout 결과를 확인합니다."
+      ],
+      "expected_behavior": "상한 경계 사용자는 제외되어야 합니다.",
+      "actual_behavior": "활성 대상으로 판정됩니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_percentage_boundary_excludes_bucket_equal_to_percentage"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 15,
+    "name": "benchmark-20260928T065850Z-59223a30-rollout-boundary-symptom",
+    "description": "Clio Benchmark feature-flags-30: rollout-boundary-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:14:34.683554Z",
+    "updatedAt": "2026-09-28T07:14:34.683554Z"
+  },
+  "clio_repository": {
+    "id": 15,
+    "projectId": 15,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:15:14.990158Z",
+    "createdAt": "2026-09-28T07:14:34.689332Z",
+    "updatedAt": "2026-09-28T07:15:14.990704Z"
+  },
+  "bug": {
+    "id": 15,
+    "project_id": 15,
+    "issue_id": 15,
+    "title": "0% rollout에서도 일부 사용자가 활성화됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:15:15.055952Z",
+    "created_at": "2026-09-28T07:15:15.062091Z"
+  },
+  "analysis": {
+    "analysisResultId": 15,
+    "workflowRunId": 15,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "`rollout_bucket(user_id)`: `hash(user_id) % 100`\n`is_in_rollout(bucket, percentage)`: 현재 `bucket <= percentage`",
+          "end_line": 9,
+          "location": "src/feature_flags/rollout.py:1-9",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "15",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "percentage rollout 버킷 계산과 경계/안정성 도메인 규칙. `bucket == percentage`는 제외되어야 하며(`is_in_rollout(10, 10) is False`), 현재의 `<=` 비교는 경계값을 포함하는 결함이고 `bucket < percentage`로 고쳐야 한다고 명시한다. 아울러 내장 `hash()`의 `PYTHONHASHSEED` 의존성으로 프로세스 간 안정성이 깨진다고 명시한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5861774311d85c538b8085b96c192800",
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def is_in_rollout(bucket: int, percentage: int) -> bool:",
+          "end_line": 4,
+          "location": "src/feature_flags/rollout.py:4",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "15",
+          "start_line": 4,
+          "evidence_id": "code:src/feature_flags/rollout.py:4",
+          "observation": "rollout 판정 함수의 시그니처. bucket과 percentage를 입력으로 받아 bool을 반환하며, 이 함수의 비교 연산이 결함 지점이다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "    assert is_in_rollout(bucket=10, percentage=10) is False",
+          "end_line": 9,
+          "location": "tests/test_rollout.py:9",
+          "file_path": "tests/test_rollout.py",
+          "source_id": "15",
+          "start_line": 9,
+          "evidence_id": "code:tests/test_rollout.py:9",
+          "observation": "경계 제외 요구사항을 고정하는 회귀 테스트. bucket이 percentage와 동일하면 False여야 함을 명시하므로 `<=` 구현과 직접 불일치한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def rollout_bucket(user_id: str) -> int:",
+          "end_line": 8,
+          "location": "src/feature_flags/rollout.py:8",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "15",
+          "start_line": 8,
+          "evidence_id": "code:src/feature_flags/rollout.py:8",
+          "observation": "버킷 산출 함수. 내장 hash 기반 구현으로 인해 프로세스 간 안정성 요구와 충돌한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def test_rollout_bucket_is_stable_across_processes() -> None:\n        \"from feature_flags.rollout import rollout_bucket;\"\n        \"print(rollout_bucket('user-42'))\",",
+          "end_line": 17,
+          "location": "tests/test_rollout.py:12-17",
+          "file_path": "tests/test_rollout.py",
+          "source_id": "15",
+          "start_line": 12,
+          "evidence_id": "code:tests/test_rollout.py:12",
+          "observation": "별도 프로세스에서 `rollout_bucket('user-42')`를 실행해 값 동일성을 요구하는 테스트. PYTHONHASHSEED 의존성 때문에 별개 결함으로 실패할 수 있음을 뒷받침한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+          "end_line": 20,
+          "location": "README.md:20",
+          "file_path": "README.md",
+          "source_id": "15",
+          "start_line": 20,
+          "evidence_id": "code:README.md:20",
+          "observation": "rollout.py의 책임이 percentage rollout 계산임을 확인하는 저장소 문서 근거.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "15",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "rollout 모듈은 percentage rollout 계산을 담당하며 `src/feature_flags/rollout.py`에 위치한다.",
+          "verified": true
+        },
+        {
+          "fact": "`is_in_rollout(bucket, percentage)`의 현재 구현은 `bucket <= percentage` 비교를 사용하여 상한 경계값을 포함한다.",
+          "verified": true
+        },
+        {
+          "fact": "`tests/test_rollout.py`의 `assert is_in_rollout(bucket=10, percentage=10) is False`가 경계값 제외를 기대하므로 현재 구현과 불일치한다.",
+          "verified": true
+        },
+        {
+          "fact": "`rollout_bucket(user_id)`는 내장 `hash(user_id) % 100`을 사용하며, 내장 `hash()`는 `PYTHONHASHSEED`에 의존하므로 프로세스 간 안정성이 요구되는 테스트(`test_rollout_bucket_is_stable_across_processes`)와 충돌한다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 재현 절차는 경계와 동일한 bucket을 전달한 뒤 rollout 결과를 확인하는 것이며, 기대 동작은 상한 경계 사용자 제외, 실제 동작은 활성 대상으로 판정되는 것이다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 15,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.9,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_5861774311d85c538b8085b96c192800: `is_in_rollout(bucket, percentage)`는 현재 `bucket <= percentage`",
+            "kn_5861774311d85c538b8085b96c192800: `bucket == percentage`인 경우는 제외되어야 한다(`is_in_rollout(10, 10) is False`)",
+            "code: src/feature_flags/rollout.py:4 `def is_in_rollout(bucket: int, percentage: int) -> bool:`",
+            "code: tests/test_rollout.py:9 `assert is_in_rollout(bucket=10, percentage=10) is False`"
+          ],
+          "confidence": 0.94,
+          "hypothesis": "`src/feature_flags/rollout.py`의 `is_in_rollout`이 `bucket <= percentage`로 구현되어 상한 경계 bucket(예: bucket == percentage)이 활성 대상에 포함된다. 기대 동작 및 `tests/test_rollout.py`의 `is_in_rollout(bucket=10, percentage=10) is False`와 불일치하므로 `bucket < percentage`로 수정해야 한다."
+        },
+        {
+          "evidence": [
+            "kn_5861774311d85c538b8085b96c192800: `bucket == percentage`인 경우는 제외되어야 한다",
+            "버그 컨텍스트: 0% rollout에서도 일부 사용자가 활성화됨"
+          ],
+          "confidence": 0.78,
+          "hypothesis": "0% rollout 병리 케이스도 동일한 원인의 귀결이다. `bucket <= 0`이면 bucket이 0인 사용자가 활성화되지만, `bucket < 0`인 수정에서는 어떤 사용자도 활성화되지 않는다. 보고된 증상(0%에서도 일부 사용자 활성화)은 이 상한 경계 포함 결함과 일치한다."
+        },
+        {
+          "evidence": [
+            "kn_5861774311d85c538b8085b96c192800: `rollout_bucket` 결과는 프로세스 간(다른 `PYTHONHASHSEED`)에도 안정적이어야 하며, 내장 `hash()`의 `PYTHONHASHSEED` 의존성과 충돌한다",
+            "code: tests/test_rollout.py:12 `def test_rollout_bucket_is_stable_across_processes() -> None:`",
+            "code: tests/test_rollout.py:17 `print(rollout_bucket('user-42'))`"
+          ],
+          "confidence": 0.6,
+          "hypothesis": "`rollout_bucket`이 내장 `hash()`를 사용하여 `PYTHONHASHSEED`에 따라 값이 달라진다. 이는 상한 경계 버그와 별개의 안정성 결함이며(경계 증상의 직접 원인은 아님), 프로세스 간 bucket 안정성 테스트를 실패시킨다."
+        }
+      ],
+      "project_id": 15,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`bucket < percentage`로 변경하면 상한 경계 사용자가 의도적으로 활성 대상에서 빠지므로, 기존에 활성화되었던 일부 사용자의 기능 접근이 회수되어 사용자에게 노출되는 변화가 발생할 수 있다.",
+            "mitigation": "변경을 릴리스 노트에 명시하고, 경계 사용자 수가 미미함을 확인한 뒤 배포한다. 필요 시 롤아웃 비율을 소폭 상향하여 순 활성 비율을 보정한다."
+          },
+          {
+            "risk": "`rollout_bucket`을 내장 `hash()`에서 `hashlib` 기반으로 교체하면 기존 `hash()` 기준 bucket 배정이 전면 재배치되어 진행 중인 롤아웃 대상 집단이 바뀐다.",
+            "mitigation": "안정성 수정은 경계 버그와 분리해 별도 커밋/릴리스로 배포하고, 배정 재편을 감수할 수 있는 시점에 적용한다. 배포 전후 bucket 분포를 샘플링해 검증한다."
+          },
+          {
+            "risk": "두 결함(경계 포함 결함, 프로세스 간 해시 불안정)을 한 번에 처리하면 문제 원인 추적이 어려워질 수 있다.",
+            "mitigation": "커밋을 분리하고, 각 수정에 대응하는 회귀 테스트를 개별적으로 확인하여 인과관계를 명확히 유지한다."
+          },
+          {
+            "risk": "경계 수정만 반영하고 해시 안정성 수정을 누락하면 `test_rollout_bucket_is_stable_across_processes`가 계속 실패할 수 있다.",
+            "mitigation": "두 결함 각각에 대한 테스트를 CI 필수 항목으로 지정하고, 서로 다른 `PYTHONHASHSEED` 환경에서 테스트를 반복 실행한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 상한 경계 비교 결함을 `bucket <= percentage`에서 `bucket < percentage`로 수정한다.",
+            "details": "근거: kn_5861774311d85c538b8085b96c192800 및 `src/feature_flags/rollout.py:4` `def is_in_rollout(bucket: int, percentage: int) -> bool:`. 상한 경계 bucket(예: bucket == percentage)은 활성 대상에서 제외되어야 한다(`is_in_rollout(10, 10) is False`). 0% 케이스에서는 `bucket < 0`이 되어 어떤 사용자도 활성화되지 않으므로, 0%에서 일부 사용자가 활성화되던 증상도 함께 해소된다."
+          },
+          {
+            "id": 2,
+            "action": "`tests/test_rollout.py:9`의 경계 회귀 테스트(`assert is_in_rollout(bucket=10, percentage=10) is False`)를 실행해 수정 결과를 검증한다.",
+            "details": "기존 `<=` 구현과 직접 불일치하던 회귀 테스트가 통과해야 한다. 추가로 `is_in_rollout(bucket=9, percentage=10) is True`, `is_in_rollout(bucket=0, percentage=0) is False` 등 경계 인접 케이스를 보강해 상한 제외와 0% 병리 케이스를 함께 고정한다."
+          },
+          {
+            "id": 3,
+            "action": "`rollout_bucket`의 내장 `hash()` 기반 구현을 `PYTHONHASHSEED` 비의존 해시로 교체한다.",
+            "details": "근거: `src/feature_flags/rollout.py:8` `def rollout_bucket(user_id: str) -> int:` — 현재 내장 `hash(user_id) % 100` 사용으로 프로세스 간 안정성 요구와 충돌한다. `hashlib.sha256(user_id.encode('utf-8'))` 등 결정적 해시의 정수값을 `% 100`으로 취해 프로세스 간 동일한 bucket을 보장한다. 이는 상한 경계 버그와 별개의 안정성 결함이며 경계 증상의 직접 원인은 아님을 유지한다."
+          },
+          {
+            "id": 4,
+            "action": "`tests/test_rollout.py:12-17`의 `test_rollout_bucket_is_stable_across_processes`를 서로 다른 `PYTHONHASHSEED`로 실행해 안정성을 검증한다.",
+            "details": "별도 프로세스에서 `rollout_bucket('user-42')` 값을 실행해 동일성 요구를 확인한다. 서로 다른 `PYTHONHASHSEED` 값(예: 0, 1, random)에서도 출력이 동일해야 하며, 교체 후에도 distributed rollout 분포가 0~99 범위를 유지하는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "전체 테스트 스위트를 실행하고 README 문서와의 정합성을 확인한다.",
+            "details": "`README.md:20`(rollout.py = percentage rollout 계산) 기술과 동작이 일치하는지 확인한다. 경계 제외 규칙(`bucket < percentage`)과 프로세스 간 bucket 안정성 두 결함이 모두 회귀 테스트로 커버되는지 점검한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "15",
+        "acceptance_criteria": [
+          "`src/feature_flags/rollout.py`의 `is_in_rollout`이 `bucket < percentage` 비교를 사용해야 한다.",
+          "`is_in_rollout(bucket=10, percentage=10)`이 `False`를 반환해야 한다(`tests/test_rollout.py:9` 통과).",
+          "0% rollout(`percentage=0`)에서 어떤 bucket에 대해서도 `is_in_rollout`이 `True`를 반환하지 않아야 한다.",
+          "경계 인접 케이스(`bucket=9, percentage=10` → True 등)에서 기대 동작이 유지되어야 한다.",
+          "`rollout_bucket`이 서로 다른 `PYTHONHASHSEED`(별도 프로세스)에서도 동일한 값을 반환하여 `test_rollout_bucket_is_stable_across_processes`(`tests/test_rollout.py:12-17`)가 통과해야 한다.",
+          "`rollout_bucket` 반환값이 0 이상 99 이하 정수 범위를 유지해야 한다.",
+          "전체 테스트 스위트가 통과해야 한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 50,
+            "rationale": "`src/feature_flags/rollout.py`의 `is_in_rollout`은 모든 percentage rollout 판정에 공통 사용되는 핵심 유틸리티로, 버그가 있으면 모든 feature flag의 rollout 판정 경로가 영향을 받는다. 다만 증상은 상한 경계(bucket == percentage)에 걸린 소수 사용자에 한정되므로 전면적 영향은 아니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 35,
+            "rationale": "크래시·데이터 손실·보안 노출은 없고, 단지 비활성화되어야 할 경계 사용자가 활성 대상으로 잘못 판정되는 로직 결함이다. 다만 실험군 오염(control contamination)이나 미출시 기능의 조기 노출로 이어질 수 있다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 55,
+            "rationale": "상한 경계값 하나에만 걸리는 조건이라 일반 사용자에게는 드물게 발생하지만, 조건이 명확해 재현성은 100%다. 0% rollout에서는 bucket == 0인 사용자가 활성화되어 '일부 사용자' 증상이 항상 나타난다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 60,
+            "rationale": "percentage를 원하는 값보다 1 낮게 설정하는 식의 임시 우회는 가능하나, 근본 수정 없이는 경계 사용자가 계속 포함되고 0% 설정으로 완전 비활성화가 불가능하다. 즉 상위 기능 단위로는 우회가 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 65,
+            "rationale": "rollout은 신규 기능 배포·결제/계정 관련 기능의 점진적 노출을 통제하는 안전장치다. 0%에서도 사용자가 활성화되는 것은 배포 통제가 신뢰할 수 없음을 의미하며, 미출시·실험 기능이 예상치 못하게 노출될 위험이 있다."
+          },
+          {
+            "name": "부수 결함 (hash 안정성)",
+            "score": 40,
+            "rationale": "`rollout_bucket`이 내장 `hash()`에 의존해 `PYTHONHASHSEED`에 따라 프로세스 간 값이 달라질 수 있어 `test_rollout_bucket_is_stable_across_processes`가 실패한다. 경계 증상의 직접 원인은 아니지만 동일 모듈의 별개 결함으로 함께 다루어야 한다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "`src/feature_flags/rollout.py:4`의 `is_in_rollout`이 `bucket <= percentage`로 구현되어 상한 경계(bucket == percentage)를 활성 대상에 포함하는 것이 근본 원인이며, `tests/test_rollout.py:9`의 `is_in_rollout(bucket=10, percentage=10) is False`와 직접 불일치한다. 이로 인해 0% rollout(bucket == 0)에서도 일부 사용자가 활성화되는 배포 통제 결함이 발생한다. 크래시·데이터 손실·보안 사고는 아니고 영향이 경계 사용자에 국한되며 percentage를 1 낮추는 임시 우회가 가능하므로 P0/P1까지는 아니지만, rollout 판정이 모든 feature flag의 공통 경로이고 배포 안전장치의 신뢰성을 훼손한다는 점, 그리고 `rollout_bucket`의 `PYTHONHASHSEED` 의존성이라는 별개 결함이 동반되어 30-49(P3)보다는 50-69(P2 보통) 구간에 해당한다. 수정은 경계 비교를 `bucket < percentage`로 바꾸고 hash를 안정적 해시로 교체하는 것으로, 변경 범위가 작아 우선순위는 P2로 산정한다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 15
+    }
+  },
+  "workflow": {
+    "id": 15,
+    "project_id": 15,
+    "request_id": "process-bug-15",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "rollout 모듈은 percentage rollout 계산을 담당하며 `src/feature_flags/rollout.py`에 위치한다.",
+            "verified": true
+          },
+          {
+            "fact": "`is_in_rollout(bucket, percentage)`의 현재 구현은 `bucket <= percentage` 비교를 사용하여 상한 경계값을 포함한다.",
+            "verified": true
+          },
+          {
+            "fact": "`tests/test_rollout.py`의 `assert is_in_rollout(bucket=10, percentage=10) is False`가 경계값 제외를 기대하므로 현재 구현과 불일치한다.",
+            "verified": true
+          },
+          {
+            "fact": "`rollout_bucket(user_id)`는 내장 `hash(user_id) % 100`을 사용하며, 내장 `hash()`는 `PYTHONHASHSEED`에 의존하므로 프로세스 간 안정성이 요구되는 테스트(`test_rollout_bucket_is_stable_across_processes`)와 충돌한다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 재현 절차는 경계와 동일한 bucket을 전달한 뒤 rollout 결과를 확인하는 것이며, 기대 동작은 상한 경계 사용자 제외, 실제 동작은 활성 대상으로 판정되는 것이다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "15",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "`rollout_bucket(user_id)`: `hash(user_id) % 100`\n`is_in_rollout(bucket, percentage)`: 현재 `bucket <= percentage`",
+            "end_line": 9,
+            "location": "src/feature_flags/rollout.py:1-9",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "15",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "percentage rollout 버킷 계산과 경계/안정성 도메인 규칙. `bucket == percentage`는 제외되어야 하며(`is_in_rollout(10, 10) is False`), 현재의 `<=` 비교는 경계값을 포함하는 결함이고 `bucket < percentage`로 고쳐야 한다고 명시한다. 아울러 내장 `hash()`의 `PYTHONHASHSEED` 의존성으로 프로세스 간 안정성이 깨진다고 명시한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5861774311d85c538b8085b96c192800",
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def is_in_rollout(bucket: int, percentage: int) -> bool:",
+            "end_line": 4,
+            "location": "src/feature_flags/rollout.py:4",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "15",
+            "start_line": 4,
+            "evidence_id": "code:src/feature_flags/rollout.py:4",
+            "observation": "rollout 판정 함수의 시그니처. bucket과 percentage를 입력으로 받아 bool을 반환하며, 이 함수의 비교 연산이 결함 지점이다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "    assert is_in_rollout(bucket=10, percentage=10) is False",
+            "end_line": 9,
+            "location": "tests/test_rollout.py:9",
+            "file_path": "tests/test_rollout.py",
+            "source_id": "15",
+            "start_line": 9,
+            "evidence_id": "code:tests/test_rollout.py:9",
+            "observation": "경계 제외 요구사항을 고정하는 회귀 테스트. bucket이 percentage와 동일하면 False여야 함을 명시하므로 `<=` 구현과 직접 불일치한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def rollout_bucket(user_id: str) -> int:",
+            "end_line": 8,
+            "location": "src/feature_flags/rollout.py:8",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "15",
+            "start_line": 8,
+            "evidence_id": "code:src/feature_flags/rollout.py:8",
+            "observation": "버킷 산출 함수. 내장 hash 기반 구현으로 인해 프로세스 간 안정성 요구와 충돌한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def test_rollout_bucket_is_stable_across_processes() -> None:\n        \"from feature_flags.rollout import rollout_bucket;\"\n        \"print(rollout_bucket('user-42'))\",",
+            "end_line": 17,
+            "location": "tests/test_rollout.py:12-17",
+            "file_path": "tests/test_rollout.py",
+            "source_id": "15",
+            "start_line": 12,
+            "evidence_id": "code:tests/test_rollout.py:12",
+            "observation": "별도 프로세스에서 `rollout_bucket('user-42')`를 실행해 값 동일성을 요구하는 테스트. PYTHONHASHSEED 의존성 때문에 별개 결함으로 실패할 수 있음을 뒷받침한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+            "end_line": 20,
+            "location": "README.md:20",
+            "file_path": "README.md",
+            "source_id": "15",
+            "start_line": 20,
+            "evidence_id": "code:README.md:20",
+            "observation": "rollout.py의 책임이 percentage rollout 계산임을 확인하는 저장소 문서 근거.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "15",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.9,
+        "evidence_counts": {
+          "code": 9,
+          "history": 0,
+          "knowledge": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_5861774311d85c538b8085b96c192800: `is_in_rollout(bucket, percentage)`는 현재 `bucket <= percentage`",
+              "kn_5861774311d85c538b8085b96c192800: `bucket == percentage`인 경우는 제외되어야 한다(`is_in_rollout(10, 10) is False`)",
+              "code: src/feature_flags/rollout.py:4 `def is_in_rollout(bucket: int, percentage: int) -> bool:`",
+              "code: tests/test_rollout.py:9 `assert is_in_rollout(bucket=10, percentage=10) is False`"
+            ],
+            "confidence": 0.94,
+            "hypothesis": "`src/feature_flags/rollout.py`의 `is_in_rollout`이 `bucket <= percentage`로 구현되어 상한 경계 bucket(예: bucket == percentage)이 활성 대상에 포함된다. 기대 동작 및 `tests/test_rollout.py`의 `is_in_rollout(bucket=10, percentage=10) is False`와 불일치하므로 `bucket < percentage`로 수정해야 한다."
+          },
+          {
+            "evidence": [
+              "kn_5861774311d85c538b8085b96c192800: `bucket == percentage`인 경우는 제외되어야 한다",
+              "버그 컨텍스트: 0% rollout에서도 일부 사용자가 활성화됨"
+            ],
+            "confidence": 0.78,
+            "hypothesis": "0% rollout 병리 케이스도 동일한 원인의 귀결이다. `bucket <= 0`이면 bucket이 0인 사용자가 활성화되지만, `bucket < 0`인 수정에서는 어떤 사용자도 활성화되지 않는다. 보고된 증상(0%에서도 일부 사용자 활성화)은 이 상한 경계 포함 결함과 일치한다."
+          },
+          {
+            "evidence": [
+              "kn_5861774311d85c538b8085b96c192800: `rollout_bucket` 결과는 프로세스 간(다른 `PYTHONHASHSEED`)에도 안정적이어야 하며, 내장 `hash()`의 `PYTHONHASHSEED` 의존성과 충돌한다",
+              "code: tests/test_rollout.py:12 `def test_rollout_bucket_is_stable_across_processes() -> None:`",
+              "code: tests/test_rollout.py:17 `print(rollout_bucket('user-42'))`"
+            ],
+            "confidence": 0.6,
+            "hypothesis": "`rollout_bucket`이 내장 `hash()`를 사용하여 `PYTHONHASHSEED`에 따라 값이 달라진다. 이는 상한 경계 버그와 별개의 안정성 결함이며(경계 증상의 직접 원인은 아님), 프로세스 간 bucket 안정성 테스트를 실패시킨다."
+          }
+        ]
+      },
+      "issue_id": "15",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`bucket < percentage`로 변경하면 상한 경계 사용자가 의도적으로 활성 대상에서 빠지므로, 기존에 활성화되었던 일부 사용자의 기능 접근이 회수되어 사용자에게 노출되는 변화가 발생할 수 있다.",
+            "mitigation": "변경을 릴리스 노트에 명시하고, 경계 사용자 수가 미미함을 확인한 뒤 배포한다. 필요 시 롤아웃 비율을 소폭 상향하여 순 활성 비율을 보정한다."
+          },
+          {
+            "risk": "`rollout_bucket`을 내장 `hash()`에서 `hashlib` 기반으로 교체하면 기존 `hash()` 기준 bucket 배정이 전면 재배치되어 진행 중인 롤아웃 대상 집단이 바뀐다.",
+            "mitigation": "안정성 수정은 경계 버그와 분리해 별도 커밋/릴리스로 배포하고, 배정 재편을 감수할 수 있는 시점에 적용한다. 배포 전후 bucket 분포를 샘플링해 검증한다."
+          },
+          {
+            "risk": "두 결함(경계 포함 결함, 프로세스 간 해시 불안정)을 한 번에 처리하면 문제 원인 추적이 어려워질 수 있다.",
+            "mitigation": "커밋을 분리하고, 각 수정에 대응하는 회귀 테스트를 개별적으로 확인하여 인과관계를 명확히 유지한다."
+          },
+          {
+            "risk": "경계 수정만 반영하고 해시 안정성 수정을 누락하면 `test_rollout_bucket_is_stable_across_processes`가 계속 실패할 수 있다.",
+            "mitigation": "두 결함 각각에 대한 테스트를 CI 필수 항목으로 지정하고, 서로 다른 `PYTHONHASHSEED` 환경에서 테스트를 반복 실행한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 상한 경계 비교 결함을 `bucket <= percentage`에서 `bucket < percentage`로 수정한다.",
+            "details": "근거: kn_5861774311d85c538b8085b96c192800 및 `src/feature_flags/rollout.py:4` `def is_in_rollout(bucket: int, percentage: int) -> bool:`. 상한 경계 bucket(예: bucket == percentage)은 활성 대상에서 제외되어야 한다(`is_in_rollout(10, 10) is False`). 0% 케이스에서는 `bucket < 0`이 되어 어떤 사용자도 활성화되지 않으므로, 0%에서 일부 사용자가 활성화되던 증상도 함께 해소된다."
+          },
+          {
+            "id": 2,
+            "action": "`tests/test_rollout.py:9`의 경계 회귀 테스트(`assert is_in_rollout(bucket=10, percentage=10) is False`)를 실행해 수정 결과를 검증한다.",
+            "details": "기존 `<=` 구현과 직접 불일치하던 회귀 테스트가 통과해야 한다. 추가로 `is_in_rollout(bucket=9, percentage=10) is True`, `is_in_rollout(bucket=0, percentage=0) is False` 등 경계 인접 케이스를 보강해 상한 제외와 0% 병리 케이스를 함께 고정한다."
+          },
+          {
+            "id": 3,
+            "action": "`rollout_bucket`의 내장 `hash()` 기반 구현을 `PYTHONHASHSEED` 비의존 해시로 교체한다.",
+            "details": "근거: `src/feature_flags/rollout.py:8` `def rollout_bucket(user_id: str) -> int:` — 현재 내장 `hash(user_id) % 100` 사용으로 프로세스 간 안정성 요구와 충돌한다. `hashlib.sha256(user_id.encode('utf-8'))` 등 결정적 해시의 정수값을 `% 100`으로 취해 프로세스 간 동일한 bucket을 보장한다. 이는 상한 경계 버그와 별개의 안정성 결함이며 경계 증상의 직접 원인은 아님을 유지한다."
+          },
+          {
+            "id": 4,
+            "action": "`tests/test_rollout.py:12-17`의 `test_rollout_bucket_is_stable_across_processes`를 서로 다른 `PYTHONHASHSEED`로 실행해 안정성을 검증한다.",
+            "details": "별도 프로세스에서 `rollout_bucket('user-42')` 값을 실행해 동일성 요구를 확인한다. 서로 다른 `PYTHONHASHSEED` 값(예: 0, 1, random)에서도 출력이 동일해야 하며, 교체 후에도 distributed rollout 분포가 0~99 범위를 유지하는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "전체 테스트 스위트를 실행하고 README 문서와의 정합성을 확인한다.",
+            "details": "`README.md:20`(rollout.py = percentage rollout 계산) 기술과 동작이 일치하는지 확인한다. 경계 제외 규칙(`bucket < percentage`)과 프로세스 간 bucket 안정성 두 결함이 모두 회귀 테스트로 커버되는지 점검한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "15",
+        "acceptance_criteria": [
+          "`src/feature_flags/rollout.py`의 `is_in_rollout`이 `bucket < percentage` 비교를 사용해야 한다.",
+          "`is_in_rollout(bucket=10, percentage=10)`이 `False`를 반환해야 한다(`tests/test_rollout.py:9` 통과).",
+          "0% rollout(`percentage=0`)에서 어떤 bucket에 대해서도 `is_in_rollout`이 `True`를 반환하지 않아야 한다.",
+          "경계 인접 케이스(`bucket=9, percentage=10` → True 등)에서 기대 동작이 유지되어야 한다.",
+          "`rollout_bucket`이 서로 다른 `PYTHONHASHSEED`(별도 프로세스)에서도 동일한 값을 반환하여 `test_rollout_bucket_is_stable_across_processes`(`tests/test_rollout.py:12-17`)가 통과해야 한다.",
+          "`rollout_bucket` 반환값이 0 이상 99 이하 정수 범위를 유지해야 한다.",
+          "전체 테스트 스위트가 통과해야 한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:15:16.066829Z",
+    "completed_at": "2026-09-28T07:15:45.227272Z",
+    "created_at": "2026-09-28T07:15:16.044783Z",
+    "updated_at": "2026-09-28T07:15:45.228978Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.459
+  }
+}

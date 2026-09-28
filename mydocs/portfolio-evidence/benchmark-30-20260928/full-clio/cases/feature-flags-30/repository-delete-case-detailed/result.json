@@ -1,0 +1,628 @@
+{
+  "input": {
+    "id": "repository-delete-case-detailed",
+    "report": {
+      "title": "대문자로 요청한 플래그 삭제가 무시됨",
+      "description": "저장과 조회는 이름 대소문자를 정규화하지만 삭제는 동일하게 처리하지 않습니다.",
+      "steps_to_reproduce": [
+        "New-Checkout 이름으로 저장합니다.",
+        "NEW-CHECKOUT 이름으로 삭제합니다.",
+        "소문자 이름으로 다시 조회합니다."
+      ],
+      "expected_behavior": "플래그가 삭제되어 조회되지 않아야 합니다.",
+      "actual_behavior": "기존 플래그가 남아 있습니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_delete_normalizes_flag_name"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 25,
+    "name": "benchmark-20260928T065850Z-59223a30-repository-delete-case-detailed",
+    "description": "Clio Benchmark feature-flags-30: repository-delete-case-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:26:11.233696Z",
+    "updatedAt": "2026-09-28T07:26:11.233696Z"
+  },
+  "clio_repository": {
+    "id": 25,
+    "projectId": 25,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:26:48.567957Z",
+    "createdAt": "2026-09-28T07:26:11.857530Z",
+    "updatedAt": "2026-09-28T07:26:48.572250Z"
+  },
+  "bug": {
+    "id": 25,
+    "project_id": 25,
+    "issue_id": 25,
+    "title": "대문자로 요청한 플래그 삭제가 무시됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:26:48.853607Z",
+    "created_at": "2026-09-28T07:26:48.866906Z"
+  },
+  "analysis": {
+    "analysisResultId": 25,
+    "workflowRunId": 25,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 27,
+          "location": null,
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "FeatureFlagRepository가 `(tenant_id, casefold된 flag name)`을 키로 사용한다는 컴포넌트 지식으로, 저장/조회 정규화 규칙의 근거이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_b067a71b138b56488ec8129177f3358a",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "FeatureFlagCache가 `_key(tenant_id, flag_name)`를 통해 조회 결과를 캐시한다는 지식으로, 삭제 후 캐시 정리 여부를 검토할 근거이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_c1b619e52bf05fbc887614b66a36be4a",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 22,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`repository.py`(테넌트별 플래그 저장소)와 `service.py`(플래그 조회 서비스)의 책임 분리를 설명하여, 삭제 미반영 지점을 좁힐 수 있는 근거이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_0072a018f6055d03bb1c13a81d6308a6",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "README.md:3",
+          "observation": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리라고 설명한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "25",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "README.md:16",
+          "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 나타낸다. 삭제 로직이 위치할 모듈이다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "25",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "README.md:18",
+          "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스임을 나타내며, 삭제가 서비스 계층에서 저장소/캐시로 전달되는 경로를 검토할 근거이다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "25",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "rollout 경계 조건 지식으로, 플래그 이름 정규화가 아닌 판정 로직에 관한 내용이라 이슈 25의 원인과는 직접 관련이 낮다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_50969c1e1db1542680e16cee7d187534",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": null,
+          "file_path": "src/feature_flags/targeting.py",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "타기팅 규칙 지식으로, `matches_country`/`matches_allowlist`는 이름 대소문자 정규화와 무관해 이슈 25의 직접 원인은 아니다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5ff6e33229685a3494ee8613f98f9380",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 40,
+          "location": null,
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "25",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "조회 흐름과 `FeatureFlagNotFoundError` 기대 동작 지식으로, 삭제된 플래그가 조회되지 않아야 한다는 기대 동작 판단의 근거이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_4e70ca558a4a5f63a55d752055498a54",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 25는 MANUAL 출처의 ReportedBehaviorMismatch로, 증상 메시지는 \"기존 플래그가 남아 있습니다.\"이며 benchmark_case_id는 `repository-delete-case-detailed`이다.",
+          "verified": true
+        },
+        {
+          "fact": "저장과 조회는 플래그 이름 대소문자를 정규화하지만 삭제는 동일하게 처리하지 않는다는 불일치가 버그 설명에 명시되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagRepository는 `(tenant_id, casefold된 flag name)`을 키로 하는 dict 기반 저장소이고, 저장 항목은 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`이다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagCache는 `dict[str, bool]` 기반 인메모리 캐시로, `get`/`set` 모두 `_key(tenant_id, flag_name)`를 사용한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 code evidence는 README.md 3행, 16행, 18행의 프로젝트 설명과 모듈 목록뿐이며, repository.py/service.py의 삭제 로직 구현 라인은 포함되어 있지 않다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 25,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.62,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_b067a71b138b56488ec8129177f3358a: FeatureFlagRepository는 `(tenant_id, casefold된 flag name)`을 키로 하는 dict 기반 저장소",
+            "버그 설명: 저장과 조회는 이름 대소문자를 정규화하지만 삭제는 동일하게 처리하지 않음",
+            "재현 절차: `New-Checkout` 저장 후 `NEW-CHECKOUT` 삭제 시도 → 소문자 이름 조회 시 기존 플래그가 남아 있음"
+          ],
+          "confidence": 0.75,
+          "hypothesis": "FeatureFlagRepository의 저장/조회 경로는 `(tenant_id, casefold된 flag name)` 키로 이름 대소문자를 정규화하지만, 삭제 경로는 casefold 정규화를 적용하지 않아 `NEW-CHECKOUT` 삭제 요청이 `New-Checkout`으로 저장된 항목을 찾지 못하고 기존 플래그가 그대로 남는다."
+        },
+        {
+          "evidence": [
+            "kn_c1b619e52bf05fbc887614b66a36be4a: FeatureFlagCache는 `get`/`set` 모두 `_key(tenant_id, flag_name)`를 사용",
+            "제공된 코드 근거(README.md, repository.py, service.py)에는 삭제 API 구현이 포함되어 있지 않아 삭제 경로 자체를 직접 확인할 수 없음"
+          ],
+          "confidence": 0.35,
+          "hypothesis": "삭제가 repository의 정규화 키 대신 원본 표기 이름을 그대로 사용하거나, 캐시(FeatureFlagCache) 정리 경로가 `_key(tenant_id, flag_name)` 정규화를 거치지 않아 삭제가 반영되지 않는다."
+        }
+      ],
+      "project_id": 25,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 code evidence(README.md 3행, 16행, 18행)에는 삭제 로직 구현이 포함되어 있지 않아, 삭제 경로의 실제 위치(저장소 vs 서비스 계층)를 오판할 수 있다.",
+            "mitigation": "1단계에서 실패 테스트를 먼저 작성해 삭제 미반영 지점을 실행 기반으로 특정한 뒤 수정 대상을 확정한다."
+          },
+          {
+            "risk": "캐시 무효화 누락 가설(confidence 0.35)이 실제 원인이 아닐 경우 불필요한 캐시 변경이 발생할 수 있다.",
+            "mitigation": "저장소 정규화 수정(confidence 0.75)을 먼저 적용하고, 삭제 후 조회가 여전히 실패하는 경우에만 캐시 무효화를 추가한다."
+          },
+          {
+            "risk": "대소문자 정규화 규칙 변경이 기존에 저장된 다른 표기의 플래그 조회/판정에 영향을 줄 수 있다.",
+            "mitigation": "`casefold` 기반 키를 저장/조회/삭제에서 동일하게 사용한다는 기존 규칙을 그대로 확장하고, `FeatureFlag(tenant_id, name, enabled)`의 `name` 표기 유지 회귀 테스트로 부작용을 검출한다."
+          },
+          {
+            "risk": "이슈 25는 MANUAL 출처의 ReportedBehaviorMismatch로, 재현 전제(증상 메시지)가 실제 코드 동작과 다를 수 있다.",
+            "mitigation": "재현 절차를 자동화 테스트로 승격해 이슈 보고 내용과 실제 동작 간 차이를 명시적으로 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 정규화 키 규칙과 삭제 경로의 불일치를 재현하는 실패 테스트를 먼저 추가한다.",
+            "details": "`src/feature_flags/repository.py`의 `(tenant_id, casefold된 flag name)` 키 규칙을 기준으로, `New-Checkout` 저장 후 `NEW-CHECKOUT` 삭제를 시도하는 테스트를 작성한다. 삭제 후 소문자 이름 조회 시 `FeatureFlagNotFoundError`가 발생해야 한다는 기대 동작(kn_4e70ca558a4a5f63a55d752055498a54)을 명시한다. 벤치마크 케이스는 `repository-delete-case-detailed`를 사용한다."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository의 삭제(delete) 경로에서 이름 정규화를 저장/조회 경로와 동일하게 적용한다.",
+            "details": "삭제 시 원본 표기 이름을 그대로 사용하는 부분을 찾아, 저장/조회와 동일한 `casefold` 기반 키 생성(예: `_key(tenant_id, casefold(flag_name))`)을 거치도록 수정한다. 저장 항목 형태는 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`이므로 `name` 필드에는 기존 저장 시점의 표기가 유지된다는 점을 회귀 테스트로 확인한다."
+          },
+          {
+            "id": 3,
+            "action": "삭제 경로가 캐시(FeatureFlagCache) 정리까지 수행하는지 확인하고, 누락 시 `_key(tenant_id, flag_name)` 정규화를 통과하는 무효화를 추가한다.",
+            "details": "`src/feature_flags/cache.py`의 `get`/`set`이 모두 `_key(tenant_id, flag_name)`를 사용하므로(kn_c1b619e52bf05fbc887614b66a36be4a), 삭제 시 동일 `_key` 규칙으로 캐시 항목을 제거하여 이전 조회 결과가 남지 않도록 한다. 삭제 API 구현 위치가 `src/feature_flags/repository.py`인지 `src/feature_flags/service.py`인지 먼저 확정하고, 확정된 계층에서 저장소와 캐시 무효화를 모두 호출하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "서비스 계층의 삭제 전달 경로를 정리하고 기대 동작을 고정한다.",
+            "details": "`src/feature_flags/service.py`에서 삭제 요청이 저장소와 캐시로 전달되는 흐름을 확인하고, 대소문자만 다른 이름으로 삭제한 뒤 소문자 이름으로 조회하면 `FeatureFlagNotFoundError`가 발생하도록 동작을 고정한다. `src/feature_flags/rollout.py`, `src/feature_flags/targeting.py`는 판정 로직으로 이슈 25의 직접 원인이 아님을 확인하고 변경 대상에서 제외한다(kn_50969c1e1db1542680e16cee7d187534, kn_5ff6e33229685a3494ee8613f98f9380)."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차를 자동화 테스트로 승격하고 회귀 스위트에 포함한다.",
+            "details": "`New-Checkout` 저장 → `NEW-CHECKOUT` 삭제 → 소문자/대문자/혼합 표기 조회 시 플래그가 남아 있지 않음을 검증하는 케이스를 추가한다. 증상 메시지 \"기존 플래그가 남아 있습니다.\"가 더 이상 재현되지 않는지 벤치마크 `repository-delete-case-detailed`로 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "25",
+        "acceptance_criteria": [
+          "`New-Checkout` 저장 후 `NEW-CHECKOUT`으로 삭제하면, 이후 소문자/대문자/혼합 표기 조회에서 플래그가 남아 있지 않고 `FeatureFlagNotFoundError`가 발생한다.",
+          "증상 메시지 \"기존 플래그가 남아 있습니다.\"가 더 이상 재현되지 않으며, 벤치마크 케이스 `repository-delete-case-detailed`가 통과한다.",
+          "삭제 경로가 저장/조회 경로와 동일한 `casefold` 기반 키 `(tenant_id, casefold된 flag name)`를 사용하고, 삭제 시 캐시 항목도 동일 `_key(tenant_id, flag_name)` 규칙으로 무효화된다.",
+          "저장/조회 동작과 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`의 `name` 표기 유지가 회귀 테스트로 보존된다.",
+          "`src/feature_flags/rollout.py`, `src/feature_flags/targeting.py`는 변경되지 않으며 관련 판정 로직 테스트가 계속 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 55,
+            "rationale": "테넌트별 기능 플래그 삭제 경로 전체가 대문자/혼합 표기 이름에 대해 무력화된다. 저장(`New-Checkout`)과 조회(소문자 정규화)는 정상이라 특정 표기로 삭제를 시도하는 사용자·운영 플로우에 한정되지만, 해당 조건에서는 모든 플래그 삭제가 실패한다."
+          },
+          {
+            "name": "심각도",
+            "score": 50,
+            "rationale": "크래시나 데이터 손상, 보안 노출은 없고 삭제가 조용히 무시되는(silent no-op) 정합성 문제다. 다만 의도한 제거가 반영되지 않아 잘못된 플래그가 계속 평가될 수 있고 에러도 보고되지 않는다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 70,
+            "rationale": "`New-Checkout` 저장 후 `NEW-CHECKOUT` 삭제 → 소문자 조회 시 플래그 잔존이라는 재현 절차가 명확하고 결정론적으로 재현된다. 대소문자만 다른 이름을 쓰는 흐름에서 100% 발생한다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 55,
+            "rationale": "저장·조회가 casefold 정규화하는 표기(예: 소문자 이름)로 삭제를 호출하면 회피 가능하나, 이는 코드 내부 규칙을 알아야 하는 우회이며 표준적인 삭제 어휘를 대문자로 쓰는 사용자에게는 사실상 우회 수단이 없다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 55,
+            "rationale": "플래그 삭제 실패는 결제/계정 같은 직접적 금전 경로는 아니지만, 킬 스위치·기능 롤백·오픈 정책 회수를 담당하는 핵심 제어 수단이다. 삭제가 무시되면 비활성화 의도가 반영되지 않아 잘못된 릴리스 상태가 유지될 수 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "이슈 25는 삭제 경로에서만 이름 대소문자 정규화가 누락되어 `New-Checkout`으로 저장된 항목이 `NEW-CHECKOUT` 삭제 요청으로 제거되지 않는 정합성 결함이다. FeatureFlagRepository가 `(tenant_id, casefold된 flag name)` 키를 사용하고 FeatureFlagCache가 `_key(tenant_id, flag_name)`를 사용한다는 근거가 있으나, 삭제 로직 구현 라인은 제공된 code evidence에 없어 원인이 repository 키 정규화 누락인지 캐시 무효화 누락인지 확정되지 않는다(confidence 0.62, hypothesis 0.75/0.35). 크래시·데이터 손상·보안 노출은 없고 소문자 표기로 삭제를 호출하면 우회가 가능하므로 P1(70-84) 수준은 아니지만, 조용히 삭제가 무시되어 의도한 플래그 회수가 실패하고 결정론적으로 재현된다는 점에서 단순 미미(P4)/낮음(P3)을 넘는다. 따라서 '부분 기능 결함, 우회 존재' 밴드인 P2 보통(50-69)에 해당하며, 삭제 로직 확인 시 심각도가 상향될 여지를 반영해 상단에 가까운 58점으로 산정한다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 25
+    }
+  },
+  "workflow": {
+    "id": 25,
+    "project_id": 25,
+    "request_id": "process-bug-25",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 25는 MANUAL 출처의 ReportedBehaviorMismatch로, 증상 메시지는 \"기존 플래그가 남아 있습니다.\"이며 benchmark_case_id는 `repository-delete-case-detailed`이다.",
+            "verified": true
+          },
+          {
+            "fact": "저장과 조회는 플래그 이름 대소문자를 정규화하지만 삭제는 동일하게 처리하지 않는다는 불일치가 버그 설명에 명시되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "FeatureFlagRepository는 `(tenant_id, casefold된 flag name)`을 키로 하는 dict 기반 저장소이고, 저장 항목은 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`이다.",
+            "verified": true
+          },
+          {
+            "fact": "FeatureFlagCache는 `dict[str, bool]` 기반 인메모리 캐시로, `get`/`set` 모두 `_key(tenant_id, flag_name)`를 사용한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 code evidence는 README.md 3행, 16행, 18행의 프로젝트 설명과 모듈 목록뿐이며, repository.py/service.py의 삭제 로직 구현 라인은 포함되어 있지 않다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "25",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 27,
+            "location": null,
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "FeatureFlagRepository가 `(tenant_id, casefold된 flag name)`을 키로 사용한다는 컴포넌트 지식으로, 저장/조회 정규화 규칙의 근거이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_b067a71b138b56488ec8129177f3358a",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "FeatureFlagCache가 `_key(tenant_id, flag_name)`를 통해 조회 결과를 캐시한다는 지식으로, 삭제 후 캐시 정리 여부를 검토할 근거이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_c1b619e52bf05fbc887614b66a36be4a",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 22,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`repository.py`(테넌트별 플래그 저장소)와 `service.py`(플래그 조회 서비스)의 책임 분리를 설명하여, 삭제 미반영 지점을 좁힐 수 있는 근거이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_0072a018f6055d03bb1c13a81d6308a6",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "README.md:3",
+            "observation": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리라고 설명한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "25",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "README.md:16",
+            "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 나타낸다. 삭제 로직이 위치할 모듈이다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "25",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "README.md:18",
+            "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스임을 나타내며, 삭제가 서비스 계층에서 저장소/캐시로 전달되는 경로를 검토할 근거이다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "25",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "rollout 경계 조건 지식으로, 플래그 이름 정규화가 아닌 판정 로직에 관한 내용이라 이슈 25의 원인과는 직접 관련이 낮다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_50969c1e1db1542680e16cee7d187534",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": null,
+            "file_path": "src/feature_flags/targeting.py",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "타기팅 규칙 지식으로, `matches_country`/`matches_allowlist`는 이름 대소문자 정규화와 무관해 이슈 25의 직접 원인은 아니다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5ff6e33229685a3494ee8613f98f9380",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 40,
+            "location": null,
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "25",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "조회 흐름과 `FeatureFlagNotFoundError` 기대 동작 지식으로, 삭제된 플래그가 조회되지 않아야 한다는 기대 동작 판단의 근거이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_4e70ca558a4a5f63a55d752055498a54",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.62,
+        "evidence_counts": {
+          "code": 6,
+          "citations": 9,
+          "documents": 9
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_b067a71b138b56488ec8129177f3358a: FeatureFlagRepository는 `(tenant_id, casefold된 flag name)`을 키로 하는 dict 기반 저장소",
+              "버그 설명: 저장과 조회는 이름 대소문자를 정규화하지만 삭제는 동일하게 처리하지 않음",
+              "재현 절차: `New-Checkout` 저장 후 `NEW-CHECKOUT` 삭제 시도 → 소문자 이름 조회 시 기존 플래그가 남아 있음"
+            ],
+            "confidence": 0.75,
+            "hypothesis": "FeatureFlagRepository의 저장/조회 경로는 `(tenant_id, casefold된 flag name)` 키로 이름 대소문자를 정규화하지만, 삭제 경로는 casefold 정규화를 적용하지 않아 `NEW-CHECKOUT` 삭제 요청이 `New-Checkout`으로 저장된 항목을 찾지 못하고 기존 플래그가 그대로 남는다."
+          },
+          {
+            "evidence": [
+              "kn_c1b619e52bf05fbc887614b66a36be4a: FeatureFlagCache는 `get`/`set` 모두 `_key(tenant_id, flag_name)`를 사용",
+              "제공된 코드 근거(README.md, repository.py, service.py)에는 삭제 API 구현이 포함되어 있지 않아 삭제 경로 자체를 직접 확인할 수 없음"
+            ],
+            "confidence": 0.35,
+            "hypothesis": "삭제가 repository의 정규화 키 대신 원본 표기 이름을 그대로 사용하거나, 캐시(FeatureFlagCache) 정리 경로가 `_key(tenant_id, flag_name)` 정규화를 거치지 않아 삭제가 반영되지 않는다."
+          }
+        ]
+      },
+      "issue_id": "25",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 code evidence(README.md 3행, 16행, 18행)에는 삭제 로직 구현이 포함되어 있지 않아, 삭제 경로의 실제 위치(저장소 vs 서비스 계층)를 오판할 수 있다.",
+            "mitigation": "1단계에서 실패 테스트를 먼저 작성해 삭제 미반영 지점을 실행 기반으로 특정한 뒤 수정 대상을 확정한다."
+          },
+          {
+            "risk": "캐시 무효화 누락 가설(confidence 0.35)이 실제 원인이 아닐 경우 불필요한 캐시 변경이 발생할 수 있다.",
+            "mitigation": "저장소 정규화 수정(confidence 0.75)을 먼저 적용하고, 삭제 후 조회가 여전히 실패하는 경우에만 캐시 무효화를 추가한다."
+          },
+          {
+            "risk": "대소문자 정규화 규칙 변경이 기존에 저장된 다른 표기의 플래그 조회/판정에 영향을 줄 수 있다.",
+            "mitigation": "`casefold` 기반 키를 저장/조회/삭제에서 동일하게 사용한다는 기존 규칙을 그대로 확장하고, `FeatureFlag(tenant_id, name, enabled)`의 `name` 표기 유지 회귀 테스트로 부작용을 검출한다."
+          },
+          {
+            "risk": "이슈 25는 MANUAL 출처의 ReportedBehaviorMismatch로, 재현 전제(증상 메시지)가 실제 코드 동작과 다를 수 있다.",
+            "mitigation": "재현 절차를 자동화 테스트로 승격해 이슈 보고 내용과 실제 동작 간 차이를 명시적으로 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 정규화 키 규칙과 삭제 경로의 불일치를 재현하는 실패 테스트를 먼저 추가한다.",
+            "details": "`src/feature_flags/repository.py`의 `(tenant_id, casefold된 flag name)` 키 규칙을 기준으로, `New-Checkout` 저장 후 `NEW-CHECKOUT` 삭제를 시도하는 테스트를 작성한다. 삭제 후 소문자 이름 조회 시 `FeatureFlagNotFoundError`가 발생해야 한다는 기대 동작(kn_4e70ca558a4a5f63a55d752055498a54)을 명시한다. 벤치마크 케이스는 `repository-delete-case-detailed`를 사용한다."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository의 삭제(delete) 경로에서 이름 정규화를 저장/조회 경로와 동일하게 적용한다.",
+            "details": "삭제 시 원본 표기 이름을 그대로 사용하는 부분을 찾아, 저장/조회와 동일한 `casefold` 기반 키 생성(예: `_key(tenant_id, casefold(flag_name))`)을 거치도록 수정한다. 저장 항목 형태는 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`이므로 `name` 필드에는 기존 저장 시점의 표기가 유지된다는 점을 회귀 테스트로 확인한다."
+          },
+          {
+            "id": 3,
+            "action": "삭제 경로가 캐시(FeatureFlagCache) 정리까지 수행하는지 확인하고, 누락 시 `_key(tenant_id, flag_name)` 정규화를 통과하는 무효화를 추가한다.",
+            "details": "`src/feature_flags/cache.py`의 `get`/`set`이 모두 `_key(tenant_id, flag_name)`를 사용하므로(kn_c1b619e52bf05fbc887614b66a36be4a), 삭제 시 동일 `_key` 규칙으로 캐시 항목을 제거하여 이전 조회 결과가 남지 않도록 한다. 삭제 API 구현 위치가 `src/feature_flags/repository.py`인지 `src/feature_flags/service.py`인지 먼저 확정하고, 확정된 계층에서 저장소와 캐시 무효화를 모두 호출하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "서비스 계층의 삭제 전달 경로를 정리하고 기대 동작을 고정한다.",
+            "details": "`src/feature_flags/service.py`에서 삭제 요청이 저장소와 캐시로 전달되는 흐름을 확인하고, 대소문자만 다른 이름으로 삭제한 뒤 소문자 이름으로 조회하면 `FeatureFlagNotFoundError`가 발생하도록 동작을 고정한다. `src/feature_flags/rollout.py`, `src/feature_flags/targeting.py`는 판정 로직으로 이슈 25의 직접 원인이 아님을 확인하고 변경 대상에서 제외한다(kn_50969c1e1db1542680e16cee7d187534, kn_5ff6e33229685a3494ee8613f98f9380)."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차를 자동화 테스트로 승격하고 회귀 스위트에 포함한다.",
+            "details": "`New-Checkout` 저장 → `NEW-CHECKOUT` 삭제 → 소문자/대문자/혼합 표기 조회 시 플래그가 남아 있지 않음을 검증하는 케이스를 추가한다. 증상 메시지 \"기존 플래그가 남아 있습니다.\"가 더 이상 재현되지 않는지 벤치마크 `repository-delete-case-detailed`로 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "25",
+        "acceptance_criteria": [
+          "`New-Checkout` 저장 후 `NEW-CHECKOUT`으로 삭제하면, 이후 소문자/대문자/혼합 표기 조회에서 플래그가 남아 있지 않고 `FeatureFlagNotFoundError`가 발생한다.",
+          "증상 메시지 \"기존 플래그가 남아 있습니다.\"가 더 이상 재현되지 않으며, 벤치마크 케이스 `repository-delete-case-detailed`가 통과한다.",
+          "삭제 경로가 저장/조회 경로와 동일한 `casefold` 기반 키 `(tenant_id, casefold된 flag name)`를 사용하고, 삭제 시 캐시 항목도 동일 `_key(tenant_id, flag_name)` 규칙으로 무효화된다.",
+          "저장/조회 동작과 frozen dataclass `FeatureFlag(tenant_id, name, enabled)`의 `name` 표기 유지가 회귀 테스트로 보존된다.",
+          "`src/feature_flags/rollout.py`, `src/feature_flags/targeting.py`는 변경되지 않으며 관련 판정 로직 테스트가 계속 통과한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:26:49.664162Z",
+    "completed_at": "2026-09-28T07:27:20.486571Z",
+    "created_at": "2026-09-28T07:26:49.650381Z",
+    "updated_at": "2026-09-28T07:27:20.489017Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 32.447
+  }
+}

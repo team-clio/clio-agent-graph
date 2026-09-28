@@ -1,0 +1,546 @@
+{
+  "input": {
+    "id": "auth-project-scope-symptom",
+    "report": {
+      "title": "프로젝트 B 설정이 프로젝트 A 사용자에게 노출",
+      "description": "프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용됩니다.",
+      "steps_to_reproduce": [
+        "사용자 프로젝트를 A로 지정합니다.",
+        "대상 프로젝트 B에 대한 편집 여부를 확인합니다."
+      ],
+      "expected_behavior": "프로젝트 불일치로 거부되어야 합니다.",
+      "actual_behavior": "편집 가능으로 판정됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_owner_cannot_edit_another_project"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 12,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-project-scope-symptom",
+    "description": "Clio Benchmark feature-flags-30: auth-project-scope-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:46:07.966964Z",
+    "updatedAt": "2026-09-28T07:46:07.966964Z"
+  },
+  "clio_repository": {
+    "id": 12,
+    "projectId": 12,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:46:43.570959Z",
+    "createdAt": "2026-09-28T07:46:07.979110Z",
+    "updatedAt": "2026-09-28T07:46:43.571563Z"
+  },
+  "bug": {
+    "id": 12,
+    "project_id": 12,
+    "issue_id": 12,
+    "title": "프로젝트 B 설정이 프로젝트 A 사용자에게 노출",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:46:44.279613Z",
+    "created_at": "2026-09-28T07:46:44.288563Z"
+  },
+  "analysis": {
+    "analysisResultId": 12,
+    "workflowRunId": 12,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 5,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 5,
+          "evidence_id": "code:README.md:5",
+          "observation": "이 저장소가 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아님을 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "12",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "code:README.md:3",
+          "observation": "대상 코드가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 설명한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "12",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 19,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 19,
+          "evidence_id": "code:README.md:19",
+          "observation": "`src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다고 문서화한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "12",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "code:README.md:16",
+          "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "12",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "code:README.md:18",
+          "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스임을 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "12",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "대상 프로젝트는 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'이다.",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/authorization.py`는 관리자 권한과 프로젝트 범위 검사를 담당한다고 문서에 명시되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/repository.py`는 테넌트별 플래그 저장소, `src/feature_flags/service.py`는 플래그 조회 서비스로 소개된다.",
+          "verified": true
+        },
+        {
+          "fact": "제보된 증상은 프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용되는 것이며, 기대 동작은 프로젝트 불일치로 거부되는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거에는 authorization.py, repository.py, service.py의 실제 구현 라인이 포함되어 있지 않아 결함 위치나 조건문을 직접 확인할 수 없다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 이력(history) 및 문서(documents) 증거가 없어 해당 동작의 도입 시점이나 관련 변경 이력을 확인할 수 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 12,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.28,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:19",
+            "README.md:3"
+          ],
+          "confidence": 0.35,
+          "hypothesis": "권한 검사가 사용자 소속 프로젝트(A)와 대상 플래그의 프로젝트(B)를 비교하지 않아 프로젝트 불일치 시에도 편집 가능으로 판정된다. `src/feature_flags/authorization.py`가 '관리자 권한과 프로젝트 범위 검사'를 담당한다고 명시되어 있으나, 실제 비교 로직이 누락되었거나 잘못된 범위 값을 사용할 가능성이 있다."
+        },
+        {
+          "evidence": [
+            "README.md:3",
+            "README.md:16",
+            "README.md:18"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "편집 여부 판정이 프로젝트 범위 대신 테넌트 단위로만 이루어져, 동일 테넌트 내 서로 다른 프로젝트 간 격리가 적용되지 않는다. 라이브러리가 '테넌트별 기능 플래그 조회'를 제공한다는 설명과 부합한다."
+        }
+      ],
+      "project_id": 12,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거에 authorization.py, repository.py, service.py의 실제 구현 라인이 없어 결함 위치나 조건문을 직접 확인할 수 없다.",
+            "mitigation": "2단계에서 해당 파일을 직접 열어 구현 라인을 확보한 뒤에만 수정을 진행하고, 확인 전에는 추정으로 코드를 변경하지 않는다."
+          },
+          {
+            "risk": "두 근본 원인 가설이 모두 재현 증상을 설명할 수 있어 잘못된 위치를 수정할 경우 증상이 지속되거나 다른 프로젝트 간 격리가 재차 누락될 수 있다.",
+            "mitigation": "3단계에서 각 가설을 코드 상에서 개별 판정하고, 5단계의 동일 테넌트·다른 프로젝트 케이스(c) 테스트로 실제 수정이 가설2까지 해소했는지 검증한다."
+          },
+          {
+            "risk": "프로젝트 범위 검사를 강화하면서 관리자 권한 보유 사용자의 정상 편집까지 거부하는 과잉 차단이 발생할 수 있다.",
+            "mitigation": "관리자 권한 정상 허용 케이스(a)와 동일 프로젝트 정상 편집 케이스(b)를 테스트에 포함하여 과잉 차단 회귀를 방지한다."
+          },
+          {
+            "risk": "이력(history)·문서(documents) 증거가 없어 해당 동작의 도입 시점이나 관련 변경 이력을 확인할 수 없고, 다른 미확인 경로에서 동일 결함이 남아 있을 수 있다.",
+            "mitigation": "6단계에서 이 한계를 명시적으로 문서화하고, repository.py/service.py의 편집 경로 전반에 동일한 프로젝트 범위 검사가 적용되는지 함께 점검한다."
+          },
+          {
+            "risk": "이 저장소는 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도가 아니므로, 수정이 실제 프로덕션 안전성을 보장하지 않는다.",
+            "mitigation": "수정은 fixture 범위 내 테스트와 격리된 코드 경로에서만 수행하고, 프로덕션 적용 여부는 별도 검토 대상임을 문서화한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "결함 재현 테스트를 먼저 작성한다",
+            "details": "제보된 증상(프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용됨)을 그대로 재현하는 회귀 테스트를 추가한다. 프로젝트 A 소유자 컨텍스트로 body에 프로젝트 B의 식별자를 담아 편집 호출을 수행하고, 현재는 성공(200/허용)하지만 기대 동작은 거부(403)임을 명시하여 실패하는 테스트(red)로 만든다. 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아니므로, 테스트는 프로덕션 데이터나 외부 시스템에 영향을 주지 않는 로컬 fixture 범위에서만 작성한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 실제 구현 라인을 확보하고 편집 여부 판정 경로를 추적한다",
+            "details": "제공된 코드 증거에는 authorization.py, repository.py, service.py의 실제 구현 라인이 포함되어 있지 않으므로, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 해당 파일들의 편집 권한 판정 함수를 직접 열어 조건문과 사용되는 범위 값을 확인한다. 특히 관리자 권한 검사와 프로젝트 범위 검사가 어느 지점에서 수행되는지, 프로젝트 범위 값이 어떤 필드에서 오는지 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "두 가지 근본 원인 가설을 코드 상에서 각각 판정한다",
+            "details": "가설1(신뢰도 0.35): 사용자 소속 프로젝트(A)와 대상 플래그의 프로젝트(B)를 비교하는 로직이 누락되었거나 잘못된 범위 값을 사용하는지 확인한다. 가설2(신뢰도 0.3): 편집 여부 판정이 테넌트 단위로만 이루어져 동일 테넌트 내 서로 다른 프로젝트 간 격리가 적용되지 않는지 확인한다. 어느 가설이 실제 결함 위치와 일치하는지, 또는 둘 다인지 결정하고 근거가 되는 파일/라인을 명시한다."
+          },
+          {
+            "id": 4,
+            "action": "편집 권한 판정에 프로젝트 범위 비교를 구현한다",
+            "details": "대상 플래그의 프로젝트 식별자와 사용자 소속 프로젝트 식별자를 비교하여 불일치 시 편집을 거부(403)하도록 authorization.py의 편집 경로를 수정한다. README.md:19에 문서화된 '관리자 권한과 프로젝트 범위 검사' 책임과 README.md:16의 '테넌트별 플래그 저장소', README.md:18의 '플래그 조회 서비스' 구조에 부합하도록 repository.py/service.py에서 전달되는 프로젝트 컨텍스트가 판정까지 누락 없이 전달되는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "1단계 재현 테스트를 통과시키고 경계 케이스 테스트를 보강한다",
+            "details": "작성한 회귀 테스트가 green이 되는지 확인하고, 추가로 (a) 관리자 권한 보유 시 정상 편집 허용, (b) 동일 테넌트·동일 프로젝트 편집 허용, (c) 동일 테넌트·다른 프로젝트 편집 거부, (d) 다른 테넌트 편집 거부 케이스를 검증하는 테스트를 추가한다. 가설2가 유효했다면 테넌트 단위 판정만으로는 (c)가 통과하지 못함을 명시적으로 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "판정 결과와 남은 불확실성을 문서화한다",
+            "details": "수정 전후 동작, 선택한 가설과 근거 파일/라인, 그리고 제공된 이력(history)·문서(documents) 증거가 없어 도입 시점과 관련 변경 이력을 확인할 수 없다는 한계를 기록한다. 이 저장소가 프로덕션 용도가 아닌 Clio Benchmark 테스트 fixture임을 유지하며 README.md의 책임 기술과 구현이 일치함을 재확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "12",
+        "acceptance_criteria": [
+          "프로젝트 A 소유자 계정으로 프로젝트 B의 플래그를 편집하려는 요청이 403(거부)으로 응답한다.",
+          "동일 테넌트·동일 프로젝트 내에서 관리자/소유자 권한을 가진 사용자의 플래그 편집은 정상 허용된다.",
+          "동일 테넌트 내 서로 다른 프로젝트 간 편집 시도가 거부되어, 테넌트 단위 판정만으로 통과되지 않음을 테스트가 확인한다.",
+          "제보 증상(프로젝트 불일치 편집 허용)을 재현하는 회귀 테스트가 수정 전에는 실패하고 수정 후에는 통과한다.",
+          "재현/경계 케이스 테스트가 모두 통과하며 기존 정상 편집 경로에 대한 회귀가 없다.",
+          "편집 거부 시 응답에 프로젝트 불일치로 인한 거부임을 식별할 수 있는 명확한 거부 사유 또는 상태 코드가 포함된다.",
+          "수정된 authorization.py의 동작이 README.md:19의 '관리자 권한과 프로젝트 범위 검사' 책임 기술과 일치한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 65,
+            "rationale": "동일 테넌트 내 서로 다른 프로젝트 간 격리가 무력화되어, 한 프로젝트(A) 소유자가 다른 프로젝트(B)의 플래그를 편집할 수 있다. 프로젝트 B의 모든 플래그와 이를 사용하는 사용자/플로우가 잠재적 영향을 받는다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 75,
+            "rationale": "크래시나 데이터 유실은 아니지만 권한 경계를 넘는 무단 편집(접근 제어 우회)으로, 플래그 오조작 시 타 프로젝트의 기능 활성화/비활성화라는 설정 무결성 침해로 이어질 수 있다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 80,
+            "rationale": "재현 절차가 명확하다(사용자 프로젝트 A 지정 후 프로젝트 B 편집 확인 시 '편집 가능으로 판정'). 조건부 로직 누락으로 보이며 재현성이 높다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 70,
+            "rationale": "권한 검사 자체가 잘못된 판정을 반환하므로 사용자 측 우회 수단이 사실상 없다. `src/feature_flags/authorization.py`의 프로젝트 범위 비교 로직 수정 외에는 대응이 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 60,
+            "rationale": "프로젝트 격리/권한은 계정·테넌트 신뢰의 핵심 경로다. 다만 저장소가 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도가 아니라고 README.md:5에 명시되어 실제 비즈니스 영향은 제한적이다."
+          },
+          {
+            "name": "증거 신뢰도 (evidence_confidence)",
+            "score": 55,
+            "rationale": "authorization.py, repository.py, service.py의 실제 구현 라인이 코드 증거에 포함되지 않아 결함 위치와 조건문을 직접 확인할 수 없고, history/documents 증거도 없어 도입 시점을 알 수 없다. 가설 신뢰도도 0.28~0.35 수준이다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용되는 접근 제어(권한 경계) 결함으로, 테넌트 내 프로젝트 간 격리가 무력화되는 보안성 이슈다. 재현 절차가 명확하고 우회 수단이 없어 심각도가 높고, 기대 동작(프로젝트 불일치 시 거부) 대비 실제 동작(편집 가능 판정)이 정면으로 어긋난다. 다만 (1) 저장소가 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아님(README.md:5), (2) 실제 구현 라인·이력·문서 증거가 없어 가설 신뢰도가 0.28~0.35에 그침, (3) 실제 데이터 손상이나 전면 장애(outage)는 확인되지 않았다는 점을 반영해 P0(85-100) 대신 P1 높음(70-84) 구간으로 산정했다. 핵심 권장 조치: `src/feature_flags/authorization.py`의 프로젝트 범위 비교 로직을 점검하고, 테넌트 단위 판정이 프로젝트 단위 비교를 대체하고 있는지 확인해야 한다.",
+        "risk_score": 72
+      },
+      "workflow_run_id": 12
+    }
+  },
+  "workflow": {
+    "id": 12,
+    "project_id": 12,
+    "request_id": "process-bug-12",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "대상 프로젝트는 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'이다.",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/authorization.py`는 관리자 권한과 프로젝트 범위 검사를 담당한다고 문서에 명시되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/repository.py`는 테넌트별 플래그 저장소, `src/feature_flags/service.py`는 플래그 조회 서비스로 소개된다.",
+            "verified": true
+          },
+          {
+            "fact": "제보된 증상은 프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용되는 것이며, 기대 동작은 프로젝트 불일치로 거부되는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거에는 authorization.py, repository.py, service.py의 실제 구현 라인이 포함되어 있지 않아 결함 위치나 조건문을 직접 확인할 수 없다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 이력(history) 및 문서(documents) 증거가 없어 해당 동작의 도입 시점이나 관련 변경 이력을 확인할 수 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "12",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 5,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 5,
+            "evidence_id": "code:README.md:5",
+            "observation": "이 저장소가 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아님을 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "12",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "code:README.md:3",
+            "observation": "대상 코드가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 설명한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "12",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 19,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 19,
+            "evidence_id": "code:README.md:19",
+            "observation": "`src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다고 문서화한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "12",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "code:README.md:16",
+            "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "12",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "code:README.md:18",
+            "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스임을 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "12",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.28,
+        "evidence_counts": {
+          "code": 6,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:19",
+              "README.md:3"
+            ],
+            "confidence": 0.35,
+            "hypothesis": "권한 검사가 사용자 소속 프로젝트(A)와 대상 플래그의 프로젝트(B)를 비교하지 않아 프로젝트 불일치 시에도 편집 가능으로 판정된다. `src/feature_flags/authorization.py`가 '관리자 권한과 프로젝트 범위 검사'를 담당한다고 명시되어 있으나, 실제 비교 로직이 누락되었거나 잘못된 범위 값을 사용할 가능성이 있다."
+          },
+          {
+            "evidence": [
+              "README.md:3",
+              "README.md:16",
+              "README.md:18"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "편집 여부 판정이 프로젝트 범위 대신 테넌트 단위로만 이루어져, 동일 테넌트 내 서로 다른 프로젝트 간 격리가 적용되지 않는다. 라이브러리가 '테넌트별 기능 플래그 조회'를 제공한다는 설명과 부합한다."
+          }
+        ]
+      },
+      "issue_id": "12",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거에 authorization.py, repository.py, service.py의 실제 구현 라인이 없어 결함 위치나 조건문을 직접 확인할 수 없다.",
+            "mitigation": "2단계에서 해당 파일을 직접 열어 구현 라인을 확보한 뒤에만 수정을 진행하고, 확인 전에는 추정으로 코드를 변경하지 않는다."
+          },
+          {
+            "risk": "두 근본 원인 가설이 모두 재현 증상을 설명할 수 있어 잘못된 위치를 수정할 경우 증상이 지속되거나 다른 프로젝트 간 격리가 재차 누락될 수 있다.",
+            "mitigation": "3단계에서 각 가설을 코드 상에서 개별 판정하고, 5단계의 동일 테넌트·다른 프로젝트 케이스(c) 테스트로 실제 수정이 가설2까지 해소했는지 검증한다."
+          },
+          {
+            "risk": "프로젝트 범위 검사를 강화하면서 관리자 권한 보유 사용자의 정상 편집까지 거부하는 과잉 차단이 발생할 수 있다.",
+            "mitigation": "관리자 권한 정상 허용 케이스(a)와 동일 프로젝트 정상 편집 케이스(b)를 테스트에 포함하여 과잉 차단 회귀를 방지한다."
+          },
+          {
+            "risk": "이력(history)·문서(documents) 증거가 없어 해당 동작의 도입 시점이나 관련 변경 이력을 확인할 수 없고, 다른 미확인 경로에서 동일 결함이 남아 있을 수 있다.",
+            "mitigation": "6단계에서 이 한계를 명시적으로 문서화하고, repository.py/service.py의 편집 경로 전반에 동일한 프로젝트 범위 검사가 적용되는지 함께 점검한다."
+          },
+          {
+            "risk": "이 저장소는 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도가 아니므로, 수정이 실제 프로덕션 안전성을 보장하지 않는다.",
+            "mitigation": "수정은 fixture 범위 내 테스트와 격리된 코드 경로에서만 수행하고, 프로덕션 적용 여부는 별도 검토 대상임을 문서화한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "결함 재현 테스트를 먼저 작성한다",
+            "details": "제보된 증상(프로젝트 A 소유자 계정으로 프로젝트 B 플래그 편집이 허용됨)을 그대로 재현하는 회귀 테스트를 추가한다. 프로젝트 A 소유자 컨텍스트로 body에 프로젝트 B의 식별자를 담아 편집 호출을 수행하고, 현재는 성공(200/허용)하지만 기대 동작은 거부(403)임을 명시하여 실패하는 테스트(red)로 만든다. 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아니므로, 테스트는 프로덕션 데이터나 외부 시스템에 영향을 주지 않는 로컬 fixture 범위에서만 작성한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 실제 구현 라인을 확보하고 편집 여부 판정 경로를 추적한다",
+            "details": "제공된 코드 증거에는 authorization.py, repository.py, service.py의 실제 구현 라인이 포함되어 있지 않으므로, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 해당 파일들의 편집 권한 판정 함수를 직접 열어 조건문과 사용되는 범위 값을 확인한다. 특히 관리자 권한 검사와 프로젝트 범위 검사가 어느 지점에서 수행되는지, 프로젝트 범위 값이 어떤 필드에서 오는지 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "두 가지 근본 원인 가설을 코드 상에서 각각 판정한다",
+            "details": "가설1(신뢰도 0.35): 사용자 소속 프로젝트(A)와 대상 플래그의 프로젝트(B)를 비교하는 로직이 누락되었거나 잘못된 범위 값을 사용하는지 확인한다. 가설2(신뢰도 0.3): 편집 여부 판정이 테넌트 단위로만 이루어져 동일 테넌트 내 서로 다른 프로젝트 간 격리가 적용되지 않는지 확인한다. 어느 가설이 실제 결함 위치와 일치하는지, 또는 둘 다인지 결정하고 근거가 되는 파일/라인을 명시한다."
+          },
+          {
+            "id": 4,
+            "action": "편집 권한 판정에 프로젝트 범위 비교를 구현한다",
+            "details": "대상 플래그의 프로젝트 식별자와 사용자 소속 프로젝트 식별자를 비교하여 불일치 시 편집을 거부(403)하도록 authorization.py의 편집 경로를 수정한다. README.md:19에 문서화된 '관리자 권한과 프로젝트 범위 검사' 책임과 README.md:16의 '테넌트별 플래그 저장소', README.md:18의 '플래그 조회 서비스' 구조에 부합하도록 repository.py/service.py에서 전달되는 프로젝트 컨텍스트가 판정까지 누락 없이 전달되는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "1단계 재현 테스트를 통과시키고 경계 케이스 테스트를 보강한다",
+            "details": "작성한 회귀 테스트가 green이 되는지 확인하고, 추가로 (a) 관리자 권한 보유 시 정상 편집 허용, (b) 동일 테넌트·동일 프로젝트 편집 허용, (c) 동일 테넌트·다른 프로젝트 편집 거부, (d) 다른 테넌트 편집 거부 케이스를 검증하는 테스트를 추가한다. 가설2가 유효했다면 테넌트 단위 판정만으로는 (c)가 통과하지 못함을 명시적으로 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "판정 결과와 남은 불확실성을 문서화한다",
+            "details": "수정 전후 동작, 선택한 가설과 근거 파일/라인, 그리고 제공된 이력(history)·문서(documents) 증거가 없어 도입 시점과 관련 변경 이력을 확인할 수 없다는 한계를 기록한다. 이 저장소가 프로덕션 용도가 아닌 Clio Benchmark 테스트 fixture임을 유지하며 README.md의 책임 기술과 구현이 일치함을 재확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "12",
+        "acceptance_criteria": [
+          "프로젝트 A 소유자 계정으로 프로젝트 B의 플래그를 편집하려는 요청이 403(거부)으로 응답한다.",
+          "동일 테넌트·동일 프로젝트 내에서 관리자/소유자 권한을 가진 사용자의 플래그 편집은 정상 허용된다.",
+          "동일 테넌트 내 서로 다른 프로젝트 간 편집 시도가 거부되어, 테넌트 단위 판정만으로 통과되지 않음을 테스트가 확인한다.",
+          "제보 증상(프로젝트 불일치 편집 허용)을 재현하는 회귀 테스트가 수정 전에는 실패하고 수정 후에는 통과한다.",
+          "재현/경계 케이스 테스트가 모두 통과하며 기존 정상 편집 경로에 대한 회귀가 없다.",
+          "편집 거부 시 응답에 프로젝트 불일치로 인한 거부임을 식별할 수 있는 명확한 거부 사유 또는 상태 코드가 포함된다.",
+          "수정된 authorization.py의 동작이 README.md:19의 '관리자 권한과 프로젝트 범위 검사' 책임 기술과 일치한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:46:45.133669Z",
+    "completed_at": "2026-09-28T07:47:10.643044Z",
+    "created_at": "2026-09-28T07:46:45.110892Z",
+    "updated_at": "2026-09-28T07:47:10.644578Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 28.377
+  }
+}

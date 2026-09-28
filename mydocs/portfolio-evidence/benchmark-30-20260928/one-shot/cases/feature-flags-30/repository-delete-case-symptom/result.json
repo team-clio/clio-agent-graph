@@ -1,0 +1,431 @@
+{
+  "input": {
+    "id": "repository-delete-case-symptom",
+    "report": {
+      "title": "삭제 완료 응답 후 플래그가 계속 조회됨",
+      "description": "표기 형식이 다른 이름으로 삭제하면 오류 없이 끝나지만 데이터가 남습니다.",
+      "steps_to_reproduce": [
+        "New-Checkout을 생성합니다.",
+        "NEW-CHECKOUT 삭제 후 new-checkout을 조회합니다."
+      ],
+      "expected_behavior": "조회 결과가 없어야 합니다.",
+      "actual_behavior": "생성했던 값이 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_delete_normalizes_flag_name"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 27,
+    "name": "benchmark-20260928T073431Z-64ae54ac-repository-delete-case-symptom",
+    "description": "Clio Benchmark feature-flags-30: repository-delete-case-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T08:01:59.513673Z",
+    "updatedAt": "2026-09-28T08:01:59.513673Z"
+  },
+  "clio_repository": {
+    "id": 27,
+    "projectId": 27,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T08:02:33.467074Z",
+    "createdAt": "2026-09-28T08:01:59.525781Z",
+    "updatedAt": "2026-09-28T08:02:33.467750Z"
+  },
+  "bug": {
+    "id": 27,
+    "project_id": 27,
+    "issue_id": 27,
+    "title": "삭제 완료 응답 후 플래그가 계속 조회됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T08:02:33.893649Z",
+    "created_at": "2026-09-28T08:02:33.907650Z"
+  },
+  "analysis": {
+    "analysisResultId": 27,
+    "workflowRunId": 27,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "    def delete(self, tenant_id: str, flag_name: str) -> None:",
+          "end_line": 23,
+          "location": "src/feature_flags/repository.py:23",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": null,
+          "start_line": 23,
+          "evidence_id": "code-1",
+          "observation": "delete는 예외를 던지지 않고 `None`을 반환하는 시그니처로, 대상 키가 존재하지 않아도 오류 없이 조용히 종료될 수 있음을 시사한다. 이는 '오류 없이 끝나지만 데이터가 남는' 증상과 부합한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "27",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def test_delete_normalizes_flag_name() -> None:",
+          "end_line": 38,
+          "location": "tests/test_feature_flags.py:38",
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": null,
+          "start_line": 38,
+          "evidence_id": "code-2",
+          "observation": "테스트 이름이 'delete가 플래그 이름을 정규화해야 한다'는 요구 동작을 명시한다. 삭제 경로에서 이름 정규화가 기대 동작임을 뒷받침한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "27",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "    repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")",
+          "end_line": 42,
+          "location": "tests/test_feature_flags.py:42",
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": null,
+          "start_line": 42,
+          "evidence_id": "code-3",
+          "observation": "삭제 호출이 대문자 표기(\"NEW-CHECKOUT\")를 전달하며, 재현 절차의 'NEW-CHECKOUT 삭제 후 new-checkout 조회'와 일치한다. 대소문자만 다른 키 간 불일치 가능성을 뒷받침한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "27",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 27의 증상은 대소문자 등 표기 형식이 다른 이름으로 삭제하면 오류 없이 종료되지만 데이터가 남고, 이후 조회 시 생성했던 값이 반환된다는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거에서 `src/feature_flags/repository.py`의 23번째 줄은 `def delete(self, tenant_id: str, flag_name: str) -> None:`로, delete는 반환값 없이 조용히 종료되는 시그니처다.",
+          "verified": true
+        },
+        {
+          "fact": "`tests/test_feature_flags.py`의 38번째 줄에는 `def test_delete_normalizes_flag_name() -> None:` 테스트가 있고, 42번째 줄에서 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")`를 호출한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거에는 delete 및 조회 경로의 실제 정규화 구현(키 생성 로직)이 포함되어 있지 않아, 정규화 적용 위치를 코드로 직접 확인하지는 못했다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 27,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.55,
+      "hypotheses": [
+        {
+          "evidence": [
+            "src/feature_flags/repository.py:23의 `def delete(self, tenant_id: str, flag_name: str) -> None:` 시그니처",
+            "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:` 테스트가 존재한다는 점(이름 정규화가 삭제 경로의 요구 동작임을 시사)",
+            "tests/test_feature_flags.py:42의 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")` 호출은 소문자와 다른 케이스 입력을 전달함"
+          ],
+          "confidence": 0.55,
+          "hypothesis": "`FeatureFlagRepository.delete`가 삭제 대상 키를 조회/저장 시 사용하는 정규화 규칙(예: 대문자 변환)과 다른 정규화(또는 무정규화) 규칙으로 조회하여, 대소문자만 다른 플래그 이름(`NEW-CHECKOUT`)으로 삭제하면 실제 저장 키(`New-Checkout`/`new-checkout` 형태)와 매칭되지 않아 삭제가 무시되고 이후 `new-checkout` 조회 시 원본 값이 그대로 반환된다."
+        },
+        {
+          "evidence": [
+            "src/feature_flags/repository.py:23의 delete가 별도 정규화 호출 없이 `flag_name`을 그대로 받는다는 관찰",
+            "테스트 케이스가 'NEW-CHECKOUT' 삭제 후 소문자 조회를 검증 대상으로 삼는다는 점"
+          ],
+          "confidence": 0.4,
+          "hypothesis": "저장소가 테넌트별로 저장 키를 만들 때 이름을 정규화해 저장하는데, `delete`는 원본 `flag_name`을 정규화 없이 그대로 키로 사용해 조회하므로 다른 표기 형식으로 삭제하면 키 불일치가 발생한다."
+        }
+      ],
+      "project_id": 27,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "저장 경로의 정규화 규칙(대소문자 변환 등)을 실제로 확인하지 못한 상태로 수정하여, delete만 변경하고 저장/조회 규칙과 어긋날 수 있다.",
+            "mitigation": "1단계에서 저장·조회·delete의 키 생성 코드를 실제로 읽고 정규화 규칙을 확정한 뒤에만 수정을 진행한다. 확인 불가 시 계획을 보류하고 근거를 남긴다."
+          },
+          {
+            "risk": "정규화 규칙이 테넌트별로 다르게 적용되어 단일 헬퍼로 통일하면 기존 데이터 키와 충돌할 수 있다.",
+            "mitigation": "tenant_id를 인자로 받는 키 빌더로 설계하고, 기존 저장 키 형식을 테스트 픽스처로 고정해 회귀를 검출한다."
+          },
+          {
+            "risk": "delete가 여전히 오류 없이 종료되어 정규화 누락 같은 미적용 상황이 은폐될 수 있다.",
+            "mitigation": "필요 시 삭제 미적용 감지를 위한 로깅을 추가하고, 반환값/예외 정책 변경은 호출부 영향 검토 후 별도 이슈로 분리한다."
+          },
+          {
+            "risk": "테스트가 소문자 조회만 검증하고 원래 표기 조회를 빠뜨려 부분 수정이 통과할 수 있다.",
+            "mitigation": "원래 표기, 소문자 표기, 혼합 표기 각각으로 조회하는 케이스를 테스트에 포함한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장/조회/삭제 경로에서 플래그 이름 키를 만드는 정규화 로직의 실제 구현 위치를 확인한다.",
+            "details": "src/feature_flags/repository.py:23의 `def delete(self, tenant_id: str, flag_name: str) -> None:`와 저장·조회 메서드가 키를 생성하는 지점을 함께 읽고, 정규화(예: 소문자 변환)가 어디에 적용되는지 표로 정리한다. 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "정규화 함수를 단일 헬퍼로 추출하고 모든 키 경로가 이를 사용하도록 통일한다.",
+            "details": "저장, 조회, delete가 동일한 키 생성 함수(예: `_normalize_flag_name(flag_name)` 또는 저장 키 빌더)를 호출하도록 리팩터링한다. delete는 원본 `flag_name`을 그대로 키로 쓰지 않고 정규화된 키로 조회/삭제해야 한다."
+          },
+          {
+            "id": 3,
+            "action": "delete가 정규화된 키로 삭제를 수행하는지 검증하는 테스트를 보강한다.",
+            "details": "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:`이 저장 시 사용한 표기와 다른 표기(예: tests/test_feature_flags.py:42의 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")`)를 삭제에 전달한 뒤, 소문자 표기로 조회하면 값이 남지 않고 조회 실패/기본값이 반환되는지 단언하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "삭제 대상이 없는 경우의 동작(멱등성 vs 오류)을 명확히 하고 기존 시그니처 유지 여부를 결정한다.",
+            "details": "`delete(...) -> None` 시그니처가 조용히 종료되어 키 불일치가 은폐되는 문제를 고려해, 정규화로 키를 일치시키는 것을 1차 수정으로 삼고, 삭제 미적용을 감지할 필요가 있으면 로깅 또는 반환값 변경은 별도 이슈로 분리한다."
+          },
+          {
+            "id": 5,
+            "action": "전체 테스트 스위트를 실행해 회귀를 확인하고 결과를 기록한다.",
+            "details": "tests/test_feature_flags.py를 포함한 플래그 관련 테스트를 실행하고, 대소문자 혼용 이름 생성/조회/삭제 시나리오가 모두 통과하는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "acceptance_criteria": [
+          "`repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")` 호출 후 `new-checkout`(및 저장 시 사용한 원래 표기)로 조회하면 삭제 전 저장 값이 더 이상 반환되지 않는다.",
+          "저장·조회·delete가 모두 동일한 정규화 함수/키 빌더를 사용하며, delete 경로에 무정규화 원본 `flag_name` 직접 사용이 남아 있지 않다.",
+          "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:`가 대소문자만 다른 이름의 생성-삭제-조회 흐름을 실행하여 데이터 잔존이 없음을 검증한다.",
+          "기존 정상 케이스(정확히 같은 표기로 저장 후 삭제)는 계속 통과하여 회귀가 없다.",
+          "`def delete(self, tenant_id: str, flag_name: str) -> None:` 시그니처가 변경된 경우, 그 이유와 호출부 수정 내역이 함께 반영되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 58,
+            "rationale": "특정 테넌트(예: tenant-alpha)의 플래그 삭제 경로에 국한되며 전체 서비스 장애는 아니지만, 대소문자·표기 형식이 다른 이름으로 삭제를 시도하는 모든 사용자에게 동일하게 발생한다. 삭제가 반영되지 않으면 해당 플래그를 참조하는 기능 분기 플로우 전체가 잘못된 상태로 남는다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 62,
+            "rationale": "크래시나 예외는 발생하지 않지만(facts: delete 시그니처가 None 반환, 조용히 종료) 데이터 정합성이 깨진다. 삭제된 것으로 간주한 플래그가 실제로 남아 있어 잘못된 기능 활성화로 이어질 수 있는 논리적 데이터 불일치(잔존 데이터)다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 78,
+            "rationale": "재현 절차가 명확하고 결정적이다: 1) New-Checkout 생성, 2) NEW-CHECKOUT 삭제 후 new-checkout 조회 시 생성했던 값이 반환된다. 이름 정규화 규칙이 다르면 100% 재현되며, tests/test_feature_flags.py:38의 test_delete_normalizes_flag_name 및 42번째 줄 repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\") 호출로 회귀 테스트까지 존재해 재현성이 높다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 48,
+            "rationale": "정확히 원본 생성 시 사용한 표기(예: New-Checkout)로 삭제하면 우회가 가능하다는 점에서 완전 차단은 아니다. 다만 사용자가 실제 저장 키 표기를 알 수 없고 삭제가 오류 없이 성공한 것처럼 보여 우회 사실을 인지하기 어려우므로 부분적 우회만 가능하다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 55,
+            "rationale": "플래그 삭제는 신규 체크아웃(New-Checkout) 등 핵심 결제/계정 플로우와 연관된 기능 플래그를 다룰 수 있어 영향력이 크다. 다만 delete 자체는 결제 트랜잭션·계정 인증 코어 경로가 아닌 관리 경로이므로 임계성은 중간 수준으로 본다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "버그 27은 대소문자 등 표기 형식이 다른 이름으로 삭제하면 src/feature_flags/repository.py:23의 `def delete(self, tenant_id: str, flag_name: str) -> None:`가 예외 없이 조용히 종료되어(None 반환) 데이터가 잔존하고, 이후 조회 시 생성했던 값이 그대로 반환되는 데이터 정합성 결함이다. 근본 원인 가설은 조회/저장 경로의 키 정규화 규칙과 delete 경로의 정규화(또는 무정규화)가 불일치한다는 것으로, tests/test_feature_flags.py:38의 test_delete_normalizes_flag_name과 42번째 줄 repository.delete(\\\"tenant-alpha\\\", \\\"NEW-CHECKOUT\\\") 호출이 이를 뒷받침한다. 크래시·보안 노출·전면 장애는 아니고, 원본 표기로 삭제하면 우회가 가능하다는 점에서 P1(70-84) 수준은 아니지만, 결정적으로 재현 가능하고 삭제가 성공한 것처럼 보이면서 실제로는 남는 조용한 실패(silent no-op)이므로 P2 보통(50-69) 구간 상단으로 평가하여 62점으로 산정한다.",
+        "risk_score": 62
+      },
+      "workflow_run_id": 27
+    }
+  },
+  "workflow": {
+    "id": 27,
+    "project_id": 27,
+    "request_id": "process-bug-27",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 27의 증상은 대소문자 등 표기 형식이 다른 이름으로 삭제하면 오류 없이 종료되지만 데이터가 남고, 이후 조회 시 생성했던 값이 반환된다는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거에서 `src/feature_flags/repository.py`의 23번째 줄은 `def delete(self, tenant_id: str, flag_name: str) -> None:`로, delete는 반환값 없이 조용히 종료되는 시그니처다.",
+            "verified": true
+          },
+          {
+            "fact": "`tests/test_feature_flags.py`의 38번째 줄에는 `def test_delete_normalizes_flag_name() -> None:` 테스트가 있고, 42번째 줄에서 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")`를 호출한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거에는 delete 및 조회 경로의 실제 정규화 구현(키 생성 로직)이 포함되어 있지 않아, 정규화 적용 위치를 코드로 직접 확인하지는 못했다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "    def delete(self, tenant_id: str, flag_name: str) -> None:",
+            "end_line": 23,
+            "location": "src/feature_flags/repository.py:23",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": null,
+            "start_line": 23,
+            "evidence_id": "code-1",
+            "observation": "delete는 예외를 던지지 않고 `None`을 반환하는 시그니처로, 대상 키가 존재하지 않아도 오류 없이 조용히 종료될 수 있음을 시사한다. 이는 '오류 없이 끝나지만 데이터가 남는' 증상과 부합한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "27",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def test_delete_normalizes_flag_name() -> None:",
+            "end_line": 38,
+            "location": "tests/test_feature_flags.py:38",
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": null,
+            "start_line": 38,
+            "evidence_id": "code-2",
+            "observation": "테스트 이름이 'delete가 플래그 이름을 정규화해야 한다'는 요구 동작을 명시한다. 삭제 경로에서 이름 정규화가 기대 동작임을 뒷받침한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "27",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "    repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")",
+            "end_line": 42,
+            "location": "tests/test_feature_flags.py:42",
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": null,
+            "start_line": 42,
+            "evidence_id": "code-3",
+            "observation": "삭제 호출이 대문자 표기(\"NEW-CHECKOUT\")를 전달하며, 재현 절차의 'NEW-CHECKOUT 삭제 후 new-checkout 조회'와 일치한다. 대소문자만 다른 키 간 불일치 가능성을 뒷받침한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "27",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.55,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "src/feature_flags/repository.py:23의 `def delete(self, tenant_id: str, flag_name: str) -> None:` 시그니처",
+              "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:` 테스트가 존재한다는 점(이름 정규화가 삭제 경로의 요구 동작임을 시사)",
+              "tests/test_feature_flags.py:42의 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")` 호출은 소문자와 다른 케이스 입력을 전달함"
+            ],
+            "confidence": 0.55,
+            "hypothesis": "`FeatureFlagRepository.delete`가 삭제 대상 키를 조회/저장 시 사용하는 정규화 규칙(예: 대문자 변환)과 다른 정규화(또는 무정규화) 규칙으로 조회하여, 대소문자만 다른 플래그 이름(`NEW-CHECKOUT`)으로 삭제하면 실제 저장 키(`New-Checkout`/`new-checkout` 형태)와 매칭되지 않아 삭제가 무시되고 이후 `new-checkout` 조회 시 원본 값이 그대로 반환된다."
+          },
+          {
+            "evidence": [
+              "src/feature_flags/repository.py:23의 delete가 별도 정규화 호출 없이 `flag_name`을 그대로 받는다는 관찰",
+              "테스트 케이스가 'NEW-CHECKOUT' 삭제 후 소문자 조회를 검증 대상으로 삼는다는 점"
+            ],
+            "confidence": 0.4,
+            "hypothesis": "저장소가 테넌트별로 저장 키를 만들 때 이름을 정규화해 저장하는데, `delete`는 원본 `flag_name`을 정규화 없이 그대로 키로 사용해 조회하므로 다른 표기 형식으로 삭제하면 키 불일치가 발생한다."
+          }
+        ]
+      },
+      "issue_id": "27",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "저장 경로의 정규화 규칙(대소문자 변환 등)을 실제로 확인하지 못한 상태로 수정하여, delete만 변경하고 저장/조회 규칙과 어긋날 수 있다.",
+            "mitigation": "1단계에서 저장·조회·delete의 키 생성 코드를 실제로 읽고 정규화 규칙을 확정한 뒤에만 수정을 진행한다. 확인 불가 시 계획을 보류하고 근거를 남긴다."
+          },
+          {
+            "risk": "정규화 규칙이 테넌트별로 다르게 적용되어 단일 헬퍼로 통일하면 기존 데이터 키와 충돌할 수 있다.",
+            "mitigation": "tenant_id를 인자로 받는 키 빌더로 설계하고, 기존 저장 키 형식을 테스트 픽스처로 고정해 회귀를 검출한다."
+          },
+          {
+            "risk": "delete가 여전히 오류 없이 종료되어 정규화 누락 같은 미적용 상황이 은폐될 수 있다.",
+            "mitigation": "필요 시 삭제 미적용 감지를 위한 로깅을 추가하고, 반환값/예외 정책 변경은 호출부 영향 검토 후 별도 이슈로 분리한다."
+          },
+          {
+            "risk": "테스트가 소문자 조회만 검증하고 원래 표기 조회를 빠뜨려 부분 수정이 통과할 수 있다.",
+            "mitigation": "원래 표기, 소문자 표기, 혼합 표기 각각으로 조회하는 케이스를 테스트에 포함한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장/조회/삭제 경로에서 플래그 이름 키를 만드는 정규화 로직의 실제 구현 위치를 확인한다.",
+            "details": "src/feature_flags/repository.py:23의 `def delete(self, tenant_id: str, flag_name: str) -> None:`와 저장·조회 메서드가 키를 생성하는 지점을 함께 읽고, 정규화(예: 소문자 변환)가 어디에 적용되는지 표로 정리한다. 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "정규화 함수를 단일 헬퍼로 추출하고 모든 키 경로가 이를 사용하도록 통일한다.",
+            "details": "저장, 조회, delete가 동일한 키 생성 함수(예: `_normalize_flag_name(flag_name)` 또는 저장 키 빌더)를 호출하도록 리팩터링한다. delete는 원본 `flag_name`을 그대로 키로 쓰지 않고 정규화된 키로 조회/삭제해야 한다."
+          },
+          {
+            "id": 3,
+            "action": "delete가 정규화된 키로 삭제를 수행하는지 검증하는 테스트를 보강한다.",
+            "details": "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:`이 저장 시 사용한 표기와 다른 표기(예: tests/test_feature_flags.py:42의 `repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")`)를 삭제에 전달한 뒤, 소문자 표기로 조회하면 값이 남지 않고 조회 실패/기본값이 반환되는지 단언하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "삭제 대상이 없는 경우의 동작(멱등성 vs 오류)을 명확히 하고 기존 시그니처 유지 여부를 결정한다.",
+            "details": "`delete(...) -> None` 시그니처가 조용히 종료되어 키 불일치가 은폐되는 문제를 고려해, 정규화로 키를 일치시키는 것을 1차 수정으로 삼고, 삭제 미적용을 감지할 필요가 있으면 로깅 또는 반환값 변경은 별도 이슈로 분리한다."
+          },
+          {
+            "id": 5,
+            "action": "전체 테스트 스위트를 실행해 회귀를 확인하고 결과를 기록한다.",
+            "details": "tests/test_feature_flags.py를 포함한 플래그 관련 테스트를 실행하고, 대소문자 혼용 이름 생성/조회/삭제 시나리오가 모두 통과하는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "acceptance_criteria": [
+          "`repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")` 호출 후 `new-checkout`(및 저장 시 사용한 원래 표기)로 조회하면 삭제 전 저장 값이 더 이상 반환되지 않는다.",
+          "저장·조회·delete가 모두 동일한 정규화 함수/키 빌더를 사용하며, delete 경로에 무정규화 원본 `flag_name` 직접 사용이 남아 있지 않다.",
+          "tests/test_feature_flags.py:38의 `def test_delete_normalizes_flag_name() -> None:`가 대소문자만 다른 이름의 생성-삭제-조회 흐름을 실행하여 데이터 잔존이 없음을 검증한다.",
+          "기존 정상 케이스(정확히 같은 표기로 저장 후 삭제)는 계속 통과하여 회귀가 없다.",
+          "`def delete(self, tenant_id: str, flag_name: str) -> None:` 시그니처가 변경된 경우, 그 이유와 호출부 수정 내역이 함께 반영되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T08:02:34.527974Z",
+    "completed_at": "2026-09-28T08:03:00.297220Z",
+    "created_at": "2026-09-28T08:02:34.519161Z",
+    "updated_at": "2026-09-28T08:03:00.298948Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.456
+  }
+}

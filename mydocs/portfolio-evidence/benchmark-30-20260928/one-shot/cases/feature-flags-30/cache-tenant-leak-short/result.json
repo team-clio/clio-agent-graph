@@ -1,0 +1,510 @@
+{
+  "input": {
+    "id": "cache-tenant-leak-short",
+    "report": {
+      "title": "테넌트별 플래그 캐시가 격리되지 않음",
+      "description": "먼저 조회한 고객사의 플래그 값이 다음 고객사 조회에 재사용됩니다.",
+      "steps_to_reproduce": [
+        "서로 다른 값을 가진 두 테넌트를 준비합니다.",
+        "동일한 플래그 이름을 차례로 조회합니다."
+      ],
+      "expected_behavior": "각 테넌트에 저장된 값이 반환되어야 합니다.",
+      "actual_behavior": "두 번째 조회가 첫 번째 값과 같습니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_returns_requested_tenant_value_after_prior_lookup"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 2,
+    "name": "benchmark-20260928T073431Z-64ae54ac-cache-tenant-leak-short",
+    "description": "Clio Benchmark feature-flags-30: cache-tenant-leak-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:35:47.001084Z",
+    "updatedAt": "2026-09-28T07:35:47.001084Z"
+  },
+  "clio_repository": {
+    "id": 2,
+    "projectId": 2,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:36:20.289760Z",
+    "createdAt": "2026-09-28T07:35:47.013361Z",
+    "updatedAt": "2026-09-28T07:36:20.290392Z"
+  },
+  "bug": {
+    "id": 2,
+    "project_id": 2,
+    "issue_id": 2,
+    "title": "테넌트별 플래그 캐시가 격리되지 않음",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:36:21.459583Z",
+    "created_at": "2026-09-28T07:36:21.466546Z"
+  },
+  "analysis": {
+    "analysisResultId": 2,
+    "workflowRunId": 2,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "code-1",
+          "observation": "저장소 2가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인. 테넌트 단위 조회가 이 프로젝트의 핵심 기능임을 뒷받침합니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "2",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": "README.md:16",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "code-2",
+          "observation": "src/feature_flags/repository.py가 테넌트별 플래그 저장소임을 확인. 테넌트 분리 책임이 저장소 계층에 있음을 시사합니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "2",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": "README.md:18",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "code-3",
+          "observation": "src/feature_flags/service.py가 플래그 조회 서비스임을 확인. 캐시 조회/저장이 발생할 가능성이 있는 계층이지만 실제 구현은 스냅샷에 포함되지 않았습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "2",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 2의 제목은 '테넌트별 플래그 캐시가 격리되지 않음'이며, 오류 유형은 ReportedBehaviorMismatch입니다.",
+          "verified": true
+        },
+        {
+          "fact": "재현 절차는 서로 다른 값을 가진 두 테넌트를 준비한 뒤 동일한 플래그 이름을 차례로 조회하는 것이며, 실제 동작은 두 번째 조회가 첫 번째 값과 동일하다고 보고됩니다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context.raw_payload의 benchmark_case_id는 'cache-tenant-leak-short'로, 테넌트 간 캐시 누수를 시사하는 벤치마크 케이스 ID입니다.",
+          "verified": true
+        },
+        {
+          "fact": "stack_trace는 빈 배열로 제공되어 런타임 프레임 정보가 없습니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 evidence.documents와 evidence.history는 모두 비어 있으며, evidence.code는 8건 모두 README.md 내용입니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 저장소 2(커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520)가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'라고 설명합니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 src/feature_flags/repository.py를 '테넌트별 플래그 저장소', src/feature_flags/service.py를 '플래그 조회 서비스'로 소개합니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거에는 캐시 키 구성, 캐시 조회/저장 로직, 테넌트 컨텍스트 전달 코드가 포함되어 있지 않아 캐시 격리 실패의 구체적 코드 지점은 미확인입니다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 2,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.35,
+      "hypotheses": [
+        {
+          "evidence": [
+            "제공된 코드 근거는 README.md의 프로젝트 개요와 모듈 목록뿐이며, 캐시 구현 코드(src/feature_flags/service.py, src/feature_flags/repository.py)는 스냅샷에 포함되지 않았습니다.",
+            "이슈 재현 절차가 '동일한 플래그 이름을 차례로 조회'할 때 두 번째 조회가 첫 번째 값과 같다고 보고합니다."
+          ],
+          "confidence": 0.55,
+          "hypothesis": "플래그 조회 캐시 키에 테넌트 식별자가 포함되지 않아, 첫 번째 테넌트 조회 결과가 tenant 무관 키로 캐시에 저장되고 이후 다른 테넌트의 동일 플래그 이름 조회가 그 값을 그대로 반환합니다."
+        },
+        {
+          "evidence": [
+            "README.md는 src/feature_flags/service.py를 '플래그 조회 서비스'로만 설명하고 테넌트 파라미터 규약을 명시하지 않습니다.",
+            "제공된 코드 근거만으로는 캐시 계층의 키 구성이나 테넌트 전달 여부를 확인할 수 없습니다."
+          ],
+          "confidence": 0.3,
+          "hypothesis": "플래그 조회 서비스가 테넌트 컨텍스트를 인자로 전달받지 않거나, 캐시 조회/저장 시 테넌트 컨텍스트를 무시하여 테넌트 간 값이 섞입니다."
+        },
+        {
+          "evidence": [
+            "README.md line 16은 src/feature_flags/repository.py를 '테넌트별 플래그 저장소'로 기술하나, 실제 테넌트 분리 구현은 스냅샷에 포함되어 있지 않습니다."
+          ],
+          "confidence": 0.15,
+          "hypothesis": "저장소 계층이 테넌트별 저장소로 분리되지 않아 같은 플래그 이름이 전역 저장소에서 덮어쓰기/재사용됩니다."
+        }
+      ],
+      "project_id": 2,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 evidence.code 8건이 모두 README.md 내용이고 evidence.documents/history가 비어 있어, 실제 캐시 구현 위치와 실패 코드 지점이 미확인 상태다.",
+            "mitigation": "1단계에서 src/feature_flags/service.py와 src/feature_flags/repository.py를 직접 확인하여 캐시 계층을 특정한 뒤 이후 단계를 진행하고, 구현이 예상과 다르면 계획을 갱신한다."
+          },
+          {
+            "risk": "stack_trace가 빈 배열이라 런타임 프레임 정보가 없어 실패 지점 특정이 어렵다.",
+            "mitigation": "2단계의 재현 테스트로 실패를 결정적으로 고정하고, 로깅 또는 디버거로 캐시 조회/저장 경로를 추적하여 지점을 좁힌다."
+          },
+          {
+            "risk": "캐시 키에 테넌트 식별자를 추가하면 테넌트별 캐시 엔트리가 증가하여 메모리 사용량과 캐시 적중률이 변동될 수 있다.",
+            "mitigation": "캐시 크기 상한/TTL 설정을 확인하고, 필요 시 테넌트 단위 축출 정책을 적용한다."
+          },
+          {
+            "risk": "가설 1의 신뢰도가 0.55로 낮아 캐시 키 외의 원인(테넌트 컨텍스트 미전달 또는 저장소 미분리)이 주 원인일 수 있다.",
+            "mitigation": "3~5단계를 순차 검증하여 각 계층에서 잔여 누수가 없는지 확인하고, 재현 테스트가 PASS가 될 때까지 원인 계층을 좁힌다."
+          },
+          {
+            "risk": "테넌트별 저장소 분리가 실제로 미구현일 경우 저장소 계층까지 변경 범위가 확대되어 영향도가 커진다.",
+            "mitigation": "5단계에서 저장소 분리 여부를 먼저 확인하고, 변경이 필요한 경우 저장소 계층 테스트를 추가한 뒤 범위를 분리하여 적용한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 2(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)의 src/feature_flags/ 계층에서 캐시 키 구성, 캐시 조회/저장 로직, 테넌트 컨텍스트 전달 경로를 확인한다.",
+            "details": "제공된 evidence.code 8건은 모두 README.md 내용이라 캐시 구현 지점이 미확인 상태다. src/feature_flags/service.py(플래그 조회 서비스)와 src/feature_flags/repository.py(테넌트별 플래그 저장소)를 우선 열어 캐시 계층 위치를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "테넌트 간 캐시 누수를 결정적으로 재현하는 회귀 테스트를 추가한다.",
+            "details": "benchmark_case_id 'cache-tenant-leak-short' 시나리오대로 서로 다른 값을 가진 두 테넌트를 준비하고, 동일한 플래그 이름을 차례대로 조회했을 때 두 번째 조회 값이 첫 번째 테넌트 값과 일치하는지 검증한다. 이 테스트는 수정 전 FAIL이어야 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키에 테넌트 식별자를 포함하도록 캐시 키 생성 로직을 수정한다.",
+            "details": "가설 1(신뢰도 0.55)에 대응한다. 캐시 조회/저장 양쪽이 동일한 키 생성 함수를 사용하도록 단일화하여, tenant 무관 키로 인한 값 재사용을 차단한다."
+          },
+          {
+            "id": 4,
+            "action": "플래그 조회 서비스가 테넌트 컨텍스트를 인자로 전달받아 캐시 조회/저장에 반영하는지 검증하고, 누락된 경우 전달 경로를 연결한다.",
+            "details": "가설 2(신뢰도 0.3)에 대응한다. README.md는 테넌트 파라미터 규약을 명시하지 않으므로, 서비스 진입점부터 캐시 계층까지 tenant 컨텍스트가 끊김 없이 전달되는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "저장소 계층이 테넌트별로 분리되어 동일 플래그 이름이 전역 저장소에서 덮어써지거나 재사용되지 않는지 확인한다.",
+            "details": "가설 3(신뢰도 0.15)에 대응한다. README.md:16이 src/feature_flags/repository.py를 '테넌트별 플래그 저장소'로 기술하나 실제 분리 구현은 확인되지 않았다. 캐시 키 수정 후 남는 잔여 누수가 없는지 점검한다."
+          },
+          {
+            "id": 6,
+            "action": "재현 테스트와 전체 관련 테스트를 실행하여 수정 결과를 확인하고 회귀 여부를 점검한다.",
+            "details": "1단계에서 추가한 회귀 테스트가 PASS로 전환되는지, 캐시 동작에 의존하는 기존 테스트가 깨지지 않는지 확인한다."
+          },
+          {
+            "id": 7,
+            "action": "캐시 키 규약과 테넌트 파라미터 규약을 문서에 반영한다.",
+            "details": "README.md에 캐시 키가 테넌트 식별자를 포함한다는 규약과 서비스 계층의 tenant 파라미터 계약을 명시하여, 향후 동일 유형의 누수 재발을 방지한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "2",
+        "acceptance_criteria": [
+          "'cache-tenant-leak-short' 시나리오 재현 테스트에서 서로 다른 값을 가진 두 테넌트가 동일 플래그 이름을 차례대로 조회할 때 두 번째 조회가 첫 번째 테넌트의 값이 아닌 자신의 값을 반환한다.",
+          "캐시 키 생성 로직이 테넌트 식별자를 포함하며, 캐시 조회와 저장이 동일한 키 생성 경로를 사용한다.",
+          "플래그 조회 서비스 진입점에서 캐시 계층까지 테넌트 컨텍스트가 인자로 전달되며, 전달 누락 시 실패하는 테스트가 존재한다.",
+          "수정 전 FAIL이던 회귀 테스트가 수정 후 PASS로 전환된다.",
+          "기존 캐시 관련 테스트가 회귀 없이 모두 통과한다.",
+          "캐시 키 및 tenant 파라미터 규약이 문서에 반영되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 78,
+            "rationale": "저장소 2는 '테넌트별 기능 플래그 조회' 자체가 핵심 기능인 서비스 라이브러리(README.md:3)이며, 캐시 키에 테넌트 식별자가 빠지면 동일 플래그를 조회하는 모든 테넌트가 오염된다. 즉 단일 기능 장애가 아니라 테넌트 단위 조회 전반에 걸친 광범위한 영향이 예상된다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 82,
+            "rationale": "크래시나 예외가 아닌 '조용한 값 오염(silent wrong value)'으로, 고객사 A의 플래그 값이 고객사 B에 반환된다. 멀티테넌트 환경에서 이는 데이터 무결성 및 테넌트 격리 위반이며, 잘못된 플래그로 기능이 켜지거나 꺼져 장애·오동작으로 이어질 수 있다. error_type은 ReportedBehaviorMismatch, benchmark_case_id는 'cache-tenant-leak-short'로 테넌트 간 캐시 누수를 명시한다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "재현 절차가 '서로 다른 값을 가진 두 테넌트 준비 → 동일한 플래그 이름을 차례로 조회'라는 최소 조건만으로 100% 재현된다. 특정 타이밍이나 부하 조건이 필요 없고, 캐시가 채워진 이후에는 동일 플래그 이름을 조회하는 모든 요청에서 두 번째 조회가 첫 번째 값과 같다고 보고된다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 72,
+            "rationale": "캐시를 무력화(플래그 이름에 테넌트 접두어를 수동으로 붙이거나 캐시를 매 조회마다 비우는 등)하지 않는 한 라이브러리 사용자가 코드 레벨에서 회피하기 어렵다. 캐시 키 구성과 테넌트 컨텍스트 전달 코드가 스냅샷에 없어 실제 수정 지점도 미확인이며, 영향받는 테넌트는 잘못된 플래그 값 자체를 인지하기 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 80,
+            "rationale": "멀티테넌트 SaaS에서 테넌트 격리 실패는 신뢰·계약·컴플라이언스 이슈로 직결된다. 플래그 값이 결제/권한/롤아웃 등 비즈니스 로직 게이트로 쓰이는 경우 다른 고객의 설정이 노출·적용될 수 있어 코어 경로 임계성이 높다."
+          },
+          {
+            "name": "근거 충족도 (evidence_confidence)",
+            "score": 40,
+            "rationale": "증거 8건이 전부 README.md 내용이며(evidence.documents/history 없음), src/feature_flags/service.py·src/feature_flags/repository.py 실제 구현과 stack_trace가 제공되지 않아 근본 원인 가설(캐시 키에 테넌트 미포함, confidence 0.55)이 코드로 확정되지 않았다. 다만 재현 절차와 벤치마크 ID가 행동 불일치를 명확히 지시하므로 심각도 자체를 낮추지는 않는다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "테넌트별 기능 플래그 조회가 이 라이브러리의 핵심 기능(README.md:3)인데, 캐시 키에 테넌트 식별자가 포함되지 않아 첫 조회 값이 다른 테넌트에 그대로 반환되는 조용한 데이터 오염이다. 크래시·예외가 아니라 잘못된 값이 정상 응답처럼 반환되므로 탐지가 어렵고(심각도 높음), 서로 다른 값을 가진 두 테넌트에서 동일 플래그 이름을 순차 조회하는 최소 조건만으로 100% 재현된다(빈도 높음). 동일 플래그를 조회하는 모든 테넌트의 조회 결과가 캐시 상태에 따라 오염될 수 있어 영향 범위가 넓고, 라이브러리 사용자가 코드 레벨에서 우회하기 어렵다. 멀티테넌트 환경의 테넌트 격리 위반은 신뢰·컴플라이언스 리스크가 크고, 플래그가 결제·권한 등 코어 경로 게이트로 쓰이면 다른 고객 설정이 노출·적용될 수 있다. 다만 근거가 README.md 8건뿐이고 service.py/repository.py 실제 구현과 stack_trace가 없어 근본 원인이 코드로 확정되지 않았으므로(confidence 0.35) 만점 수준인 P0(85+)까지는 올리지 않고, 밴딩상 P1 높음 상단(82)으로 산정한다. 캐시 계층에서 tenant_id를 키에 포함하도록 수정하고 테넌트 간 격리를 검증하는 회귀 테스트 추가가 필요하다.",
+        "risk_score": 82
+      },
+      "workflow_run_id": 2
+    }
+  },
+  "workflow": {
+    "id": 2,
+    "project_id": 2,
+    "request_id": "process-bug-2",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 2의 제목은 '테넌트별 플래그 캐시가 격리되지 않음'이며, 오류 유형은 ReportedBehaviorMismatch입니다.",
+            "verified": true
+          },
+          {
+            "fact": "재현 절차는 서로 다른 값을 가진 두 테넌트를 준비한 뒤 동일한 플래그 이름을 차례로 조회하는 것이며, 실제 동작은 두 번째 조회가 첫 번째 값과 동일하다고 보고됩니다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context.raw_payload의 benchmark_case_id는 'cache-tenant-leak-short'로, 테넌트 간 캐시 누수를 시사하는 벤치마크 케이스 ID입니다.",
+            "verified": true
+          },
+          {
+            "fact": "stack_trace는 빈 배열로 제공되어 런타임 프레임 정보가 없습니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 evidence.documents와 evidence.history는 모두 비어 있으며, evidence.code는 8건 모두 README.md 내용입니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 저장소 2(커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520)가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'라고 설명합니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 src/feature_flags/repository.py를 '테넌트별 플래그 저장소', src/feature_flags/service.py를 '플래그 조회 서비스'로 소개합니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거에는 캐시 키 구성, 캐시 조회/저장 로직, 테넌트 컨텍스트 전달 코드가 포함되어 있지 않아 캐시 격리 실패의 구체적 코드 지점은 미확인입니다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "2",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "code-1",
+            "observation": "저장소 2가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인. 테넌트 단위 조회가 이 프로젝트의 핵심 기능임을 뒷받침합니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "2",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": "README.md:16",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "code-2",
+            "observation": "src/feature_flags/repository.py가 테넌트별 플래그 저장소임을 확인. 테넌트 분리 책임이 저장소 계층에 있음을 시사합니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "2",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": "README.md:18",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "code-3",
+            "observation": "src/feature_flags/service.py가 플래그 조회 서비스임을 확인. 캐시 조회/저장이 발생할 가능성이 있는 계층이지만 실제 구현은 스냅샷에 포함되지 않았습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "2",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.35,
+        "evidence_counts": {
+          "code": 8,
+          "history": 0,
+          "document": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "제공된 코드 근거는 README.md의 프로젝트 개요와 모듈 목록뿐이며, 캐시 구현 코드(src/feature_flags/service.py, src/feature_flags/repository.py)는 스냅샷에 포함되지 않았습니다.",
+              "이슈 재현 절차가 '동일한 플래그 이름을 차례로 조회'할 때 두 번째 조회가 첫 번째 값과 같다고 보고합니다."
+            ],
+            "confidence": 0.55,
+            "hypothesis": "플래그 조회 캐시 키에 테넌트 식별자가 포함되지 않아, 첫 번째 테넌트 조회 결과가 tenant 무관 키로 캐시에 저장되고 이후 다른 테넌트의 동일 플래그 이름 조회가 그 값을 그대로 반환합니다."
+          },
+          {
+            "evidence": [
+              "README.md는 src/feature_flags/service.py를 '플래그 조회 서비스'로만 설명하고 테넌트 파라미터 규약을 명시하지 않습니다.",
+              "제공된 코드 근거만으로는 캐시 계층의 키 구성이나 테넌트 전달 여부를 확인할 수 없습니다."
+            ],
+            "confidence": 0.3,
+            "hypothesis": "플래그 조회 서비스가 테넌트 컨텍스트를 인자로 전달받지 않거나, 캐시 조회/저장 시 테넌트 컨텍스트를 무시하여 테넌트 간 값이 섞입니다."
+          },
+          {
+            "evidence": [
+              "README.md line 16은 src/feature_flags/repository.py를 '테넌트별 플래그 저장소'로 기술하나, 실제 테넌트 분리 구현은 스냅샷에 포함되어 있지 않습니다."
+            ],
+            "confidence": 0.15,
+            "hypothesis": "저장소 계층이 테넌트별 저장소로 분리되지 않아 같은 플래그 이름이 전역 저장소에서 덮어쓰기/재사용됩니다."
+          }
+        ]
+      },
+      "issue_id": "2",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 evidence.code 8건이 모두 README.md 내용이고 evidence.documents/history가 비어 있어, 실제 캐시 구현 위치와 실패 코드 지점이 미확인 상태다.",
+            "mitigation": "1단계에서 src/feature_flags/service.py와 src/feature_flags/repository.py를 직접 확인하여 캐시 계층을 특정한 뒤 이후 단계를 진행하고, 구현이 예상과 다르면 계획을 갱신한다."
+          },
+          {
+            "risk": "stack_trace가 빈 배열이라 런타임 프레임 정보가 없어 실패 지점 특정이 어렵다.",
+            "mitigation": "2단계의 재현 테스트로 실패를 결정적으로 고정하고, 로깅 또는 디버거로 캐시 조회/저장 경로를 추적하여 지점을 좁힌다."
+          },
+          {
+            "risk": "캐시 키에 테넌트 식별자를 추가하면 테넌트별 캐시 엔트리가 증가하여 메모리 사용량과 캐시 적중률이 변동될 수 있다.",
+            "mitigation": "캐시 크기 상한/TTL 설정을 확인하고, 필요 시 테넌트 단위 축출 정책을 적용한다."
+          },
+          {
+            "risk": "가설 1의 신뢰도가 0.55로 낮아 캐시 키 외의 원인(테넌트 컨텍스트 미전달 또는 저장소 미분리)이 주 원인일 수 있다.",
+            "mitigation": "3~5단계를 순차 검증하여 각 계층에서 잔여 누수가 없는지 확인하고, 재현 테스트가 PASS가 될 때까지 원인 계층을 좁힌다."
+          },
+          {
+            "risk": "테넌트별 저장소 분리가 실제로 미구현일 경우 저장소 계층까지 변경 범위가 확대되어 영향도가 커진다.",
+            "mitigation": "5단계에서 저장소 분리 여부를 먼저 확인하고, 변경이 필요한 경우 저장소 계층 테스트를 추가한 뒤 범위를 분리하여 적용한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 2(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)의 src/feature_flags/ 계층에서 캐시 키 구성, 캐시 조회/저장 로직, 테넌트 컨텍스트 전달 경로를 확인한다.",
+            "details": "제공된 evidence.code 8건은 모두 README.md 내용이라 캐시 구현 지점이 미확인 상태다. src/feature_flags/service.py(플래그 조회 서비스)와 src/feature_flags/repository.py(테넌트별 플래그 저장소)를 우선 열어 캐시 계층 위치를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "테넌트 간 캐시 누수를 결정적으로 재현하는 회귀 테스트를 추가한다.",
+            "details": "benchmark_case_id 'cache-tenant-leak-short' 시나리오대로 서로 다른 값을 가진 두 테넌트를 준비하고, 동일한 플래그 이름을 차례대로 조회했을 때 두 번째 조회 값이 첫 번째 테넌트 값과 일치하는지 검증한다. 이 테스트는 수정 전 FAIL이어야 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키에 테넌트 식별자를 포함하도록 캐시 키 생성 로직을 수정한다.",
+            "details": "가설 1(신뢰도 0.55)에 대응한다. 캐시 조회/저장 양쪽이 동일한 키 생성 함수를 사용하도록 단일화하여, tenant 무관 키로 인한 값 재사용을 차단한다."
+          },
+          {
+            "id": 4,
+            "action": "플래그 조회 서비스가 테넌트 컨텍스트를 인자로 전달받아 캐시 조회/저장에 반영하는지 검증하고, 누락된 경우 전달 경로를 연결한다.",
+            "details": "가설 2(신뢰도 0.3)에 대응한다. README.md는 테넌트 파라미터 규약을 명시하지 않으므로, 서비스 진입점부터 캐시 계층까지 tenant 컨텍스트가 끊김 없이 전달되는지 확인한다."
+          },
+          {
+            "id": 5,
+            "action": "저장소 계층이 테넌트별로 분리되어 동일 플래그 이름이 전역 저장소에서 덮어써지거나 재사용되지 않는지 확인한다.",
+            "details": "가설 3(신뢰도 0.15)에 대응한다. README.md:16이 src/feature_flags/repository.py를 '테넌트별 플래그 저장소'로 기술하나 실제 분리 구현은 확인되지 않았다. 캐시 키 수정 후 남는 잔여 누수가 없는지 점검한다."
+          },
+          {
+            "id": 6,
+            "action": "재현 테스트와 전체 관련 테스트를 실행하여 수정 결과를 확인하고 회귀 여부를 점검한다.",
+            "details": "1단계에서 추가한 회귀 테스트가 PASS로 전환되는지, 캐시 동작에 의존하는 기존 테스트가 깨지지 않는지 확인한다."
+          },
+          {
+            "id": 7,
+            "action": "캐시 키 규약과 테넌트 파라미터 규약을 문서에 반영한다.",
+            "details": "README.md에 캐시 키가 테넌트 식별자를 포함한다는 규약과 서비스 계층의 tenant 파라미터 계약을 명시하여, 향후 동일 유형의 누수 재발을 방지한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "2",
+        "acceptance_criteria": [
+          "'cache-tenant-leak-short' 시나리오 재현 테스트에서 서로 다른 값을 가진 두 테넌트가 동일 플래그 이름을 차례대로 조회할 때 두 번째 조회가 첫 번째 테넌트의 값이 아닌 자신의 값을 반환한다.",
+          "캐시 키 생성 로직이 테넌트 식별자를 포함하며, 캐시 조회와 저장이 동일한 키 생성 경로를 사용한다.",
+          "플래그 조회 서비스 진입점에서 캐시 계층까지 테넌트 컨텍스트가 인자로 전달되며, 전달 누락 시 실패하는 테스트가 존재한다.",
+          "수정 전 FAIL이던 회귀 테스트가 수정 후 PASS로 전환된다.",
+          "기존 캐시 관련 테스트가 회귀 없이 모두 통과한다.",
+          "캐시 키 및 tenant 파라미터 규약이 문서에 반영되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:36:22.356741Z",
+    "completed_at": "2026-09-28T07:36:49.873759Z",
+    "created_at": "2026-09-28T07:36:22.341648Z",
+    "updated_at": "2026-09-28T07:36:49.874760Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 28.471
+  }
+}

@@ -1,0 +1,430 @@
+{
+  "input": {
+    "id": "repository-delete-case-short",
+    "report": {
+      "title": "플래그 이름 대소문자가 다르면 삭제 실패",
+      "description": "삭제 API만 flag name의 표기 차이를 허용하지 않습니다.",
+      "steps_to_reproduce": [
+        "혼합 대소문자로 저장하고 대문자로 삭제합니다."
+      ],
+      "expected_behavior": "같은 플래그가 삭제되어야 합니다.",
+      "actual_behavior": "삭제되지 않습니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_delete_normalizes_flag_name"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 26,
+    "name": "benchmark-20260928T073431Z-64ae54ac-repository-delete-case-short",
+    "description": "Clio Benchmark feature-flags-30: repository-delete-case-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T08:00:52.680888Z",
+    "updatedAt": "2026-09-28T08:00:52.680888Z"
+  },
+  "clio_repository": {
+    "id": 26,
+    "projectId": 26,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T08:01:32.867297Z",
+    "createdAt": "2026-09-28T08:00:52.699149Z",
+    "updatedAt": "2026-09-28T08:01:32.870543Z"
+  },
+  "bug": {
+    "id": 26,
+    "project_id": 26,
+    "issue_id": 26,
+    "title": "플래그 이름 대소문자가 다르면 삭제 실패",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T08:01:33.102019Z",
+    "created_at": "2026-09-28T08:01:33.109670Z"
+  },
+  "analysis": {
+    "analysisResultId": 26,
+    "workflowRunId": 26,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": null,
+          "observation": "삭제 로직 후보 모듈인 테넌트별 플래그 저장소(repository.py)의 역할이 명시되어 있습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": null,
+          "observation": "플래그 조회 서비스(service.py)의 역할이 명시되어 있어 이름 비교 규칙이 위치할 후보 모듈을 시사합니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": null,
+          "observation": "저장소는 테넌트별 기능 플래그 조회를 제공하는 소규모 Python 서비스 라이브러리로 설명됩니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 26의 현상은 삭제 API가 flag name의 대소문자 표기 차이를 허용하지 않아, 혼합 대소문자로 저장한 플래그를 대문자로 삭제하면 삭제되지 않는다는 것입니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거는 repository_id 26, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 16, 18행뿐이며, repository.py와 service.py의 실제 삭제/비교 구현은 증거에 포함되지 않았습니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md 16행은 `src/feature_flags/repository.py`를 테넌트별 플래그 저장소로, 18행은 `src/feature_flags/service.py`를 플래그 조회 서비스로 설명하여 삭제 로직이 위치할 후보 모듈을 시사합니다.",
+          "verified": true
+        },
+        {
+          "fact": "실제 정규화 누락 여부, 삭제 로직의 비교 방식, 관련 테스트 존재 여부는 제공된 증거로 검증되지 않았습니다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 26,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.4,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:16 (repository.py는 테넌트별 플래그 저장소, 삭제 로직 후보)",
+            "README.md:18 (service.py는 플래그 조회 서비스, 조회/삭제 대소문자 처리 후보)",
+            "삭제 API만 표기 차이를 허용하지 않는다는 이슈 설명"
+          ],
+          "confidence": 0.35,
+          "hypothesis": "삭제 경로에서 flag name의 대소문자 표기 차이를 정규화하지 않고 비교(예: `name` 그대로 키로 사용)하여, 저장 시 혼합 대소문자로 저장된 플래그가 대문자 삭제 요청과 매칭되지 않아 삭제가 실패합니다."
+        },
+        {
+          "evidence": [
+            "README.md:16 및 README.md:18에서 저장소와 서비스가 별도 모듈로 분리되어 있음"
+          ],
+          "confidence": 0.25,
+          "hypothesis": "삭제 API가 내부적으로 조회/저장 계층의 키 조회를 사용하지만 조회 서비스(service.py)와 저장소(repository.py)의 이름 정규화 규칙이 불일치하여, 존재하는 플래그를 찾지 못하고 no-op 또는 오류로 종료됩니다."
+        }
+      ],
+      "project_id": 26,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거에는 실제 삭제/비교 구현이 없어 근본 원인 가설(신뢰도 0.35, 0.25)이 검증되지 않았다. 실제 코드가 가정과 다를 수 있다.",
+            "mitigation": "1단계에서 실제 코드를 확인하기 전까지 수정을 시작하지 않고, 확인 결과에 따라 가설을 재평가한다."
+          },
+          {
+            "risk": "정규화 규칙(casefold 등) 적용 시 기존에 대소문자를 구분해 저장된 플래그가 충돌/중복될 수 있다.",
+            "mitigation": "정규화 도입 전 기존 데이터에서 정규화 키 충돌 여부를 점검하고, 충돌 시 마이그레이션 또는 우선순위 규칙을 정의한다."
+          },
+          {
+            "risk": "정규화로 인해 의도적으로 대소문자를 구분하던 기존 동작이 변경되어 다른 기능이 회귀할 수 있다.",
+            "mitigation": "조회·저장·삭제 전 경로에 대한 회귀 테스트를 추가하고, 공개 API 동작 변경 여부를 릴리스 노트에 명시한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "증거 범위 확인 및 삭제 경로 특정",
+            "details": "제공된 증거는 repository_id 26, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 16, 18행뿐이며 실제 삭제/비교 구현은 포함되지 않았다. 먼저 `src/feature_flags/repository.py`(테넌트별 플래그 저장소)와 `src/feature_flags/service.py`(플래그 조회 서비스)의 실제 삭제 로직을 코드에서 확인하여 flag name 키 조회 지점을 모두 나열한다."
+          },
+          {
+            "id": 2,
+            "action": "현재 이름 비교 규칙 재현 테스트 작성",
+            "details": "혼합 대소문자(예: `NewCheckout`)로 저장된 플래그를 대문자 요청(예: `NEWCHECKOUT`)으로 삭제 시도하는 재현 테스트를 작성하여, 삭제가 실패하거나 no-op으로 종료되는지 확인한다. 테스트는 수정 전 실패해야 한다."
+          },
+          {
+            "id": 3,
+            "action": "정규화 유틸리티 도입",
+            "details": "flag name 정규화 함수(예: `normalize_flag_name(name)` → `name.strip().casefold()` 또는 프로젝트 합의 규칙)를 단일 모듈에 정의하고, 저장·조회·삭제 경로가 모두 이 함수를 통과하도록 한다. 저장 시점의 원본 표기는 보존하되 비교 키는 정규화 키를 사용한다."
+          },
+          {
+            "id": 4,
+            "action": "repository.py 삭제 로직에 정규화 키 적용",
+            "details": "`src/feature_flags/repository.py`의 삭제 함수가 정규화된 키로 항목을 탐색하도록 수정하고, 일치 항목이 없을 때의 반환값(no-op vs 오류)을 명시적으로 정의한다."
+          },
+          {
+            "id": 5,
+            "action": "service.py 조회/삭제 경로의 규칙 일치화",
+            "details": "`src/feature_flags/service.py`가 repository와 동일한 정규화 함수를 사용하도록 통일하여, 조회 서비스와 저장소 간 이름 정규화 규칙 불일치로 인한 미매칭을 제거한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 테스트 및 문서 갱신",
+            "details": "대소문자 혼합 조합(저장 표기 × 요청 표기) 케이스를 포함한 테이블 기반 회귀 테스트를 추가하고, README.md의 관련 설명(3, 16, 18행)에 이름 비교 규칙을 반영한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "acceptance_criteria": [
+          "혼합 대소문자로 저장된 플래그를 대소문자가 다른 요청으로 삭제해도 정상 삭제된다 (재현 테스트가 수정 후 통과).",
+          "`src/feature_flags/repository.py`와 `src/feature_flags/service.py`가 동일한 정규화 함수를 사용하며, 두 모듈에서 각각 정의된 별도 비교 규칙이 남아 있지 않다.",
+          "삭제 대상이 존재하지 않을 때의 동작(no-op 또는 오류)이 코드와 테스트로 명시적으로 문서화되어 있다.",
+          "저장 표기 × 요청 표기 조합을 다루는 테이블 기반 회귀 테스트가 추가되어 모두 통과한다.",
+          "수정 사항과 이름 비교 규칙이 README.md(해당 3, 16, 18행 포함)에 반영되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 40,
+            "rationale": "단일 라이브러리(테넌트별 기능 플래그 조회 서비스, repository_id 26)의 삭제 API 경로에 국한되며, 조회 API는 대소문자 표기 차이를 허용하는 것으로 보아 영향은 삭제 흐름에 한정됩니다. 플래그 삭제가 필요한 테넌트/운영자만 영향받아 전체 사용자 대상 장애는 아닙니다."
+          },
+          {
+            "name": "심각도",
+            "score": 45,
+            "rationale": "크래시나 데이터 손상/유출은 아니고, 요청한 리소스가 삭제되지 않는 ReportedBehaviorMismatch(‘삭제되지 않습니다.’)입니다. 다만 삭제 실패로 인해 폐기된 플래그가 잔존할 수 있어 잘못된 기능 활성화로 이어질 잠재적 위험은 있습니다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 60,
+            "rationale": "‘혼합 대소문자로 저장하고 대문자로 삭제’라는 명확한 재현 절차가 제시되어 있고, 삭제 API가 표기 차이를 허용하지 않는다는 서술상 해당 조합에서는 결정적으로(100%) 재현됩니다. 다만 대소문자가 완전히 동일한 일반 경로에서는 발생하지 않아 조건부입니다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 45,
+            "rationale": "삭제 시 저장 시점과 정확히 동일한 대소문자 표기를 사용하면 우회 가능하나, 저장 시 표기를 사용자가 알지 못하거나 플래그 이름이 정규화되어 관리되는 경우 우회가 어렵습니다. 적극적인 우회 절차 없이 자연스럽게 회피되지는 않습니다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 40,
+            "rationale": "기능 플래그 라이브러리로 결제/계정 등 직접적 매출 경로는 아니지만, 플래그 삭제 불가로 인해 긴급 비활성화(kill switch) 대상 플래그가 남는 경우 운영 대응력에 영향을 줄 수 있습니다. 다만 삭제 기능 자체는 핵심 조회 경로보다 임계성이 낮습니다."
+          }
+        ],
+        "priority": "P3",
+        "rationale": "삭제 API만 flag name의 대소문자 표기 차이를 허용하지 않아, 혼합 대소문자로 저장된 플래그를 대문자로 삭제하면 삭제되지 않는 ReportedBehaviorMismatch 이슈입니다. 크래시·데이터 손실·보안 노출이 없고 삭제 요청이 단순 실패(no-op)하는 동작이므로 심각도와 비즈니스 임계성은 중간 수준입니다. 영향은 repository_id 26 라이브러리의 삭제 경로로 제한되며(README.md:16 `src/feature_flags/repository.py`, README.md:18 `src/feature_flags/service.py`가 후보 모듈), 저장 시 표기와 동일한 대소문자를 사용하면 회피 가능하다는 점에서 우회 가능성도 중간입니다. 재현 조건(혼합 대소문자 저장 → 대문자 삭제)이 명확해 해당 조합에서는 결정적으로 재현되므로 빈도 점수는 다소 높게 반영했습니다. 종합 위험도 44점으로, 부분 기능이 깨지고 우회가 존재하는 P3 낮음(30-49) 구간에 해당합니다. 단, 근본 원인(정규화 누락 또는 service.py/repository.py 간 정규화 규칙 불일치)은 코드 증거(README.md 3, 16, 18행)만으로 검증되지 않았으므로, 실제 삭제/비교 구현이 확인되어 폐기 플래그 잔존이 운영 사고로 이어질 수 있음이 입증되면 P2로 상향될 여지가 있습니다.",
+        "risk_score": 44
+      },
+      "workflow_run_id": 26
+    }
+  },
+  "workflow": {
+    "id": 26,
+    "project_id": 26,
+    "request_id": "process-bug-26",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 26의 현상은 삭제 API가 flag name의 대소문자 표기 차이를 허용하지 않아, 혼합 대소문자로 저장한 플래그를 대문자로 삭제하면 삭제되지 않는다는 것입니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거는 repository_id 26, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 16, 18행뿐이며, repository.py와 service.py의 실제 삭제/비교 구현은 증거에 포함되지 않았습니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md 16행은 `src/feature_flags/repository.py`를 테넌트별 플래그 저장소로, 18행은 `src/feature_flags/service.py`를 플래그 조회 서비스로 설명하여 삭제 로직이 위치할 후보 모듈을 시사합니다.",
+            "verified": true
+          },
+          {
+            "fact": "실제 정규화 누락 여부, 삭제 로직의 비교 방식, 관련 테스트 존재 여부는 제공된 증거로 검증되지 않았습니다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": null,
+            "observation": "삭제 로직 후보 모듈인 테넌트별 플래그 저장소(repository.py)의 역할이 명시되어 있습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": null,
+            "observation": "플래그 조회 서비스(service.py)의 역할이 명시되어 있어 이름 비교 규칙이 위치할 후보 모듈을 시사합니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": null,
+            "observation": "저장소는 테넌트별 기능 플래그 조회를 제공하는 소규모 Python 서비스 라이브러리로 설명됩니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.4,
+        "evidence_counts": {
+          "code": 6,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:16 (repository.py는 테넌트별 플래그 저장소, 삭제 로직 후보)",
+              "README.md:18 (service.py는 플래그 조회 서비스, 조회/삭제 대소문자 처리 후보)",
+              "삭제 API만 표기 차이를 허용하지 않는다는 이슈 설명"
+            ],
+            "confidence": 0.35,
+            "hypothesis": "삭제 경로에서 flag name의 대소문자 표기 차이를 정규화하지 않고 비교(예: `name` 그대로 키로 사용)하여, 저장 시 혼합 대소문자로 저장된 플래그가 대문자 삭제 요청과 매칭되지 않아 삭제가 실패합니다."
+          },
+          {
+            "evidence": [
+              "README.md:16 및 README.md:18에서 저장소와 서비스가 별도 모듈로 분리되어 있음"
+            ],
+            "confidence": 0.25,
+            "hypothesis": "삭제 API가 내부적으로 조회/저장 계층의 키 조회를 사용하지만 조회 서비스(service.py)와 저장소(repository.py)의 이름 정규화 규칙이 불일치하여, 존재하는 플래그를 찾지 못하고 no-op 또는 오류로 종료됩니다."
+          }
+        ]
+      },
+      "issue_id": "26",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거에는 실제 삭제/비교 구현이 없어 근본 원인 가설(신뢰도 0.35, 0.25)이 검증되지 않았다. 실제 코드가 가정과 다를 수 있다.",
+            "mitigation": "1단계에서 실제 코드를 확인하기 전까지 수정을 시작하지 않고, 확인 결과에 따라 가설을 재평가한다."
+          },
+          {
+            "risk": "정규화 규칙(casefold 등) 적용 시 기존에 대소문자를 구분해 저장된 플래그가 충돌/중복될 수 있다.",
+            "mitigation": "정규화 도입 전 기존 데이터에서 정규화 키 충돌 여부를 점검하고, 충돌 시 마이그레이션 또는 우선순위 규칙을 정의한다."
+          },
+          {
+            "risk": "정규화로 인해 의도적으로 대소문자를 구분하던 기존 동작이 변경되어 다른 기능이 회귀할 수 있다.",
+            "mitigation": "조회·저장·삭제 전 경로에 대한 회귀 테스트를 추가하고, 공개 API 동작 변경 여부를 릴리스 노트에 명시한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "증거 범위 확인 및 삭제 경로 특정",
+            "details": "제공된 증거는 repository_id 26, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 16, 18행뿐이며 실제 삭제/비교 구현은 포함되지 않았다. 먼저 `src/feature_flags/repository.py`(테넌트별 플래그 저장소)와 `src/feature_flags/service.py`(플래그 조회 서비스)의 실제 삭제 로직을 코드에서 확인하여 flag name 키 조회 지점을 모두 나열한다."
+          },
+          {
+            "id": 2,
+            "action": "현재 이름 비교 규칙 재현 테스트 작성",
+            "details": "혼합 대소문자(예: `NewCheckout`)로 저장된 플래그를 대문자 요청(예: `NEWCHECKOUT`)으로 삭제 시도하는 재현 테스트를 작성하여, 삭제가 실패하거나 no-op으로 종료되는지 확인한다. 테스트는 수정 전 실패해야 한다."
+          },
+          {
+            "id": 3,
+            "action": "정규화 유틸리티 도입",
+            "details": "flag name 정규화 함수(예: `normalize_flag_name(name)` → `name.strip().casefold()` 또는 프로젝트 합의 규칙)를 단일 모듈에 정의하고, 저장·조회·삭제 경로가 모두 이 함수를 통과하도록 한다. 저장 시점의 원본 표기는 보존하되 비교 키는 정규화 키를 사용한다."
+          },
+          {
+            "id": 4,
+            "action": "repository.py 삭제 로직에 정규화 키 적용",
+            "details": "`src/feature_flags/repository.py`의 삭제 함수가 정규화된 키로 항목을 탐색하도록 수정하고, 일치 항목이 없을 때의 반환값(no-op vs 오류)을 명시적으로 정의한다."
+          },
+          {
+            "id": 5,
+            "action": "service.py 조회/삭제 경로의 규칙 일치화",
+            "details": "`src/feature_flags/service.py`가 repository와 동일한 정규화 함수를 사용하도록 통일하여, 조회 서비스와 저장소 간 이름 정규화 규칙 불일치로 인한 미매칭을 제거한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 테스트 및 문서 갱신",
+            "details": "대소문자 혼합 조합(저장 표기 × 요청 표기) 케이스를 포함한 테이블 기반 회귀 테스트를 추가하고, README.md의 관련 설명(3, 16, 18행)에 이름 비교 규칙을 반영한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "acceptance_criteria": [
+          "혼합 대소문자로 저장된 플래그를 대소문자가 다른 요청으로 삭제해도 정상 삭제된다 (재현 테스트가 수정 후 통과).",
+          "`src/feature_flags/repository.py`와 `src/feature_flags/service.py`가 동일한 정규화 함수를 사용하며, 두 모듈에서 각각 정의된 별도 비교 규칙이 남아 있지 않다.",
+          "삭제 대상이 존재하지 않을 때의 동작(no-op 또는 오류)이 코드와 테스트로 명시적으로 문서화되어 있다.",
+          "저장 표기 × 요청 표기 조합을 다루는 테이블 기반 회귀 테스트가 추가되어 모두 통과한다.",
+          "수정 사항과 이름 비교 규칙이 README.md(해당 3, 16, 18행 포함)에 반영되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T08:01:33.928629Z",
+    "completed_at": "2026-09-28T08:01:57.628818Z",
+    "created_at": "2026-09-28T08:01:33.918237Z",
+    "updated_at": "2026-09-28T08:01:57.631767Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.4
+  }
+}

@@ -1,0 +1,1582 @@
+{
+  "schema_version": 1,
+  "run_id": "20260928T073431Z-64ae54ac",
+  "profile": "one-shot",
+  "repetition": 1,
+  "case_count": 30,
+  "mean_score": 80.56400000000001,
+  "pass_rate": 0.8,
+  "dimensions": {
+    "verdict": 1.0,
+    "root_cause": 0.925,
+    "code_location": 0.5,
+    "evidence_quality": 0.8384696784696785,
+    "reproduction": 0.5444444444444444,
+    "uncertainty": 0.5333333333333333
+  },
+  "efficiency": {
+    "mean_duration_seconds": 27.457633333333334
+  },
+  "cases": [
+    {
+      "score": 78.23,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9375,
+          "method": "deterministic",
+          "rationale": "15/16 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 32.867,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-tenant-leak-detailed"
+    },
+    {
+      "score": 71.35,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9230769230769231,
+          "method": "deterministic",
+          "rationale": "12/13 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.471,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-tenant-leak-short"
+    },
+    {
+      "score": 83.85,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8125,
+          "method": "deterministic",
+          "rationale": "13/16 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.493,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-tenant-leak-symptom"
+    },
+    {
+      "score": 77.92,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.75,
+          "method": "deterministic",
+          "rationale": "3/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "16/16 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.44,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-false-miss-detailed"
+    },
+    {
+      "score": 60.83,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/4 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.3333333333333333,
+          "method": "deterministic",
+          "rationale": "1/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 22.527,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-false-miss-short"
+    },
+    {
+      "score": 68.01,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "2/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9230769230769231,
+          "method": "deterministic",
+          "rationale": "12/13 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.475,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "cache-false-miss-symptom"
+    },
+    {
+      "score": 85.67,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9333333333333333,
+          "method": "deterministic",
+          "rationale": "14/15 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.466,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-role-escalation-detailed"
+    },
+    {
+      "score": 71.67,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "3/6 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 24.347,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-role-escalation-short"
+    },
+    {
+      "score": 73.33,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8333333333333334,
+          "method": "deterministic",
+          "rationale": "10/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.3333333333333333,
+          "method": "deterministic",
+          "rationale": "1/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.454,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-role-escalation-symptom"
+    },
+    {
+      "score": 68.17,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "2/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9333333333333333,
+          "method": "deterministic",
+          "rationale": "14/15 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 24.324,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-project-scope-detailed"
+    },
+    {
+      "score": 57.5,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "2/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "4/6 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.656,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-project-scope-short"
+    },
+    {
+      "score": 61.67,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "2/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9444444444444444,
+          "method": "deterministic",
+          "rationale": "17/18 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.377,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "auth-project-scope-symptom"
+    },
+    {
+      "score": 100.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "15/15 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 24.373,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-boundary-detailed"
+    },
+    {
+      "score": 85.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8888888888888888,
+          "method": "deterministic",
+          "rationale": "8/9 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 24.438,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-boundary-short"
+    },
+    {
+      "score": 97.5,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "27/27 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.404,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-boundary-symptom"
+    },
+    {
+      "score": 100.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "21/21 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.29,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-hash-unstable-detailed"
+    },
+    {
+      "score": 81.67,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8888888888888888,
+          "method": "deterministic",
+          "rationale": "8/9 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.3333333333333333,
+          "method": "deterministic",
+          "rationale": "1/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.494,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-hash-unstable-short"
+    },
+    {
+      "score": 97.5,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "24/24 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.439,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "rollout-hash-unstable-symptom"
+    },
+    {
+      "score": 85.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8888888888888888,
+          "method": "deterministic",
+          "rationale": "8/9 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.343,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-country-case-detailed"
+    },
+    {
+      "score": 85.42,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9166666666666666,
+          "method": "deterministic",
+          "rationale": "11/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.348,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-country-case-short"
+    },
+    {
+      "score": 81.67,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "4/6 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.437,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-country-case-symptom"
+    },
+    {
+      "score": 85.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8888888888888888,
+          "method": "deterministic",
+          "rationale": "8/9 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.433,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-empty-allowlist-detailed"
+    },
+    {
+      "score": 81.67,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.8888888888888888,
+          "method": "deterministic",
+          "rationale": "8/9 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.3333333333333333,
+          "method": "deterministic",
+          "rationale": "1/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.424,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-empty-allowlist-short"
+    },
+    {
+      "score": 60.83,
+      "passed": false,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.3333333333333333,
+          "method": "deterministic",
+          "rationale": "1/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 24.472,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "target-empty-allowlist-symptom"
+    },
+    {
+      "score": 97.5,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "12/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 28.442,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-delete-case-detailed"
+    },
+    {
+      "score": 78.75,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9166666666666666,
+          "method": "deterministic",
+          "rationale": "11/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.4,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-delete-case-short"
+    },
+    {
+      "score": 97.5,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "12/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "3/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.456,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-delete-case-symptom"
+    },
+    {
+      "score": 85.42,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9166666666666666,
+          "method": "deterministic",
+          "rationale": "11/12 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.6666666666666666,
+          "method": "deterministic",
+          "rationale": "2/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 26.413,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-list-tenant-detailed"
+    },
+    {
+      "score": 79.0,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9333333333333333,
+          "method": "deterministic",
+          "rationale": "14/15 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.396,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-list-tenant-short"
+    },
+    {
+      "score": 79.29,
+      "passed": true,
+      "dimensions": [
+        {
+          "dimension": "verdict",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "2/2 checks passed for expected workflow verdicts"
+        },
+        {
+          "dimension": "root_cause",
+          "value": 1.0,
+          "method": "deterministic",
+          "rationale": "4/4 checks passed for required root-cause concepts"
+        },
+        {
+          "dimension": "code_location",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for expected files and symbols"
+        },
+        {
+          "dimension": "evidence_quality",
+          "value": 0.9523809523809523,
+          "method": "deterministic",
+          "rationale": "20/21 checks passed for coverage and citation integrity"
+        },
+        {
+          "dimension": "reproduction",
+          "value": 0.0,
+          "method": "deterministic",
+          "rationale": "0/3 checks passed for reproduction plan evidence"
+        },
+        {
+          "dimension": "uncertainty",
+          "value": 0.5,
+          "method": "deterministic",
+          "rationale": "1/2 checks passed for review state and confidence calibration"
+        }
+      ],
+      "efficiency": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "duration_seconds": 30.83,
+        "model_calls": null,
+        "tool_calls": null
+      },
+      "suite": "feature-flags-30",
+      "case_id": "repository-list-tenant-symptom"
+    }
+  ]
+}

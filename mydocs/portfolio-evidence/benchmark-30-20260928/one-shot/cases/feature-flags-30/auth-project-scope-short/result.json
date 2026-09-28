@@ -1,0 +1,400 @@
+{
+  "input": {
+    "id": "auth-project-scope-short",
+    "report": {
+      "title": "프로젝트 경계를 넘는 플래그 편집",
+      "description": "한 프로젝트의 owner가 다른 프로젝트 리소스를 수정할 수 있습니다.",
+      "steps_to_reproduce": [
+        "alpha owner로 beta 대상 권한을 평가합니다."
+      ],
+      "expected_behavior": "false가 반환되어야 합니다.",
+      "actual_behavior": "true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_owner_cannot_edit_another_project"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 11,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-project-scope-short",
+    "description": "Clio Benchmark feature-flags-30: auth-project-scope-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:45:04.926660Z",
+    "updatedAt": "2026-09-28T07:45:04.926660Z"
+  },
+  "clio_repository": {
+    "id": 11,
+    "projectId": 11,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:45:39.114960Z",
+    "createdAt": "2026-09-28T07:45:04.933295Z",
+    "updatedAt": "2026-09-28T07:45:39.115517Z"
+  },
+  "bug": {
+    "id": 11,
+    "project_id": 11,
+    "issue_id": 11,
+    "title": "프로젝트 경계를 넘는 플래그 편집",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:45:39.302239Z",
+    "created_at": "2026-09-28T07:45:39.311262Z"
+  },
+  "analysis": {
+    "analysisResultId": 11,
+    "workflowRunId": 11,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 19,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 19,
+          "evidence_id": "code-11-0",
+          "observation": "README.md 19행은 `src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다고 서술한다. 이는 프로젝트 경계 검사 로직의 위치를 지시하는 유일한 코드 근거이며, 구현 세부는 제공되지 않았다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "11",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 11의 증상은 alpha 프로젝트 owner로 beta 프로젝트 대상 권한을 평가했을 때 기대값 false가 아닌 true가 반환되는 권한 경계 위반이다.",
+          "verified": true
+        },
+        {
+          "fact": "리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)의 README.md 19행은 `src/feature_flags/authorization.py`를 관리자 권한과 프로젝트 범위 검사 모듈로 명시한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 근거에는 authorization.py의 실제 구현 코드, 권한 평가 함수 시그니처, 테스트가 포함되어 있지 않아 프로젝트 범위 비교 로직의 구체적 결함 라인은 확인되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "reproduction 절차는 alpha owner로 beta 대상 권한 평가 1단계만 기술하며, 호출되는 함수명·API 엔드포인트·리소스 종류는 명시되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "error_type은 ReportedBehaviorMismatch이고 stack_trace는 비어 있어 런타임 예외가 아닌 반환값 불일치 유형의 결함이다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 11,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.3,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:19 - `src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다는 서술"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "`src/feature_flags/authorization.py`의 프로젝트 범위 검사 로직이 리소스 소유 프로젝트(project_id 등)와 현재 컨텍스트의 프로젝트를 비교하지 않고, 프로젝트 경계와 무관한 owner/관리자 권한만 평가하여 alpha owner가 beta 대상 권한 평가에서 true를 반환한다."
+        },
+        {
+          "evidence": [
+            "README.md:19 - 관리자 권한과 프로젝트 범위 검사가 동일 모듈에 공존한다는 서술"
+          ],
+          "confidence": 0.25,
+          "hypothesis": "프로젝트 범위 검사가 존재하지만 소유권 비교 시 `project_id` 대신 사용자 식별자만 비교하는 조건 누락(예: `if user.is_admin` 단락 평가)으로 인해 다른 프로젝트 리소스에 대한 수정 권한이 허용된다."
+        },
+        {
+          "evidence": [
+            "제공된 코드 근거가 README의 모듈 설명 한 줄뿐이라 시그니처 수준 검증 불가"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "권한 평가 함수가 호출 시 대상 리소스의 프로젝트 식별자를 전달받지 못해(인자 누락 또는 기본값) 항상 동일 프로젝트로 간주하고 true를 반환한다."
+        }
+      ],
+      "project_id": 11,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에 authorization.py의 실제 구현 코드·권한 평가 함수 시그니처·테스트가 없어 결함 라인을 잘못 특정할 수 있다(신뢰도 0.3, 가설 최대 신뢰도 0.45).",
+            "mitigation": "구현 코드를 직접 열람하여 README.md:19 서술과 실제 코드를 대조한 뒤 수정에 착수하고, 함수 시그니처 확인 전에는 패치를 확정하지 않는다."
+          },
+          {
+            "risk": "관리자 권한과 프로젝트 범위 검사가 동일 모듈(`src/feature_flags/authorization.py`)에 공존하여 한쪽 수정이 다른 쪽 권한 동작을 회귀시킬 수 있다.",
+            "mitigation": "관리자 경로와 프로젝트 범위 경로를 각각 별도 테스트로 고정하고, 단락 평가 순서 변경 시 양쪽 테스트를 함께 실행한다."
+          },
+          {
+            "risk": "프로젝트 식별자 누락 시 거부 기본값으로 변경하면 기존에 암묵적으로 허용되던 호출 경로가 과잉 차단될 수 있다.",
+            "mitigation": "리포지토리 내 authorization 함수 호출부를 전수 조사하여 프로젝트 식별자를 전달하지 않는 호출을 식별하고, 정당한 호출에는 식별자를 명시적으로 전달하도록 함께 수정한다."
+          },
+          {
+            "risk": "관리자 권한 보유자의 교차 프로젝트 접근에 대한 기대 정책이 명세에 없어 테스트 기대값이 임의로 결정될 수 있다.",
+            "mitigation": "기대 정책을 코드 주석·문서·이슈에서 확인하고, 확인되지 않으면 현행 관리자 동작을 유지한 채 교차 프로젝트 owner 케이스만 수정 대상으로 한정하고 정책 공백을 이슈에 기록한다."
+          },
+          {
+            "risk": "재현 절차가 1단계만 기술되어 있어 수정 후에도 동일 증상을 재현·검증하지 못할 수 있다.",
+            "mitigation": "호출 함수명·API 엔드포인트·리소스 종류를 명시한 완전한 재현 절차를 작성하고, 신규 회귀 테스트를 재현 절차의 실행 가능한 형태로 제공한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트 작성: alpha 프로젝트 owner 컨텍스트에서 beta 프로젝트 리소스에 대한 권한 평가가 false를 반환하는지 검증하는 실패 테스트를 추가한다.",
+            "details": "리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520) 기준으로 테스트를 작성한다. 제공된 근거에 호출 함수명·API 엔드포인트·리소스 종류가 명시되어 있지 않으므로, 먼저 `src/feature_flags/authorization.py`의 공개 함수 시그니처와 프로젝트 컨텍스트 전달 경로를 확인한 뒤 테스트 대상 진입점을 확정한다. 테스트는 error_type=ReportedBehaviorMismatch 유형(런타임 예외가 아닌 반환값 불일치)이므로 예외가 아닌 반환값 bool을 단언한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 권한 평가 로직을 정독하여 프로젝트 범위 비교가 존재하는지, 존재한다면 어떤 식별자(예: project_id)를 비교하는지 확인한다.",
+            "details": "README.md:19는 해당 모듈이 관리자 권한과 프로젝트 범위 검사를 담당한다고 서술하므로 두 관심사가 공존한다. 관리자 단락(예: `if user.is_admin`) 평가 경로와 프로젝트 소유권 비교 경로를 분리해 추적하고, 호출 시 대상 리소스의 프로젝트 식별자가 실제로 전달되는지(인자 누락·기본값 간주 여부)를 확인한다. 가설 1(비교 부재), 가설 2(조건 누락), 가설 3(인자 미전달/기본값)을 각각 코드 상에서 판별한다."
+          },
+          {
+            "id": 3,
+            "action": "결함 라인을 수정하여 프로젝트 범위 검사가 대상 리소스의 소유 프로젝트와 현재 컨텍스트의 프로젝트를 일치 비교하도록 강제한다.",
+            "details": "프로젝트 경계를 벗어난 권한 평가는 false를 반환해야 한다. 관리자 권한 평가가 프로젝트 범위 검사를 우회하지 않도록 단락 평가 순서를 조정하고, 프로젝트 식별자가 누락된 경우 암묵적 허용(true)이 아닌 거부(false)를 기본값으로 사용한다. 관리자 권한과 프로젝트 범위 검사가 동일 모듈에 공존하므로 한쪽 수정이 다른 쪽 회귀를 유발하지 않도록 변경 범위를 국소화한다."
+          },
+          {
+            "id": 4,
+            "action": "경계 조건 회귀 테스트를 확장한다: 동일 프로젝트 owner, 교차 프로젝트 owner, 관리자 권한 보유자, 프로젝트 식별자 누락 케이스를 각각 검증한다.",
+            "details": "동일 프로젝트 내 정상 권한은 true를 유지해야 하며(과잉 차단 방지), 교차 프로젝트는 false여야 한다. 관리자 권한 보유자가 프로젝트 경계를 넘는 경우의 기대 정책을 코드 주석 또는 별도 명세로 확인한 뒤 테스트 기대값을 확정한다. 프로젝트 식별자 누락 시 거부 기본값이 적용되는지도 단언한다."
+          },
+          {
+            "id": 5,
+            "action": "제공된 근거 범위를 재확인하고 수정 결과를 기록한다: 실제 구현 코드·테스트 부재로 미확인 상태였던 프로젝트 범위 비교 로직의 구체적 결함 라인을 확정하여 이슈에 남긴다.",
+            "details": "기존 근거는 README.md:19 단일 코드 인용뿐이므로, 수정 완료 후 authorization.py의 실제 결함 라인과 신규 테스트를 근거로 추가한다. 재현 절차가 1단계만 기술되어 있었으므로 호출 함수명·리소스 종류·권한 평가 엔드포인트를 명시한 완전한 재현 절차로 갱신한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "acceptance_criteria": [
+          "alpha 프로젝트 owner 컨텍스트에서 beta 프로젝트 리소스에 대한 권한 평가가 false를 반환한다(기존에는 true였던 ReportedBehaviorMismatch 증상이 재현되지 않는다).",
+          "동일 프로젝트(자기 프로젝트) 리소스에 대한 owner의 정상 권한 평가는 true를 유지한다.",
+          "`src/feature_flags/authorization.py`의 프로젝트 범위 검사가 대상 리소스의 소유 프로젝트 식별자와 현재 컨텍스트의 프로젝트를 명시적으로 비교하는 코드로 확인된다.",
+          "프로젝트 식별자가 전달되지 않거나 누락된 경우 암묵적 허용(true)이 아닌 거부(false)가 반환된다.",
+          "관리자 권한 평가 경로가 프로젝트 범위 검사를 우회하여 교차 프로젝트 true를 반환하지 않는다.",
+          "신규 회귀 테스트(동일 프로젝트/교차 프로젝트/관리자/식별자 누락 케이스)가 모두 통과한다.",
+          "수정 대상 리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520) 기준으로 결함 라인과 재현 절차가 이슈에 갱신된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 80,
+            "rationale": "권한 평가 경로 전반에 걸친 결함으로, alpha 프로젝트 owner가 beta 프로젝트 리소스에 대해 true를 받는 문제가 `src/feature_flags/authorization.py`의 프로젝트 범위 검사 로직에 존재한다. 단일 엔드포인트가 아니라 모든 프로젝트 경계 권한 평가 호출에 영향을 줄 수 있어 다수 프로젝트·리소스·플로우에 파급된다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 90,
+            "rationale": "크래시나 데이터 손상이 아닌 인가 경계 위반(privilege boundary bypass)으로, 타 프로젝트 리소스에 대한 무단 수정이 가능한 보안 노출이다. 기대값 false 대신 true가 반환되는 논리적 결함이므로 보안 사고 등급에 준한다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "재현 절차가 'alpha owner로 beta 대상 권한 평가' 1단계만으로 결정적으로 true를 반환하는 결정적(deterministic) 결함이며, 조건부·간헐적 요소가 없다. error_type이 ReportedBehaviorMismatch이고 stack_trace가 비어 있으나 재현성 자체는 매우 높다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 75,
+            "rationale": "권한 검사가 잘못된 값을 반환하는 이상 애플리케이션 레벨에서 우회가 사실상 불가능하다. 관리자 권한 확인이나 수동 프로젝트 소유권 검증을 별도로 추가하지 않는 한 사용자·운영자가 회피할 수단이 없다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 85,
+            "rationale": "프로젝트 경계는 멀티테넌시 격리의 핵심이며, 격리 실패는 계정·결제 등 핵심 경로 전체의 신뢰를 훼손한다. 다른 프로젝트 리소스를 수정할 수 있다는 점에서 데이터 무결성·테넌트 격리 위반에 해당한다."
+          },
+          {
+            "name": "확증 근거 부족 (evidence_confidence)",
+            "score": 40,
+            "rationale": "code 근거가 `README.md:19`의 모듈 설명 한 줄(code-11-0, repository 11, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)뿐이고, authorization.py 구현·함수 시그니처·테스트가 없어 결함 라인이 미확정이다(confidence 0.3). 다만 이는 위험도가 아니라 확신도에 대한 리스크로, 점수 산정 시 하향 요인으로 제한적으로 반영했다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "alpha owner가 beta 프로젝트 대상 권한 평가에서 기대값 false 대신 true를 받는 인가 경계 위반 이슈로, 크래시·데이터 손실은 아니지만 타 프로젝트 리소스 수정이 가능한 보안 노출(테넌트 격리 실패)이다. 재현이 단 1단계로 결정적이며 사용자 측 우회 수단이 없고, 결함 위치가 `src/feature_flags/authorization.py`의 프로젝트 범위 검사 로직으로 권한 평가 경로 전반에 파급된다. P0(85-100)는 전면 장애·데이터 손실·보안 인시던트를 요구하는데, 본 건은 전면 장애나 실제 유출 확정이 아닌 잠재적 인가 우회이므로 P1 상단(82)으로 산정한다. 근거가 README.md:19 인용 한 줄에 그쳐 구현 라인이 미확정(confidence 0.3)인 점은 확신도 리스크로 다뤄 점수를 소폭만 낮췄다. 권고: authorization.py의 프로젝트 범위 비교에 대상 리소스의 project_id 대조를 필수화하고 회귀 테스트를 추가해야 한다.",
+        "risk_score": 82
+      },
+      "workflow_run_id": 11
+    }
+  },
+  "workflow": {
+    "id": 11,
+    "project_id": 11,
+    "request_id": "process-bug-11",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 11의 증상은 alpha 프로젝트 owner로 beta 프로젝트 대상 권한을 평가했을 때 기대값 false가 아닌 true가 반환되는 권한 경계 위반이다.",
+            "verified": true
+          },
+          {
+            "fact": "리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)의 README.md 19행은 `src/feature_flags/authorization.py`를 관리자 권한과 프로젝트 범위 검사 모듈로 명시한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 근거에는 authorization.py의 실제 구현 코드, 권한 평가 함수 시그니처, 테스트가 포함되어 있지 않아 프로젝트 범위 비교 로직의 구체적 결함 라인은 확인되지 않았다.",
+            "verified": true
+          },
+          {
+            "fact": "reproduction 절차는 alpha owner로 beta 대상 권한 평가 1단계만 기술하며, 호출되는 함수명·API 엔드포인트·리소스 종류는 명시되지 않았다.",
+            "verified": true
+          },
+          {
+            "fact": "error_type은 ReportedBehaviorMismatch이고 stack_trace는 비어 있어 런타임 예외가 아닌 반환값 불일치 유형의 결함이다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 19,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 19,
+            "evidence_id": "code-11-0",
+            "observation": "README.md 19행은 `src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다고 서술한다. 이는 프로젝트 경계 검사 로직의 위치를 지시하는 유일한 코드 근거이며, 구현 세부는 제공되지 않았다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "11",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.3,
+        "evidence_counts": {
+          "code": 1,
+          "history": 0,
+          "documents": 0,
+          "repository_code_citations": 1
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:19 - `src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당한다는 서술"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "`src/feature_flags/authorization.py`의 프로젝트 범위 검사 로직이 리소스 소유 프로젝트(project_id 등)와 현재 컨텍스트의 프로젝트를 비교하지 않고, 프로젝트 경계와 무관한 owner/관리자 권한만 평가하여 alpha owner가 beta 대상 권한 평가에서 true를 반환한다."
+          },
+          {
+            "evidence": [
+              "README.md:19 - 관리자 권한과 프로젝트 범위 검사가 동일 모듈에 공존한다는 서술"
+            ],
+            "confidence": 0.25,
+            "hypothesis": "프로젝트 범위 검사가 존재하지만 소유권 비교 시 `project_id` 대신 사용자 식별자만 비교하는 조건 누락(예: `if user.is_admin` 단락 평가)으로 인해 다른 프로젝트 리소스에 대한 수정 권한이 허용된다."
+          },
+          {
+            "evidence": [
+              "제공된 코드 근거가 README의 모듈 설명 한 줄뿐이라 시그니처 수준 검증 불가"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "권한 평가 함수가 호출 시 대상 리소스의 프로젝트 식별자를 전달받지 못해(인자 누락 또는 기본값) 항상 동일 프로젝트로 간주하고 true를 반환한다."
+          }
+        ]
+      },
+      "issue_id": "11",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에 authorization.py의 실제 구현 코드·권한 평가 함수 시그니처·테스트가 없어 결함 라인을 잘못 특정할 수 있다(신뢰도 0.3, 가설 최대 신뢰도 0.45).",
+            "mitigation": "구현 코드를 직접 열람하여 README.md:19 서술과 실제 코드를 대조한 뒤 수정에 착수하고, 함수 시그니처 확인 전에는 패치를 확정하지 않는다."
+          },
+          {
+            "risk": "관리자 권한과 프로젝트 범위 검사가 동일 모듈(`src/feature_flags/authorization.py`)에 공존하여 한쪽 수정이 다른 쪽 권한 동작을 회귀시킬 수 있다.",
+            "mitigation": "관리자 경로와 프로젝트 범위 경로를 각각 별도 테스트로 고정하고, 단락 평가 순서 변경 시 양쪽 테스트를 함께 실행한다."
+          },
+          {
+            "risk": "프로젝트 식별자 누락 시 거부 기본값으로 변경하면 기존에 암묵적으로 허용되던 호출 경로가 과잉 차단될 수 있다.",
+            "mitigation": "리포지토리 내 authorization 함수 호출부를 전수 조사하여 프로젝트 식별자를 전달하지 않는 호출을 식별하고, 정당한 호출에는 식별자를 명시적으로 전달하도록 함께 수정한다."
+          },
+          {
+            "risk": "관리자 권한 보유자의 교차 프로젝트 접근에 대한 기대 정책이 명세에 없어 테스트 기대값이 임의로 결정될 수 있다.",
+            "mitigation": "기대 정책을 코드 주석·문서·이슈에서 확인하고, 확인되지 않으면 현행 관리자 동작을 유지한 채 교차 프로젝트 owner 케이스만 수정 대상으로 한정하고 정책 공백을 이슈에 기록한다."
+          },
+          {
+            "risk": "재현 절차가 1단계만 기술되어 있어 수정 후에도 동일 증상을 재현·검증하지 못할 수 있다.",
+            "mitigation": "호출 함수명·API 엔드포인트·리소스 종류를 명시한 완전한 재현 절차를 작성하고, 신규 회귀 테스트를 재현 절차의 실행 가능한 형태로 제공한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트 작성: alpha 프로젝트 owner 컨텍스트에서 beta 프로젝트 리소스에 대한 권한 평가가 false를 반환하는지 검증하는 실패 테스트를 추가한다.",
+            "details": "리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520) 기준으로 테스트를 작성한다. 제공된 근거에 호출 함수명·API 엔드포인트·리소스 종류가 명시되어 있지 않으므로, 먼저 `src/feature_flags/authorization.py`의 공개 함수 시그니처와 프로젝트 컨텍스트 전달 경로를 확인한 뒤 테스트 대상 진입점을 확정한다. 테스트는 error_type=ReportedBehaviorMismatch 유형(런타임 예외가 아닌 반환값 불일치)이므로 예외가 아닌 반환값 bool을 단언한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/authorization.py`의 권한 평가 로직을 정독하여 프로젝트 범위 비교가 존재하는지, 존재한다면 어떤 식별자(예: project_id)를 비교하는지 확인한다.",
+            "details": "README.md:19는 해당 모듈이 관리자 권한과 프로젝트 범위 검사를 담당한다고 서술하므로 두 관심사가 공존한다. 관리자 단락(예: `if user.is_admin`) 평가 경로와 프로젝트 소유권 비교 경로를 분리해 추적하고, 호출 시 대상 리소스의 프로젝트 식별자가 실제로 전달되는지(인자 누락·기본값 간주 여부)를 확인한다. 가설 1(비교 부재), 가설 2(조건 누락), 가설 3(인자 미전달/기본값)을 각각 코드 상에서 판별한다."
+          },
+          {
+            "id": 3,
+            "action": "결함 라인을 수정하여 프로젝트 범위 검사가 대상 리소스의 소유 프로젝트와 현재 컨텍스트의 프로젝트를 일치 비교하도록 강제한다.",
+            "details": "프로젝트 경계를 벗어난 권한 평가는 false를 반환해야 한다. 관리자 권한 평가가 프로젝트 범위 검사를 우회하지 않도록 단락 평가 순서를 조정하고, 프로젝트 식별자가 누락된 경우 암묵적 허용(true)이 아닌 거부(false)를 기본값으로 사용한다. 관리자 권한과 프로젝트 범위 검사가 동일 모듈에 공존하므로 한쪽 수정이 다른 쪽 회귀를 유발하지 않도록 변경 범위를 국소화한다."
+          },
+          {
+            "id": 4,
+            "action": "경계 조건 회귀 테스트를 확장한다: 동일 프로젝트 owner, 교차 프로젝트 owner, 관리자 권한 보유자, 프로젝트 식별자 누락 케이스를 각각 검증한다.",
+            "details": "동일 프로젝트 내 정상 권한은 true를 유지해야 하며(과잉 차단 방지), 교차 프로젝트는 false여야 한다. 관리자 권한 보유자가 프로젝트 경계를 넘는 경우의 기대 정책을 코드 주석 또는 별도 명세로 확인한 뒤 테스트 기대값을 확정한다. 프로젝트 식별자 누락 시 거부 기본값이 적용되는지도 단언한다."
+          },
+          {
+            "id": 5,
+            "action": "제공된 근거 범위를 재확인하고 수정 결과를 기록한다: 실제 구현 코드·테스트 부재로 미확인 상태였던 프로젝트 범위 비교 로직의 구체적 결함 라인을 확정하여 이슈에 남긴다.",
+            "details": "기존 근거는 README.md:19 단일 코드 인용뿐이므로, 수정 완료 후 authorization.py의 실제 결함 라인과 신규 테스트를 근거로 추가한다. 재현 절차가 1단계만 기술되어 있었으므로 호출 함수명·리소스 종류·권한 평가 엔드포인트를 명시한 완전한 재현 절차로 갱신한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "acceptance_criteria": [
+          "alpha 프로젝트 owner 컨텍스트에서 beta 프로젝트 리소스에 대한 권한 평가가 false를 반환한다(기존에는 true였던 ReportedBehaviorMismatch 증상이 재현되지 않는다).",
+          "동일 프로젝트(자기 프로젝트) 리소스에 대한 owner의 정상 권한 평가는 true를 유지한다.",
+          "`src/feature_flags/authorization.py`의 프로젝트 범위 검사가 대상 리소스의 소유 프로젝트 식별자와 현재 컨텍스트의 프로젝트를 명시적으로 비교하는 코드로 확인된다.",
+          "프로젝트 식별자가 전달되지 않거나 누락된 경우 암묵적 허용(true)이 아닌 거부(false)가 반환된다.",
+          "관리자 권한 평가 경로가 프로젝트 범위 검사를 우회하여 교차 프로젝트 true를 반환하지 않는다.",
+          "신규 회귀 테스트(동일 프로젝트/교차 프로젝트/관리자/식별자 누락 케이스)가 모두 통과한다.",
+          "수정 대상 리포지토리 11(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520) 기준으로 결함 라인과 재현 절차가 이슈에 갱신된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:45:40.166010Z",
+    "completed_at": "2026-09-28T07:46:06.206626Z",
+    "created_at": "2026-09-28T07:45:40.156285Z",
+    "updated_at": "2026-09-28T07:46:06.208732Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 28.656
+  }
+}

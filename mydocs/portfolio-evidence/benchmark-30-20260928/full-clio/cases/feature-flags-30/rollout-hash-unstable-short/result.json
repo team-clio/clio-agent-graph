@@ -1,0 +1,536 @@
+{
+  "input": {
+    "id": "rollout-hash-unstable-short",
+    "report": {
+      "title": "rollout bucket이 재시작마다 변경",
+      "description": "동일 사용자의 percentage rollout 배정이 안정적이지 않습니다.",
+      "steps_to_reproduce": [
+        "두 Python 프로세스에서 같은 사용자 bucket을 계산합니다."
+      ],
+      "expected_behavior": "항상 같은 숫자여야 합니다.",
+      "actual_behavior": "프로세스별 결과가 다릅니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_rollout_bucket_is_stable_across_processes"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 17,
+    "name": "benchmark-20260928T065850Z-59223a30-rollout-hash-unstable-short",
+    "description": "Clio Benchmark feature-flags-30: rollout-hash-unstable-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:16:52.358899Z",
+    "updatedAt": "2026-09-28T07:16:52.358899Z"
+  },
+  "clio_repository": {
+    "id": 17,
+    "projectId": 17,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:17:45.964117Z",
+    "createdAt": "2026-09-28T07:16:52.374232Z",
+    "updatedAt": "2026-09-28T07:17:45.964928Z"
+  },
+  "bug": {
+    "id": 17,
+    "project_id": 17,
+    "issue_id": 17,
+    "title": "rollout bucket이 재시작마다 변경",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:17:46.043973Z",
+    "created_at": "2026-09-28T07:17:46.056181Z"
+  },
+  "analysis": {
+    "analysisResultId": 17,
+    "workflowRunId": 17,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": "src/feature_flags/rollout.py:1-9",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "17",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "rollout_bucket(user_id)이 hash(user_id) % 100으로 버킷을 계산하며, PYTHONHASHSEED가 달라져도(1 vs 2) 동일 버킷이 나와야 한다는 요구가 명시되어 있다. 즉 임의 문자열 해시 의존이 프로세스 간 비안정성의 원인임을 시사한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_c304bd19cc2a5696aed80275753a3767",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 30,
+          "location": "tests/test_rollout.py:1-30",
+          "file_path": "tests/test_rollout.py",
+          "source_id": "17",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "미해결 결함 목록의 8번 항목으로 'rollout_bucket의 프로세스 간 비안정성'이 존재하고, 대응 테스트 test_rollout_bucket_is_stable_across_processes가 기대 동작을 규정한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_88e0f496040b5e84a007e3cbef0115fe",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "\"\"\"Percentage rollout helpers.\"\"\"",
+          "end_line": 1,
+          "location": "src/feature_flags/rollout.py:1",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "17",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "rollout 모듈이 percentage rollout 헬퍼임을 확인시켜 주는 모듈 docstring이다. 버킷 산정 로직 본문은 제공된 코드 근거에 포함되지 않아 구현 세부는 PCM 지식에 의존한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "17",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+          "end_line": 20,
+          "location": "README.md:20",
+          "file_path": "README.md",
+          "source_id": "17",
+          "start_line": 20,
+          "evidence_id": null,
+          "observation": "README가 src/feature_flags/rollout.py를 percentage rollout 계산 모듈로 문서화하여, 이슈 17의 버킷 계산이 해당 모듈에 위치함을 뒷받침한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "17",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 7,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "17",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "feature-flags-service 라이브러리 개요로, rollout.py가 percentage rollout을 담당하는 구성 요소임을 명시한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5f45dab0393653afa58e738eb6b1a22c",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 17은 동일 사용자의 percentage rollout 배정이 재시작(프로세스)마다 달라진다는 ReportedBehaviorMismatch이며 benchmark_case_id는 rollout-hash-unstable-short이다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 지식 kn_c304bd19cc2a5696aed80275753a3767에 따르면 rollout_bucket(user_id)은 hash(user_id) % 100으로 0~99 버킷을 계산하며, test_rollout_bucket_is_stable_across_processes는 PYTHONHASHSEED가 달라도(1 vs 2) 동일한 버킷이 나와야 함을 요구한다.",
+          "verified": true
+        },
+        {
+          "fact": "동일 지식에 따르면 프로세스 간 안정적인 해시가 필요하다는 것, 즉 임의 문자열 해시에 의존하지 않아야 한다는 것이 요구사항으로 명시되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 지식 kn_88e0f496040b5e84a007e3cbef0115fe는 미해결 결함 8번으로 rollout_bucket의 프로세스 간 비안정성을 열거하고, 대응 테스트로 tests/test_rollout.py의 test_rollout_bucket_is_stable_across_processes를 지목한다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 지식 kn_c304bd19cc2a5696aed80275753a3767은 동일 파일 src/feature_flags/rollout.py에서 is_in_rollout이 현재 bucket <= percentage를 사용해 경계값을 포함하지만 테스트 기대는 배타적(<)이어야 한다고 기술한다(이슈 17 범위 밖의 별개 결함).",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거는 src/feature_flags/rollout.py의 1행 docstring(\"Percentage rollout helpers.\")과 README.md 20행의 모듈 설명만 포함하며, rollout_bucket 구현 본문은 제공되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 지식 kn_5f45dab0393653afa58e738eb6b1a22c에 따르면 feature-flags-service는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 라이브러리이며 Clio Benchmark 분석 대상 fixture이다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 17,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.78,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_c304bd19cc2a5696aed80275753a3767",
+            "kn_88e0f496040b5e84a007e3cbef0115fe"
+          ],
+          "confidence": 0.78,
+          "hypothesis": "rollout.rollout_bucket이 hash(user_id) % 100처럼 파이썬 내장 hash()를 사용하는데, str에 대한 hash()는 PYTHONHASHSEED 기반 랜덤화로 프로세스마다 값이 달라지므로 동일 사용자에 대해 프로세스별 버킷이 달라진다. 수정은 hashlib.md5/sha256 같은 결정적 해시로 바꿔 안정적 버킷을 계산하는 것이다."
+        },
+        {
+          "evidence": [
+            "kn_c304bd19cc2a5696aed80275753a3767"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "rollout_bucket 계산에 프로세스별로 초기화되는 임의 salt(예: 모듈 임포트 시 생성한 시드/난수)가 섞여 있어 재시작마다 결과가 달라진다."
+        },
+        {
+          "evidence": [
+            "kn_88e0f496040b5e84a007e3cbef0115fe"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "프로세스별로 달라지는 설정/환경값(예: os.environ 기반 시드)이 버킷 산정에 반영되어 재현 절차의 두 프로세스가 서로 다른 버킷을 얻는다."
+        }
+      ],
+      "project_id": 17,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "해시 알고리즘 교체로 기존 사용자 배정(버킷)이 이동하여 진행 중인 percentage rollout 노출 대상이 변경될 수 있다.",
+            "mitigation": "변경 전후 버킷 분포를 비교하고, 배정 이동이 허용 가능한지 확인한다. 필요 시 마이그레이션 기간이나 배정 고정 방안을 검토한다."
+          },
+          {
+            "risk": "src/feature_flags/rollout.py 의 rollout_bucket 구현 본문이 제공된 코드 근거에 포함되지 않아 실제 로직 가정이 틀릴 수 있다.",
+            "mitigation": "수정 전 실제 소스에서 현재 구현을 직접 확인하고 PCM 지식 kn_c304bd19cc2a5696aed80275753a3767 기술과 대조한다."
+          },
+          {
+            "risk": "salt 제거 또는 상수 고정이 보안/샘플링 목적(예: 버킷 편향 방지)을 약화시킬 수 있다.",
+            "mitigation": "고정 상수 salt 사용 시에도 프로세스 간 결정성이 유지되는지 검증하고, 분포 균일성을 테스트로 확인한다."
+          },
+          {
+            "risk": "이슈 17 범위 밖 결함(경계값 bucket <= percentage 불일치)을 함께 수정하려다 범위가 확대될 수 있다.",
+            "mitigation": "해당 결함은 별도 이슈로 분리하고 이번 변경에는 포함하지 않는다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/rollout.py의 rollout_bucket 구현 본문을 확인한다",
+            "details": "제공된 코드 근거에는 1행 docstring(\"\"\"Percentage rollout helpers.\"\"\")만 포함되어 있으므로, 실제 버킷 산정 로직이 파이썬 내장 hash()를 사용하는지 먼저 확인한다. PCM 지식 kn_c304bd19cc2a5696aed80275753a3767에 따르면 현재 rollout_bucket(user_id)는 hash(user_id) % 100 형태로 0~99 버킷을 계산한다."
+          },
+          {
+            "id": 2,
+            "action": "파이썬 내장 hash() 의존을 결정적 해시로 교체한다",
+            "details": "hash(user_id) % 100 을 hashlib.md5 또는 hashlib.sha256 기반의 결정적 해시로 대체한다. 예: int(hashlib.sha256(str(user_id).encode(\"utf-8\")).hexdigest(), 16) % 100. PYTHONHASHSEED 값(1 vs 2)이 달라져도 동일 user_id에 대해 동일 버킷이 나오도록 임의 문자열 해시 의존을 제거한다(사실: 프로세스 간 안정적 해시 필요, 임의 문자열 해시 비의존 요구)."
+          },
+          {
+            "id": 3,
+            "action": "프로세스별로 초기화되는 임의 salt/시드 혼입 여부를 제거한다",
+            "details": "모듈 임포트 시 생성한 시드/난수 또는 os.environ 기반 시드가 버킷 산정에 섞여 있는지 점검하고 제거한다(가설 2, 가설 3). salt가 필요한 경우에도 프로세스 간 고정 상수를 사용해 재시작 간 결과가 동일하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "tests/test_rollout.py의 test_rollout_bucket_is_stable_across_processes 로 검증한다",
+            "details": "PYTHONHASHSEED를 1과 2로 각각 설정한 두 프로세스에서 동일 user_id를 입력했을 때 같은 버킷이 반환되는지 확인한다. 지식 kn_88e0f496040b5e84a007e3cbef0115fe가 지목한 미해결 결함 8번 항목(rollout_bucket의 프로세스 간 비안정성)에 대한 대응 테스트다."
+          },
+          {
+            "id": 5,
+            "action": "이슈 17 범위 밖 경계값 결함은 별도 분리한다",
+            "details": "is_in_rollout의 bucket <= percentage(경계 포함) vs 테스트 기대 배타적(<) 불일치는 이슈 17 범위 밖의 별개 결함이므로 이번 수정에 포함하지 않고 별도 이슈로 기록한다(PCM 지식 kn_c304bd19cc2a5696aed80275753a3767)."
+          },
+          {
+            "id": 6,
+            "action": "회귀 확인 및 변경 문서화",
+            "details": "전체 테스트 스위트를 실행해 회귀가 없음을 확인하고, README.md 20행의 src/feature_flags/rollout.py 설명과 일관되게 변경 내용을 반영한다. 해시 방식 변경으로 기존 배정이 이동할 수 있는지 영향을 검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "acceptance_criteria": [
+          "test_rollout_bucket_is_stable_across_processes 가 통과한다: PYTHONHASHSEED=1 및 PYTHONHASHSEED=2 두 프로세스에서 동일 user_id에 대해 동일한 버킷 값이 반환된다.",
+          "rollout_bucket 이 파이썬 내장 hash() 에 의존하지 않고 hashlib.md5 또는 hashlib.sha256 등 결정적 해시를 사용한다.",
+          "rollout_bucket 반환값이 0~99(또는 기존 정의된) 범위를 유지한다.",
+          "모듈 임포트 시점에 생성되는 임의 salt/시드 또는 프로세스별 환경값 시드가 버킷 산정에 영향을 주지 않는다.",
+          "기존 테스트 스위트가 회귀 없이 통과한다.",
+          "경계값(bucket <= percentage) 결함은 이슈 17 범위에서 제외되었음이 기록된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 65,
+            "rationale": "src/feature_flags/rollout.py의 rollout_bucket(user_id)은 percentage rollout 배정의 단일 진입점으로, 테넌트별 기능 플래그 조회를 제공하는 feature-flags-service 전체에서 노출 비율에 따라 사용자에게 기능이 켜지고 꺼지는 모든 플로우에 영향을 준다. 두 프로세스 재현 절차에서 확인되듯 멀티 프로세스/워커 환경(웹 워커, 배치)에서는 모든 rollout 대상 사용자가 영향권이다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 45,
+            "rationale": "크래시나 데이터 손실/손상은 아니지만 배정 결과가 프로세스마다 달라져 기능 플래그 상태가 비결정적이 된다. 동일 사용자가 요청마다 켜짐/꺼짐을 오가면 플래그 판정의 신뢰성이 훼손되고, 노출 편중으로 A/B/점진 배포 지표가 오염되는 논리적 결함이다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 75,
+            "rationale": "Python은 기본적으로 PYTHONHASHSEED 랜덤화가 켜져 있어 str에 대한 내장 hash()는 프로세스마다 다른 값을 낸다. 따라서 프로세스 시작/재시작마다 항상 재현되며, kn_c304bd19cc2a5696aed80275753a3767과 test_rollout_bucket_is_stable_across_processes(PYTHONHASHSEED 1 vs 2)가 이를 규정한다. 단일 프로세스 내에서는 안정적이어서 간헐적으로 관측될 수 있다는 점만 감안했다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 60,
+            "rationale": "PYTHONHASHSEED를 고정하는 환경 설정으로 임시 회피가 가능하지만, 배포·워커·재시작 시마다 값을 유지해야 하고 프로세스 구성 변경에 취약하다. 근본 원인인 임의 문자열 해시 의존(kn_c304bd19cc2a5696aed80275753a3767)을 제거하기 전까지는 코드 내 우회 수단이 없어 hashlib.md5/sha256 기반 결정적 버킷으로의 수정이 필요하다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 70,
+            "rationale": "percentage rollout은 점진적 릴리스·기능 노출 제어의 핵심 경로로, 배정이 불안정하면 신규 기능을 특정 비율로 제한하려던 릴리스 통제가 무력화된다. 결제 자체의 직접 손상은 아니나 릴리스 게이팅·기능 활성화 정책이 잘못 적용될 위험이 있어 임계성은 높다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "이슈 17은 src/feature_flags/rollout.py의 rollout_bucket(user_id) = hash(user_id) % 100이 PYTHONHASHSEED 기반 str 해시 랜덤화에 의존해 프로세스/재시작마다 동일 사용자의 percentage rollout 배정이 달라지는 ReportedBehaviorMismatch다(confidence 0.78, kn_c304bd19cc2a5696aed80275753a3767, kn_88e0f496040b5e84a007e3cbef0115fe). 크래시나 데이터 손실·보안 노출은 아니므로 P0은 아니지만, 멀티 프로세스 환경에서 100% 재현되고 Python 기본 설정에서도 발생하며, 결정적 해시(hashlib)로 버킷을 안정화하기 전까지 코드 수준 우회 수단이 사실상 없다. 노출이 불규칙해지면 릴리스 게이팅과 A/B 지표가 오염되므로 부분 기능 파손·우회 존재 구간인 P2 보통 상단으로 산정하여 risk_score 62로 평가한다. 참고로 같은 파일의 is_in_rollout 경계값(bucket <= percentage vs 배타적 <) 문제는 이슈 17 범위 밖의 별개 결함이므로 점수에 반영하지 않았다.",
+        "risk_score": 62
+      },
+      "workflow_run_id": 17
+    }
+  },
+  "workflow": {
+    "id": 17,
+    "project_id": 17,
+    "request_id": "process-bug-17",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 17은 동일 사용자의 percentage rollout 배정이 재시작(프로세스)마다 달라진다는 ReportedBehaviorMismatch이며 benchmark_case_id는 rollout-hash-unstable-short이다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 지식 kn_c304bd19cc2a5696aed80275753a3767에 따르면 rollout_bucket(user_id)은 hash(user_id) % 100으로 0~99 버킷을 계산하며, test_rollout_bucket_is_stable_across_processes는 PYTHONHASHSEED가 달라도(1 vs 2) 동일한 버킷이 나와야 함을 요구한다.",
+            "verified": true
+          },
+          {
+            "fact": "동일 지식에 따르면 프로세스 간 안정적인 해시가 필요하다는 것, 즉 임의 문자열 해시에 의존하지 않아야 한다는 것이 요구사항으로 명시되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 지식 kn_88e0f496040b5e84a007e3cbef0115fe는 미해결 결함 8번으로 rollout_bucket의 프로세스 간 비안정성을 열거하고, 대응 테스트로 tests/test_rollout.py의 test_rollout_bucket_is_stable_across_processes를 지목한다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 지식 kn_c304bd19cc2a5696aed80275753a3767은 동일 파일 src/feature_flags/rollout.py에서 is_in_rollout이 현재 bucket <= percentage를 사용해 경계값을 포함하지만 테스트 기대는 배타적(<)이어야 한다고 기술한다(이슈 17 범위 밖의 별개 결함).",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거는 src/feature_flags/rollout.py의 1행 docstring(\"Percentage rollout helpers.\")과 README.md 20행의 모듈 설명만 포함하며, rollout_bucket 구현 본문은 제공되지 않았다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 지식 kn_5f45dab0393653afa58e738eb6b1a22c에 따르면 feature-flags-service는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 라이브러리이며 Clio Benchmark 분석 대상 fixture이다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": "src/feature_flags/rollout.py:1-9",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "17",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "rollout_bucket(user_id)이 hash(user_id) % 100으로 버킷을 계산하며, PYTHONHASHSEED가 달라져도(1 vs 2) 동일 버킷이 나와야 한다는 요구가 명시되어 있다. 즉 임의 문자열 해시 의존이 프로세스 간 비안정성의 원인임을 시사한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_c304bd19cc2a5696aed80275753a3767",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 30,
+            "location": "tests/test_rollout.py:1-30",
+            "file_path": "tests/test_rollout.py",
+            "source_id": "17",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "미해결 결함 목록의 8번 항목으로 'rollout_bucket의 프로세스 간 비안정성'이 존재하고, 대응 테스트 test_rollout_bucket_is_stable_across_processes가 기대 동작을 규정한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_88e0f496040b5e84a007e3cbef0115fe",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "\"\"\"Percentage rollout helpers.\"\"\"",
+            "end_line": 1,
+            "location": "src/feature_flags/rollout.py:1",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "17",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "rollout 모듈이 percentage rollout 헬퍼임을 확인시켜 주는 모듈 docstring이다. 버킷 산정 로직 본문은 제공된 코드 근거에 포함되지 않아 구현 세부는 PCM 지식에 의존한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "17",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+            "end_line": 20,
+            "location": "README.md:20",
+            "file_path": "README.md",
+            "source_id": "17",
+            "start_line": 20,
+            "evidence_id": null,
+            "observation": "README가 src/feature_flags/rollout.py를 percentage rollout 계산 모듈로 문서화하여, 이슈 17의 버킷 계산이 해당 모듈에 위치함을 뒷받침한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "17",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 7,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "17",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "feature-flags-service 라이브러리 개요로, rollout.py가 percentage rollout을 담당하는 구성 요소임을 명시한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5f45dab0393653afa58e738eb6b1a22c",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.78,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "knowledge": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_c304bd19cc2a5696aed80275753a3767",
+              "kn_88e0f496040b5e84a007e3cbef0115fe"
+            ],
+            "confidence": 0.78,
+            "hypothesis": "rollout.rollout_bucket이 hash(user_id) % 100처럼 파이썬 내장 hash()를 사용하는데, str에 대한 hash()는 PYTHONHASHSEED 기반 랜덤화로 프로세스마다 값이 달라지므로 동일 사용자에 대해 프로세스별 버킷이 달라진다. 수정은 hashlib.md5/sha256 같은 결정적 해시로 바꿔 안정적 버킷을 계산하는 것이다."
+          },
+          {
+            "evidence": [
+              "kn_c304bd19cc2a5696aed80275753a3767"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "rollout_bucket 계산에 프로세스별로 초기화되는 임의 salt(예: 모듈 임포트 시 생성한 시드/난수)가 섞여 있어 재시작마다 결과가 달라진다."
+          },
+          {
+            "evidence": [
+              "kn_88e0f496040b5e84a007e3cbef0115fe"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "프로세스별로 달라지는 설정/환경값(예: os.environ 기반 시드)이 버킷 산정에 반영되어 재현 절차의 두 프로세스가 서로 다른 버킷을 얻는다."
+          }
+        ]
+      },
+      "issue_id": "17",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "해시 알고리즘 교체로 기존 사용자 배정(버킷)이 이동하여 진행 중인 percentage rollout 노출 대상이 변경될 수 있다.",
+            "mitigation": "변경 전후 버킷 분포를 비교하고, 배정 이동이 허용 가능한지 확인한다. 필요 시 마이그레이션 기간이나 배정 고정 방안을 검토한다."
+          },
+          {
+            "risk": "src/feature_flags/rollout.py 의 rollout_bucket 구현 본문이 제공된 코드 근거에 포함되지 않아 실제 로직 가정이 틀릴 수 있다.",
+            "mitigation": "수정 전 실제 소스에서 현재 구현을 직접 확인하고 PCM 지식 kn_c304bd19cc2a5696aed80275753a3767 기술과 대조한다."
+          },
+          {
+            "risk": "salt 제거 또는 상수 고정이 보안/샘플링 목적(예: 버킷 편향 방지)을 약화시킬 수 있다.",
+            "mitigation": "고정 상수 salt 사용 시에도 프로세스 간 결정성이 유지되는지 검증하고, 분포 균일성을 테스트로 확인한다."
+          },
+          {
+            "risk": "이슈 17 범위 밖 결함(경계값 bucket <= percentage 불일치)을 함께 수정하려다 범위가 확대될 수 있다.",
+            "mitigation": "해당 결함은 별도 이슈로 분리하고 이번 변경에는 포함하지 않는다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/rollout.py의 rollout_bucket 구현 본문을 확인한다",
+            "details": "제공된 코드 근거에는 1행 docstring(\"\"\"Percentage rollout helpers.\"\"\")만 포함되어 있으므로, 실제 버킷 산정 로직이 파이썬 내장 hash()를 사용하는지 먼저 확인한다. PCM 지식 kn_c304bd19cc2a5696aed80275753a3767에 따르면 현재 rollout_bucket(user_id)는 hash(user_id) % 100 형태로 0~99 버킷을 계산한다."
+          },
+          {
+            "id": 2,
+            "action": "파이썬 내장 hash() 의존을 결정적 해시로 교체한다",
+            "details": "hash(user_id) % 100 을 hashlib.md5 또는 hashlib.sha256 기반의 결정적 해시로 대체한다. 예: int(hashlib.sha256(str(user_id).encode(\"utf-8\")).hexdigest(), 16) % 100. PYTHONHASHSEED 값(1 vs 2)이 달라져도 동일 user_id에 대해 동일 버킷이 나오도록 임의 문자열 해시 의존을 제거한다(사실: 프로세스 간 안정적 해시 필요, 임의 문자열 해시 비의존 요구)."
+          },
+          {
+            "id": 3,
+            "action": "프로세스별로 초기화되는 임의 salt/시드 혼입 여부를 제거한다",
+            "details": "모듈 임포트 시 생성한 시드/난수 또는 os.environ 기반 시드가 버킷 산정에 섞여 있는지 점검하고 제거한다(가설 2, 가설 3). salt가 필요한 경우에도 프로세스 간 고정 상수를 사용해 재시작 간 결과가 동일하도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "tests/test_rollout.py의 test_rollout_bucket_is_stable_across_processes 로 검증한다",
+            "details": "PYTHONHASHSEED를 1과 2로 각각 설정한 두 프로세스에서 동일 user_id를 입력했을 때 같은 버킷이 반환되는지 확인한다. 지식 kn_88e0f496040b5e84a007e3cbef0115fe가 지목한 미해결 결함 8번 항목(rollout_bucket의 프로세스 간 비안정성)에 대한 대응 테스트다."
+          },
+          {
+            "id": 5,
+            "action": "이슈 17 범위 밖 경계값 결함은 별도 분리한다",
+            "details": "is_in_rollout의 bucket <= percentage(경계 포함) vs 테스트 기대 배타적(<) 불일치는 이슈 17 범위 밖의 별개 결함이므로 이번 수정에 포함하지 않고 별도 이슈로 기록한다(PCM 지식 kn_c304bd19cc2a5696aed80275753a3767)."
+          },
+          {
+            "id": 6,
+            "action": "회귀 확인 및 변경 문서화",
+            "details": "전체 테스트 스위트를 실행해 회귀가 없음을 확인하고, README.md 20행의 src/feature_flags/rollout.py 설명과 일관되게 변경 내용을 반영한다. 해시 방식 변경으로 기존 배정이 이동할 수 있는지 영향을 검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "acceptance_criteria": [
+          "test_rollout_bucket_is_stable_across_processes 가 통과한다: PYTHONHASHSEED=1 및 PYTHONHASHSEED=2 두 프로세스에서 동일 user_id에 대해 동일한 버킷 값이 반환된다.",
+          "rollout_bucket 이 파이썬 내장 hash() 에 의존하지 않고 hashlib.md5 또는 hashlib.sha256 등 결정적 해시를 사용한다.",
+          "rollout_bucket 반환값이 0~99(또는 기존 정의된) 범위를 유지한다.",
+          "모듈 임포트 시점에 생성되는 임의 salt/시드 또는 프로세스별 환경값 시드가 버킷 산정에 영향을 주지 않는다.",
+          "기존 테스트 스위트가 회귀 없이 통과한다.",
+          "경계값(bucket <= percentage) 결함은 이슈 17 범위에서 제외되었음이 기록된다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:17:47.030276Z",
+    "completed_at": "2026-09-28T07:18:15.411527Z",
+    "created_at": "2026-09-28T07:17:47.018891Z",
+    "updated_at": "2026-09-28T07:18:15.412914Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.359
+  }
+}

@@ -1,0 +1,584 @@
+{
+  "input": {
+    "id": "repository-delete-case-symptom",
+    "report": {
+      "title": "삭제 완료 응답 후 플래그가 계속 조회됨",
+      "description": "표기 형식이 다른 이름으로 삭제하면 오류 없이 끝나지만 데이터가 남습니다.",
+      "steps_to_reproduce": [
+        "New-Checkout을 생성합니다.",
+        "NEW-CHECKOUT 삭제 후 new-checkout을 조회합니다."
+      ],
+      "expected_behavior": "조회 결과가 없어야 합니다.",
+      "actual_behavior": "생성했던 값이 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_delete_normalizes_flag_name"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 27,
+    "name": "benchmark-20260928T065850Z-59223a30-repository-delete-case-symptom",
+    "description": "Clio Benchmark feature-flags-30: repository-delete-case-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:28:54.761851Z",
+    "updatedAt": "2026-09-28T07:28:54.761851Z"
+  },
+  "clio_repository": {
+    "id": 27,
+    "projectId": 27,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:29:30.835278Z",
+    "createdAt": "2026-09-28T07:28:54.768124Z",
+    "updatedAt": "2026-09-28T07:29:30.836458Z"
+  },
+  "bug": {
+    "id": 27,
+    "project_id": 27,
+    "issue_id": 27,
+    "title": "삭제 완료 응답 후 플래그가 계속 조회됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:29:31.053266Z",
+    "created_at": "2026-09-28T07:29:31.070986Z"
+  },
+  "analysis": {
+    "analysisResultId": 27,
+    "workflowRunId": 27,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 22,
+          "location": "저장소 목적·모듈 구조·실행 방법 > 목적 > 구조",
+          "file_path": "README.md",
+          "source_id": "27",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "테넌트별 플래그 저장소 `src/feature_flags/repository.py`, 조회 결과 캐시 `src/feature_flags/cache.py`, 플래그 조회 서비스 `src/feature_flags/service.py` 구조를 확인했다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_fd7c3caa6dbe5fac8b46f9eb044693b1",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 27,
+          "location": "FeatureFlagRepository 저장소 계약과 키 정규화",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "27",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlag`는 frozen dataclass(필드 `tenant_id`, `name`, `enabled`)이고 `FeatureFlagRepository`는 `_flags: dict[tuple[str, str], FeatureFlag]` 내부 저장소를 사용한다. 키가 (tenant_id, name) 튜플이므로 name 문자열 표기가 키 동일성을 결정한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_a6b1357b809d59d1b56758ec83034bb3",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 40,
+          "location": "FeatureFlagService 조회 유스케이스와 Legacy 변형",
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "27",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagService(repository, cache)`가 플래그 조회 유스케이스를 제공하며, 저장소와 캐시를 함께 주입받는 구조임을 확인했다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_3ad71c8b60f65f93b19a8c4794a724a9",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 7,
+          "location": "feature_flags 패키지 공개 API",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "27",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 세 클래스가 공식 공개 진입점이며, 삭제 경로가 이 계층 중 어디에서 처리되는지는 공개 API만으로 단정할 수 없다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_18503303380254fcaaa7c5fdc28df336",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "27:README.md:16",
+          "observation": "`src/feature_flags/repository.py`: 테넌트별 플래그 저장소 — 삭제 시 키가 (tenant_id, name) 튜플로 비교되므로 name 표기 형식이 다른 삭제 요청은 저장된 엔트리와 다른 키가 될 수 있다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "27",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "27:README.md:18",
+          "observation": "`src/feature_flags/service.py`: 플래그 조회 서비스 — 조회가 캐시와 저장소를 경유하므로 삭제 후에도 이전 조회 결과가 남을 경로가 존재한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "27",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 27의 증상은 \"New-Checkout\"을 생성한 뒤 \"NEW-CHECKOUT\"으로 삭제하고 \"new-checkout\"을 조회하면 조회 결과가 없어야 하지만 생성했던 값이 반환된다는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "supplied code evidence에는 repository.py, service.py, cache.py의 실제 구현 본문이 포함되어 있지 않고 README.md 라인 3, 16, 18만 포함되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "저장소 계약 문서(kn_a6b1357b809d59d1b56758ec83034bb3)에 따르면 FeatureFlagRepository는 `_flags: dict[tuple[str, str], FeatureFlag]` 내부 저장소를 사용하며 FeatureFlag는 frozen dataclass(필드 `tenant_id`, `name`, `enabled`)이다.",
+          "verified": true
+        },
+        {
+          "fact": "저장소 계층 문서는 키 정규화(key normalization)를 제목으로 내걸고 있으나(정규화 여부 자체는 본문에서 명시되지 않음), 정규화가 적용된다면 표기 형식이 다른 이름은 같은 키로 취급된다.",
+          "verified": false
+        },
+        {
+          "fact": "service.py는 테넌트별 플래그 조회 서비스이며 (kn_3ad71c8b60f65f93b19a8c4794a724a9) FeatureFlagService(repository, cache) 형태로 조회 유스케이스를 제공한다.",
+          "verified": true
+        },
+        {
+          "fact": "cache.py는 조회 결과 캐시 모듈이다(kn_fd7c3caa6dbe5fac8b46f9eb044693b1).",
+          "verified": true
+        }
+      ],
+      "issue_id": 27,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.5,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:16 - `src/feature_flags/repository.py`: 테넌트별 플래그 저장소(r27@b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+            "kn_a6b1357b809d59d1b56758ec83034bb3 - 저장소 계약과 키 정규화(dict[tuple[str, str], FeatureFlag])",
+            "저장 키는 (tenant_id, name) 튜플이므로 name의 대소문자 표기가 키 동일성을 좌우한다"
+          ],
+          "confidence": 0.62,
+          "hypothesis": "키 정규화 불일치: FeatureFlagRepository가 저장 키를 `name.casefold()` 등으로 정규화하고 조회 시에는 원본 문자열을 그대로 조회하거나, 반대로 저장은 원본으로 하고 조회에서만 정규화하는 등 저장/조회 경로의 대소문자 처리 기준이 비대칭이어서, 삭제는 `NEW-CHECKOUT` 키(또는 정규화된 `new-checkout` 키)에서만 일어나고 조회 시 `new-checkout`의 정규화 결과가 다른 키를 가리켜 삭제된 플래그가 계속 발견된다."
+        },
+        {
+          "evidence": [
+            "README.md:16,18 - repository.py(저장소)·service.py(조회 서비스) 구조",
+            "kn_fd7c3caa6dbe5fac8b46f9eb044693b1 - `src/feature_flags/cache.py`: 조회 결과 캐시",
+            "증상이 '삭제 완료 응답 후에도 조회됨'이라는 지속적 조회 실패 형태이며 이슈 제목도 '삭제 완료 응답 후 플래그가 계속 조회됨'임"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "캐시 무효화 누락: service.py가 조회 결과를 cache.py에 저장하는데(kn_fd7c3caa6dbe5fac8b46f9eb044693b1, kn_3ad71c8b60f65f93b19a8c4794a724a9), 삭제(delete) 경로가 캐시 엔트리를 무효화하지 않아 `new-checkout` 조회가 삭제 전 캐시된 값을 반환한다."
+        },
+        {
+          "evidence": [
+            "증상 재현 절차: New-Checkout 생성 → NEW-CHECKOUT 삭제 → new-checkout 조회",
+            "kn_a6b1357b809d59d1b56758ec83034bb3 - 저장소 키는 (tenant_id, name) 튜플"
+          ],
+          "confidence": 0.4,
+          "hypothesis": "삭제 API가 키를 정규화하지 않아 `NEW-CHECKOUT` 삭제가 저장된 `New-Checkout` 엔트리에 도달하지 못하고 no-op에 가깝게 성공 응답만 반환한다."
+        }
+      ],
+      "project_id": 27,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "정규화 기준(예: casefold vs lower)을 변경하면 기존에 원본 표기로 저장된 엔트리의 키가 달라져 마이그레이션 없이는 조회·삭제가 실패할 수 있다.",
+            "mitigation": "정규화 도입 시 기존 `_flags` 엔트리를 새 정규화 키로 재색인하는 일회성 마이그레이션 또는 지연 마이그레이션을 함께 구현하고, 마이그레이션 전후 조회 일관성을 테스트로 검증한다."
+          },
+          {
+            "risk": "정규화로 인해 기존에 서로 다른 플래그로 취급되던 대소문자 변형 이름들이 충돌해 데이터(플래그) 유실 또는 의도치 않은 덮어쓰기가 발생할 수 있다.",
+            "mitigation": "충돌 가능 키를 사전 스캔해 리포트하고, 충돌 발생 시 병합 규칙(예: 최신 우선)을 명시적으로 정의하며, 충돌 케이스 테스트를 추가한다."
+          },
+          {
+            "risk": "캐시 무효화를 추가해도 캐시 키 정규화가 저장소 정규화와 다르면 동일한 누수가 재발할 수 있다.",
+            "mitigation": "캐시 키 생성도 3단계의 단일 정규화 함수를 공유하도록 강제하고, 캐시 워밍 후 삭제 시나리오를 회귀 테스트로 고정한다."
+          },
+          {
+            "risk": "삭제 결과 계약을 no-op 성공에서 실패로 바꾸면 이를 성공으로 가정하던 기존 호출자가 오동작할 수 있다.",
+            "mitigation": "`__init__.py`의 공개 API 사용처를 조사해 영향을 파악하고, 반환 계약 변경을 문서화한 뒤 필요 시 하위 호환 반환값을 병행 제공한다."
+          },
+          {
+            "risk": "제공된 code evidence에 repository.py·service.py·cache.py의 실제 구현 본문이 포함되어 있지 않아(README.md 라인 3, 16, 18만 포함), 정규화 위치에 대한 가설이 틀릴 수 있다.",
+            "mitigation": "1단계 재현 테스트와 코드 직접 확인으로 실제 결함 지점을 확정한 뒤 수정을 진행하고, 근본 원인이 가설과 다르면 계획 단계를 갱신한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트를 먼저 작성해 현재 실패 동작을 고정한다.",
+            "details": "`src/feature_flags/` 아래 테스트에서 동일 테넌트 기준으로 \"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회 순서를 수행하고, 조회 결과가 없어야 한다는 기대를 명시한다. 저장소 단위(repository)와 서비스 단위(service, cache 포함) 두 레벨로 각각 테스트를 분리해 어느 계층에서 누수가 발생하는지 판별 가능하게 한다. 참고 증거: 27:README.md:16, 27:README.md:18."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository의 저장/조회/삭제 경로에서 키 정규화 기준이 대칭인지 코드로 확인한다.",
+            "details": "`_flags: dict[tuple[str, str], FeatureFlag]` 키의 `name` 요소가 저장 시점과 조회·삭제 시점에 동일한 정규화 함수(예: `name.casefold()`)를 통과하는지 확인한다. 한쪽 경로에만 정규화가 적용되어 있으면 비대칭 지점을 목록화한다. FeatureFlag는 frozen dataclass(`tenant_id`, `name`, `enabled`)이므로 정규화된 키와 저장 객체 내부의 `name` 필드가 다를 수 있음을 함께 기록한다. 참고 증거: kn_a6b1357b809d59d1b56758ec83034bb3, README.md:16."
+          },
+          {
+            "id": 3,
+            "action": "단일 키 정규화 함수를 도입하고 저장소의 모든 키 생성 지점에서 이를 사용하도록 통일한다.",
+            "details": "저장(write/upsert), 조회(get), 삭제(delete), 존재 확인(exists) 등 키를 만드는 모든 지점이 같은 헬퍼(예: `_normalize_name(name) -> str`)를 호출하도록 한다. 정규화 방식이 `casefold()`인지 `lower()`인지, 그리고 정규화 결과가 `FeatureFlag.name` 필드에도 반영되는지 계약을 명확히 결정해 문서화한다. 참고 증거: kn_a6b1357b809d59d1b56758ec83034bb3."
+          },
+          {
+            "id": 4,
+            "action": "삭제 경로에서 캐시 무효화 여부를 점검하고 필요 시 캐시 엔트리를 함께 제거한다.",
+            "details": "`FeatureFlagService(repository, cache)`에서 조회가 `cache.py`의 캐시를 경유하므로, 삭제 성공 시 해당 (tenant_id, 정규화된 name) 캐시 키를 무효화한다. 캐시에 삭제/무효화 API가 없으면 추가한다. 무효화 키도 반드시 3단계의 동일 정규화 함수를 사용해야 한다. 참고 증거: kn_fd7c3caa6dbe5fac8b46f9eb044693b1, kn_3ad71c8b60f65f93b19a8c4794a724a9, README.md:18."
+          },
+          {
+            "id": 5,
+            "action": "삭제 API가 미존재 키에 대해 어떻게 응답하는지 계약을 확정하고 no-op 성공을 제거한다.",
+            "details": "정규화 적용 후에도 저장된 엔트리가 없으면 삭제는 실패(예: not found) 또는 명시적 no-op임을 구분해 반환하고, 존재하지 않는 키 삭제가 성공으로 위장되지 않도록 한다. 이슈 재현 절차(\"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회)에서 삭제가 실제 도달했음을 검증 가능하게 만든다. 참고 증거: kn_18503303380254fcaaa7c5fdc28df336, README.md:16."
+          },
+          {
+            "id": 6,
+            "action": "1단계 재현 테스트가 통과하는지 확인하고 회귀 테스트를 추가한다.",
+            "details": "저장/조회/삭제 레벨 테스트와 서비스 레벨(캐시 포함) 테스트를 모두 통과시킨다. 추가로 대소문자만 다른 이름들의 동시 존재 케이스, 캐시 워밍 후 삭제 케이스, 테넌트 격리(다른 tenant_id는 영향 없음) 케이스를 회귀 테스트로 고정한다. `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]` 공개 API 경로를 통한 동작도 확인한다. 참고 증거: kn_18503303380254fcaaa7c5fdc28df336."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "acceptance_criteria": [
+          "동일 테넌트에서 \"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회 시 조회 결과가 존재하지 않아야 한다(이슈 27 재현 절차 기준).",
+          "FeatureFlagRepository의 저장·조회·삭제 경로가 모두 동일한 키 정규화 함수를 사용하며, 정규화 기준의 비대칭이 남아 있지 않다.",
+          "대소문자만 다른 이름(예: \"New-Checkout\"과 \"new-checkout\")이 동일 테넌트 내에서 하나의 키로 취급되어 서로 다른 플래그로 중복 저장되지 않는다.",
+          "삭제 성공 시 `cache.py`의 해당 캐시 엔트리가 무효화되어, 캐시 워밍 후에도 삭제된 플래그가 조회되지 않는다.",
+          "존재하지 않는 키에 대한 삭제 요청이 실제 삭제 성공으로 오인되지 않도록 결과가 구분되어 반환된다.",
+          "테넌트 격리가 유지되어 다른 tenant_id의 동일 이름 플래그는 삭제·조회 동작에 영향을 받지 않는다.",
+          "재현 테스트와 회귀 테스트가 저장소 단위 및 서비스 단위(캐시 포함)에서 모두 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 60,
+            "rationale": "feature_flags 패키지의 공개 API(FeatureFlagRepository, FeatureFlagService, FeatureFlagCache) 전반에 걸친 삭제/조회 경로 문제로, 테넌트별 플래그를 사용하는 모든 조회·삭제 흐름에 영향이 가능하다. 다만 특정 표기 형식(대소문자 혼용)의 이름 조합에서만 발현되므로 전체 기능 마비는 아니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 62,
+            "rationale": "크래시나 예외는 발생하지 않지만 삭제가 성공 응답을 반환한 뒤에도 데이터가 잔존하여 삭제된 플래그가 계속 활성 상태로 조회된다. 이는 데이터 정합성/잔존 문제로, 삭제된 줄 알았던 플래그가 계속 적용되는 잘못된 동작을 유발한다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 70,
+            "rationale": "재현 절차가 명확하다: New-Checkout 생성 → NEW-CHECKOUT 삭제 → new-checkout 조회 시 생성했던 값이 반환된다. 표기 형식이 다른 이름을 사용하는 한 결정적으로 재현되며, report된 error_type도 ReportedBehaviorMismatch로 재현성이 높다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 45,
+            "rationale": "생성 시 사용한 것과 동일한 표기(대소문자)로 삭제하면 회피할 수 있다는 점에서 부분적 우회가 가능하다. 그러나 정규화 기준이 문서상 명시되지 않아 사용자가 올바른 표기를 알기 어렵고, 캐시 무효화 누락 가설(kn_fd7c3caa6dbe5fac8b46f9eb044693b1)이 맞다면 동일 표기 삭제로도 우회되지 않을 수 있다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 60,
+            "rationale": "feature flag는 릴리스 제어·킬 스위치 용도로 쓰이는 핵심 경로다. 삭제가 반영되지 않으면 플래그를 끄거나 제거하려는 운영 조치가 실패하고, 잘못된 플래그가 계속 조회되어 결제/계정 등 하위 판단 로직에 영향을 줄 수 있다. 다만 결제 자체의 직접 손상 증거는 없다."
+          },
+          {
+            "name": "증거 확실성 (confidence)",
+            "score": 45,
+            "rationale": "제공된 code evidence에 repository.py, service.py, cache.py의 실제 구현 본문이 없고 README.md 라인과 계약 문서만 있어 근본 원인이 확정되지 않았다. 키 정규화 비대칭(0.62), 캐시 무효화 누락(0.45), 삭제 키 미정규화(0.40) 가설이 경합 중이며 confidence 0.5 수준이다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "삭제 완료 응답 후에도 플래그가 계속 조회되는 데이터 잔존/정합성 이슈로, 표기 형식이 다른 이름(New-Checkout vs NEW-CHECKOUT vs new-checkout)을 사용하면 결정적으로 재현된다. 저장소 키가 (tenant_id, name) 튜플이므로 name 대소문자 표기가 키 동일성을 좌우해, 삭제 대상 키와 저장 키가 어긋나면 삭제가 no-op에 가까운 성공 응답이 되고(가설 1·3), 조회 결과 캐시(kn_fd7c3caa6dbe5fac8b46f9eb044693b1)가 무효화되지 않으면 삭제 전 값이 캐시에서 반환될 수도 있다(가설 2). 크래시·보안 침해·전면 장애는 없고, 동일 표기로 삭제하는 회피책이 존재하므로 P0/P1 최상위는 아니며, feature flag라는 릴리스 제어 핵심 경로의 정합성 붕괴와 높은 재현성을 고려해 P2 보통(50-69) 구간에서 63으로 산정한다. 다만 실제 구현 본문 증거가 부재하여 단일 근본 원인이 확정되지 않은 점이 잔여 불확실성이다.",
+        "risk_score": 63
+      },
+      "workflow_run_id": 27
+    }
+  },
+  "workflow": {
+    "id": 27,
+    "project_id": 27,
+    "request_id": "process-bug-27",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 27의 증상은 \"New-Checkout\"을 생성한 뒤 \"NEW-CHECKOUT\"으로 삭제하고 \"new-checkout\"을 조회하면 조회 결과가 없어야 하지만 생성했던 값이 반환된다는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "supplied code evidence에는 repository.py, service.py, cache.py의 실제 구현 본문이 포함되어 있지 않고 README.md 라인 3, 16, 18만 포함되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "저장소 계약 문서(kn_a6b1357b809d59d1b56758ec83034bb3)에 따르면 FeatureFlagRepository는 `_flags: dict[tuple[str, str], FeatureFlag]` 내부 저장소를 사용하며 FeatureFlag는 frozen dataclass(필드 `tenant_id`, `name`, `enabled`)이다.",
+            "verified": true
+          },
+          {
+            "fact": "저장소 계층 문서는 키 정규화(key normalization)를 제목으로 내걸고 있으나(정규화 여부 자체는 본문에서 명시되지 않음), 정규화가 적용된다면 표기 형식이 다른 이름은 같은 키로 취급된다.",
+            "verified": false
+          },
+          {
+            "fact": "service.py는 테넌트별 플래그 조회 서비스이며 (kn_3ad71c8b60f65f93b19a8c4794a724a9) FeatureFlagService(repository, cache) 형태로 조회 유스케이스를 제공한다.",
+            "verified": true
+          },
+          {
+            "fact": "cache.py는 조회 결과 캐시 모듈이다(kn_fd7c3caa6dbe5fac8b46f9eb044693b1).",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 22,
+            "location": "저장소 목적·모듈 구조·실행 방법 > 목적 > 구조",
+            "file_path": "README.md",
+            "source_id": "27",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "테넌트별 플래그 저장소 `src/feature_flags/repository.py`, 조회 결과 캐시 `src/feature_flags/cache.py`, 플래그 조회 서비스 `src/feature_flags/service.py` 구조를 확인했다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_fd7c3caa6dbe5fac8b46f9eb044693b1",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 27,
+            "location": "FeatureFlagRepository 저장소 계약과 키 정규화",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "27",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlag`는 frozen dataclass(필드 `tenant_id`, `name`, `enabled`)이고 `FeatureFlagRepository`는 `_flags: dict[tuple[str, str], FeatureFlag]` 내부 저장소를 사용한다. 키가 (tenant_id, name) 튜플이므로 name 문자열 표기가 키 동일성을 결정한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_a6b1357b809d59d1b56758ec83034bb3",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 40,
+            "location": "FeatureFlagService 조회 유스케이스와 Legacy 변형",
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "27",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagService(repository, cache)`가 플래그 조회 유스케이스를 제공하며, 저장소와 캐시를 함께 주입받는 구조임을 확인했다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_3ad71c8b60f65f93b19a8c4794a724a9",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 7,
+            "location": "feature_flags 패키지 공개 API",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "27",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]`로 세 클래스가 공식 공개 진입점이며, 삭제 경로가 이 계층 중 어디에서 처리되는지는 공개 API만으로 단정할 수 없다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_18503303380254fcaaa7c5fdc28df336",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "27:README.md:16",
+            "observation": "`src/feature_flags/repository.py`: 테넌트별 플래그 저장소 — 삭제 시 키가 (tenant_id, name) 튜플로 비교되므로 name 표기 형식이 다른 삭제 요청은 저장된 엔트리와 다른 키가 될 수 있다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "27",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "27:README.md:18",
+            "observation": "`src/feature_flags/service.py`: 플래그 조회 서비스 — 조회가 캐시와 저장소를 경유하므로 삭제 후에도 이전 조회 결과가 남을 경로가 존재한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "27",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.5,
+        "evidence_counts": {
+          "code": 6,
+          "history": 0,
+          "documents": 7
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:16 - `src/feature_flags/repository.py`: 테넌트별 플래그 저장소(r27@b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+              "kn_a6b1357b809d59d1b56758ec83034bb3 - 저장소 계약과 키 정규화(dict[tuple[str, str], FeatureFlag])",
+              "저장 키는 (tenant_id, name) 튜플이므로 name의 대소문자 표기가 키 동일성을 좌우한다"
+            ],
+            "confidence": 0.62,
+            "hypothesis": "키 정규화 불일치: FeatureFlagRepository가 저장 키를 `name.casefold()` 등으로 정규화하고 조회 시에는 원본 문자열을 그대로 조회하거나, 반대로 저장은 원본으로 하고 조회에서만 정규화하는 등 저장/조회 경로의 대소문자 처리 기준이 비대칭이어서, 삭제는 `NEW-CHECKOUT` 키(또는 정규화된 `new-checkout` 키)에서만 일어나고 조회 시 `new-checkout`의 정규화 결과가 다른 키를 가리켜 삭제된 플래그가 계속 발견된다."
+          },
+          {
+            "evidence": [
+              "README.md:16,18 - repository.py(저장소)·service.py(조회 서비스) 구조",
+              "kn_fd7c3caa6dbe5fac8b46f9eb044693b1 - `src/feature_flags/cache.py`: 조회 결과 캐시",
+              "증상이 '삭제 완료 응답 후에도 조회됨'이라는 지속적 조회 실패 형태이며 이슈 제목도 '삭제 완료 응답 후 플래그가 계속 조회됨'임"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "캐시 무효화 누락: service.py가 조회 결과를 cache.py에 저장하는데(kn_fd7c3caa6dbe5fac8b46f9eb044693b1, kn_3ad71c8b60f65f93b19a8c4794a724a9), 삭제(delete) 경로가 캐시 엔트리를 무효화하지 않아 `new-checkout` 조회가 삭제 전 캐시된 값을 반환한다."
+          },
+          {
+            "evidence": [
+              "증상 재현 절차: New-Checkout 생성 → NEW-CHECKOUT 삭제 → new-checkout 조회",
+              "kn_a6b1357b809d59d1b56758ec83034bb3 - 저장소 키는 (tenant_id, name) 튜플"
+            ],
+            "confidence": 0.4,
+            "hypothesis": "삭제 API가 키를 정규화하지 않아 `NEW-CHECKOUT` 삭제가 저장된 `New-Checkout` 엔트리에 도달하지 못하고 no-op에 가깝게 성공 응답만 반환한다."
+          }
+        ]
+      },
+      "issue_id": "27",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "정규화 기준(예: casefold vs lower)을 변경하면 기존에 원본 표기로 저장된 엔트리의 키가 달라져 마이그레이션 없이는 조회·삭제가 실패할 수 있다.",
+            "mitigation": "정규화 도입 시 기존 `_flags` 엔트리를 새 정규화 키로 재색인하는 일회성 마이그레이션 또는 지연 마이그레이션을 함께 구현하고, 마이그레이션 전후 조회 일관성을 테스트로 검증한다."
+          },
+          {
+            "risk": "정규화로 인해 기존에 서로 다른 플래그로 취급되던 대소문자 변형 이름들이 충돌해 데이터(플래그) 유실 또는 의도치 않은 덮어쓰기가 발생할 수 있다.",
+            "mitigation": "충돌 가능 키를 사전 스캔해 리포트하고, 충돌 발생 시 병합 규칙(예: 최신 우선)을 명시적으로 정의하며, 충돌 케이스 테스트를 추가한다."
+          },
+          {
+            "risk": "캐시 무효화를 추가해도 캐시 키 정규화가 저장소 정규화와 다르면 동일한 누수가 재발할 수 있다.",
+            "mitigation": "캐시 키 생성도 3단계의 단일 정규화 함수를 공유하도록 강제하고, 캐시 워밍 후 삭제 시나리오를 회귀 테스트로 고정한다."
+          },
+          {
+            "risk": "삭제 결과 계약을 no-op 성공에서 실패로 바꾸면 이를 성공으로 가정하던 기존 호출자가 오동작할 수 있다.",
+            "mitigation": "`__init__.py`의 공개 API 사용처를 조사해 영향을 파악하고, 반환 계약 변경을 문서화한 뒤 필요 시 하위 호환 반환값을 병행 제공한다."
+          },
+          {
+            "risk": "제공된 code evidence에 repository.py·service.py·cache.py의 실제 구현 본문이 포함되어 있지 않아(README.md 라인 3, 16, 18만 포함), 정규화 위치에 대한 가설이 틀릴 수 있다.",
+            "mitigation": "1단계 재현 테스트와 코드 직접 확인으로 실제 결함 지점을 확정한 뒤 수정을 진행하고, 근본 원인이 가설과 다르면 계획 단계를 갱신한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트를 먼저 작성해 현재 실패 동작을 고정한다.",
+            "details": "`src/feature_flags/` 아래 테스트에서 동일 테넌트 기준으로 \"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회 순서를 수행하고, 조회 결과가 없어야 한다는 기대를 명시한다. 저장소 단위(repository)와 서비스 단위(service, cache 포함) 두 레벨로 각각 테스트를 분리해 어느 계층에서 누수가 발생하는지 판별 가능하게 한다. 참고 증거: 27:README.md:16, 27:README.md:18."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository의 저장/조회/삭제 경로에서 키 정규화 기준이 대칭인지 코드로 확인한다.",
+            "details": "`_flags: dict[tuple[str, str], FeatureFlag]` 키의 `name` 요소가 저장 시점과 조회·삭제 시점에 동일한 정규화 함수(예: `name.casefold()`)를 통과하는지 확인한다. 한쪽 경로에만 정규화가 적용되어 있으면 비대칭 지점을 목록화한다. FeatureFlag는 frozen dataclass(`tenant_id`, `name`, `enabled`)이므로 정규화된 키와 저장 객체 내부의 `name` 필드가 다를 수 있음을 함께 기록한다. 참고 증거: kn_a6b1357b809d59d1b56758ec83034bb3, README.md:16."
+          },
+          {
+            "id": 3,
+            "action": "단일 키 정규화 함수를 도입하고 저장소의 모든 키 생성 지점에서 이를 사용하도록 통일한다.",
+            "details": "저장(write/upsert), 조회(get), 삭제(delete), 존재 확인(exists) 등 키를 만드는 모든 지점이 같은 헬퍼(예: `_normalize_name(name) -> str`)를 호출하도록 한다. 정규화 방식이 `casefold()`인지 `lower()`인지, 그리고 정규화 결과가 `FeatureFlag.name` 필드에도 반영되는지 계약을 명확히 결정해 문서화한다. 참고 증거: kn_a6b1357b809d59d1b56758ec83034bb3."
+          },
+          {
+            "id": 4,
+            "action": "삭제 경로에서 캐시 무효화 여부를 점검하고 필요 시 캐시 엔트리를 함께 제거한다.",
+            "details": "`FeatureFlagService(repository, cache)`에서 조회가 `cache.py`의 캐시를 경유하므로, 삭제 성공 시 해당 (tenant_id, 정규화된 name) 캐시 키를 무효화한다. 캐시에 삭제/무효화 API가 없으면 추가한다. 무효화 키도 반드시 3단계의 동일 정규화 함수를 사용해야 한다. 참고 증거: kn_fd7c3caa6dbe5fac8b46f9eb044693b1, kn_3ad71c8b60f65f93b19a8c4794a724a9, README.md:18."
+          },
+          {
+            "id": 5,
+            "action": "삭제 API가 미존재 키에 대해 어떻게 응답하는지 계약을 확정하고 no-op 성공을 제거한다.",
+            "details": "정규화 적용 후에도 저장된 엔트리가 없으면 삭제는 실패(예: not found) 또는 명시적 no-op임을 구분해 반환하고, 존재하지 않는 키 삭제가 성공으로 위장되지 않도록 한다. 이슈 재현 절차(\"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회)에서 삭제가 실제 도달했음을 검증 가능하게 만든다. 참고 증거: kn_18503303380254fcaaa7c5fdc28df336, README.md:16."
+          },
+          {
+            "id": 6,
+            "action": "1단계 재현 테스트가 통과하는지 확인하고 회귀 테스트를 추가한다.",
+            "details": "저장/조회/삭제 레벨 테스트와 서비스 레벨(캐시 포함) 테스트를 모두 통과시킨다. 추가로 대소문자만 다른 이름들의 동시 존재 케이스, 캐시 워밍 후 삭제 케이스, 테넌트 격리(다른 tenant_id는 영향 없음) 케이스를 회귀 테스트로 고정한다. `__all__ = [\"FeatureFlagCache\", \"FeatureFlagRepository\", \"FeatureFlagService\"]` 공개 API 경로를 통한 동작도 확인한다. 참고 증거: kn_18503303380254fcaaa7c5fdc28df336."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "27",
+        "acceptance_criteria": [
+          "동일 테넌트에서 \"New-Checkout\" 생성 → \"NEW-CHECKOUT\" 삭제 → \"new-checkout\" 조회 시 조회 결과가 존재하지 않아야 한다(이슈 27 재현 절차 기준).",
+          "FeatureFlagRepository의 저장·조회·삭제 경로가 모두 동일한 키 정규화 함수를 사용하며, 정규화 기준의 비대칭이 남아 있지 않다.",
+          "대소문자만 다른 이름(예: \"New-Checkout\"과 \"new-checkout\")이 동일 테넌트 내에서 하나의 키로 취급되어 서로 다른 플래그로 중복 저장되지 않는다.",
+          "삭제 성공 시 `cache.py`의 해당 캐시 엔트리가 무효화되어, 캐시 워밍 후에도 삭제된 플래그가 조회되지 않는다.",
+          "존재하지 않는 키에 대한 삭제 요청이 실제 삭제 성공으로 오인되지 않도록 결과가 구분되어 반환된다.",
+          "테넌트 격리가 유지되어 다른 tenant_id의 동일 이름 플래그는 삭제·조회 동작에 영향을 받지 않는다.",
+          "재현 테스트와 회귀 테스트가 저장소 단위 및 서비스 단위(캐시 포함)에서 모두 통과한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:29:31.935011Z",
+    "completed_at": "2026-09-28T07:30:05.006052Z",
+    "created_at": "2026-09-28T07:29:31.886664Z",
+    "updated_at": "2026-09-28T07:30:05.011316Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 34.432
+  }
+}

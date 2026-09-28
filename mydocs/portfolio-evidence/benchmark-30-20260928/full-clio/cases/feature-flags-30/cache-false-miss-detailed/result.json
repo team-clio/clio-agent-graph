@@ -1,0 +1,579 @@
+{
+  "input": {
+    "id": "cache-false-miss-detailed",
+    "report": {
+      "title": "비활성 플래그 캐시가 무시됨",
+      "description": "false로 캐시된 플래그가 cache hit로 처리되지 않아 저장소의 변경값을 다시 읽습니다.",
+      "steps_to_reproduce": [
+        "플래그를 false로 저장하고 조회합니다.",
+        "저장소 값을 true로 바꿉니다.",
+        "같은 플래그를 다시 조회합니다."
+      ],
+      "expected_behavior": "캐시된 false가 계속 반환되어야 합니다.",
+      "actual_behavior": "저장소의 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_cached_false_value_is_not_treated_as_a_miss"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 4,
+    "name": "benchmark-20260928T065850Z-59223a30-cache-false-miss-detailed",
+    "description": "Clio Benchmark feature-flags-30: cache-false-miss-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:02:39.898763Z",
+    "updatedAt": "2026-09-28T07:02:39.898763Z"
+  },
+  "clio_repository": {
+    "id": 4,
+    "projectId": 4,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:03:13.819152Z",
+    "createdAt": "2026-09-28T07:02:39.914323Z",
+    "updatedAt": "2026-09-28T07:03:13.819578Z"
+  },
+  "bug": {
+    "id": 4,
+    "project_id": 4,
+    "issue_id": 4,
+    "title": "비활성 플래그 캐시가 무시됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:03:14.344991Z",
+    "created_at": "2026-09-28T07:03:14.354525Z"
+  },
+  "analysis": {
+    "analysisResultId": 4,
+    "workflowRunId": 4,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "FeatureFlagCache는 내부 dict[str, bool]에 get/set을 제공하지만, _key(tenant_id, flag_name)가 flag_name.casefold()만 반환하여 tenant_id를 키에서 제외한다.",
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "4",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "캐시 컴포넌트의 저장 키와 값 타입(bool)만 문서화되어 있고, False가 무시되는 히트 판정 로직은 이 발췌 범위에서 확인되지 않는다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/cache.py`: 조회 결과 캐시",
+          "end_line": 17,
+          "location": "README.md:17",
+          "file_path": "README.md",
+          "source_id": "4",
+          "start_line": 17,
+          "evidence_id": "README.md:17",
+          "observation": "cache.py가 조회 결과 캐시 역할을 담당하므로, false 캐시 미스는 캐시 계층 또는 이를 소비하는 service 계층 중 하나에 위치한다.",
+          "source_type": "repository",
+          "knowledge_id": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소\n- `src/feature_flags/cache.py`: 조회 결과 캐시\n- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": "README.md:16-18",
+          "file_path": "README.md",
+          "source_id": "4",
+          "start_line": 16,
+          "evidence_id": "README.md:16-18",
+          "observation": "repository.py(저장소), cache.py(조회 결과 캐시), service.py(조회 서비스)로 계층이 분리되어 있어, 저장소 재조회 폴백이 발생하면 변경된 true 값이 반환된다.",
+          "source_type": "repository",
+          "knowledge_id": "kn_288f71187652506bbb070f1939d8b62f",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:1-3",
+          "file_path": "README.md",
+          "source_id": "4",
+          "start_line": 1,
+          "evidence_id": "README.md:1-3",
+          "observation": "저장소가 Clio Benchmark 분석 대상 테스트 fixture임이 README 서두에 명시되어 있어, 보고된 동작은 재현 가능한 벤치마크 케이스(cache-false-miss-detailed)로 다룰 수 있다.",
+          "source_type": "repository",
+          "knowledge_id": "kn_288f71187652506bbb070f1939d8b62f",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "저장 키 및 조회: (tenant_id, name.casefold()) / get도 flag_name.casefold()로 조회.",
+          "end_line": 27,
+          "location": "src/feature_flags/repository.py:1-27",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "4",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "저장소 조회가 폴백 경로로 실행될 때 키 정규화가 일관되므로, 저장소에 true로 갱신된 값이 그대로 반환되어 증상과 일치한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_2c30f03ebc305d218cd604b413816bd8",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "FeatureFlagCache, FeatureFlagRepository, FeatureFlagService",
+          "end_line": 7,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "4",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "공개 진입점이 세 클래스로 한정되어 있어 캐시-서비스 상호작용이 이슈의 유효한 분석 범위임을 확인한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_e26d068cca8f59648495d1dfa337709a",
+          "repository_id": "4",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "bug_context의 설명과 message에 따르면 false로 캐시된 플래그가 cache hit으로 처리되지 않아 저장소의 변경값 true가 반환된다(ReportedBehaviorMismatch, benchmark_case_id=cache-false-miss-detailed).",
+          "verified": false
+        },
+        {
+          "fact": "README.md는 저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이며 프로덕션 용도가 아님을 명시하고, cache.py를 '조회 결과 캐시', repository.py를 '테넌트별 플래그 저장소', service.py를 '플래그 조회 서비스'로 설명한다.",
+          "verified": true
+        },
+        {
+          "fact": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae에 따르면 FeatureFlagCache는 내부 dict[str, bool]에 get/set을 제공하고, _key(tenant_id, flag_name)가 flag_name.casefold()만 반환하여 tenant_id를 캐시 키에서 제외한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 캐시 관련 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에는 get()의 캐시 히트 판정 방식과 service.py의 캐시 조회 코드가 포함되어 있지 않아, False가 무시되는 정확한 표현식을 직접 확인할 수 없다.",
+          "verified": true
+        },
+        {
+          "fact": "kn_2c30f03ebc305d218cd604b413816bd8에 따르면 FeatureFlagRepository는 (tenant_id, name.casefold()) 키로 저장/조회하며, delete는 casefold 없이 pop하고 list_for_tenant는 내부 값 전체를 반환하는 별도 결함이 있다.",
+          "verified": true
+        },
+        {
+          "fact": "이 이슈의 stack_trace는 빈 배열이며, 예외/크래시 증거 없이 반환값 불일치만 보고되었다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 4,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.6,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae: cache.py는 내부 dict[str, bool]에 get/set을 제공하지만, 제공된 발췌에는 캐시 적중 판정이 저장값 자체인지 히트 플래그인지 구분되지 않는다.",
+            "버그 재현 절차: false 저장 후 같은 플래그 재조회 시 저장소의 true가 반환된다는 것은 캐시된 False가 조회 시 무시됨을 의미한다.",
+            "사용자 제공 코드 근거(README.md:17)는 cache.py가 '조회 결과 캐시'임을 확인시켜 주지만 반환 로직 자체는 발췌에 포함되어 있지 않다."
+          ],
+          "confidence": 0.62,
+          "hypothesis": "cache.py의 FeatureFlagCache가 get/set에서 'if value' 또는 'if cached'와 같이 저장된 bool 값을 진위값(truthiness)으로 검사하여, 캐시에 저장된 False가 '캐시 미스'로 오인되고 서비스가 저장소(FeatureFlagRepository)를 다시 조회해 변경된 true 값을 반환한다."
+        },
+        {
+          "evidence": [
+            "버그 제목 '비활성 플래그 캐시가 무시됨'과 재현 절차상 false 캐시 후 재조회 시 저장소 값 true가 반환되는 동작.",
+            "저장소가 (tenant_id, name.casefold()) 키로 플래그를 보관한다는 kn_2c30f03ebc305d218cd604b413816bd8는 폴백 시 저장소의 변경값이 그대로 반환됨을 설명한다."
+          ],
+          "confidence": 0.25,
+          "hypothesis": "service.py의 조회 경로가 캐시 조회 결과를 '없음(None/미스)' 신호로만 해석하는 규약을 사용하는데, 캐시에 False가 저장된 경우 이 규약과 충돌하여 캐시 히트를 감지하지 못하고 저장소 조회로 폴백한다."
+        },
+        {
+          "evidence": [
+            "재현 절차 3단계에서 저장소의 true가 반환된다는 보고.",
+            "다만 캐시 키 정규화 결함(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)이 별도로 존재해 이 가설만으로는 설명력이 제한적이다."
+          ],
+          "confidence": 0.13,
+          "hypothesis": "service.py가 캐시 조회 후 저장소를 조건 없이 재조회하여 결과를 항상 덮어쓰기 때문에 캐시된 값(특히 False)이 신뢰되지 않는다."
+        }
+      ],
+      "project_id": 4,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "get() 히트 판정 로직이 제공된 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에 포함되지 않아, 정확한 수정 지점이 소스에 없거나 발췌 범위가 잘못 매핑되어 있을 수 있다.",
+            "mitigation": "수정 전 2단계에서 실제 소스의 get() 구현을 먼저 확인하고, 발췌에 로직이 없으면 해당 파일·라인을 근거로 분석 범위를 갱신한 뒤 수정에 착수한다."
+          },
+          {
+            "risk": "service.py가 캐시 결과를 조건 없이 저장소 조회로 덮어쓰는 구조일 경우(가설 3, 신뢰도 0.13), cache.py만 수정해도 재현 절차가 그대로 실패할 수 있다.",
+            "mitigation": "1단계 회귀 테스트가 캐시 수정 후에도 실패하면 service.py의 조회 경로를 우선 조사하여 호출 순서와 폴백 조건을 함께 수정한다."
+          },
+          {
+            "risk": "_key가 tenant_id를 제외한 채 flag_name.casefold()만 사용하여 테넌트 간 값 누출이 발생할 수 있다.",
+            "mitigation": "redis 키를 repository.py의 (tenant_id, name.casefold()) 규약과 일치시키고 테넌트별 분리 테스트(케이스 e)를 추가한다. 범위 분리를 위해 별도 이슈로 분리 기록하는 것을 검토한다."
+          },
+          {
+            "risk": "캐시 무효화 계약(값 변경 시 캐시 갱신 시점)이 문서화되어 있지 않아, 저장소 값 변경 후 캐시 히트로 이전 값이 반환되는 동작이 의도인지 불명확하다.",
+            "mitigation": "service.py 및 캐시 API를 확인해 무효화 정책을 명시하고, 정책이 다르면 폴백 반환이 아닌 명시적 무효화 경로로 처리하도록 조정한 뒤 테스트로 고정한다."
+          },
+          {
+            "risk": "빈 stack_trace로 예외/크래시 증거 없이 반환값 불일치만 보고되어, 캐시 외 다른 결함(예: repository.delete의 casefold 누락, list_for_tenant 전체 반환)이 함께 존재할 수 있다.",
+            "mitigation": "6단계 테스트 세트에 저장소 결함 확인 케이스를 포함하고, 이슈 범위를 벗어나는 결함은 별도 항목으로 분리해 추적한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 벤치마크 케이스(cache-false-miss-detailed)를 먼저 실행 가능한 형태로 고정한다.",
+            "details": "src/feature_flags/cache.py, repository.py, service.py로 구성된 fixture에서 false 저장 → 저장소 true 갱신 → 동일 플래그 재조회 절차를 그대로 재현하는 회귀 테스트를 작성한다. 현재는 저장소 값 true가 반환되어 실패해야 한다."
+          },
+          {
+            "id": 2,
+            "action": "cache.py의 get() 캐시 히트 판정 로직을 직접 확인한다.",
+            "details": "제공된 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에는 저장 키(_key)와 값 타입만 문서화되어 있고 get() 히트 판정식이 포함되어 있지 않으므로, 소스에서 'if value', 'if cached', dict.get(...) or ... 형태의 진위값(truthiness) 검사를 찾아 저장된 False가 미스로 오인되는 지점을 특정한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 히트 여부를 값이 아닌 키 존재 여부로 판정하도록 수정한다.",
+            "details": "예: value = self._store.get(key) → if key in self._store / if value is not None 형태로 변경하여 bool False가 정상적인 캐시 히트로 처리되도록 하고, sentinel(None이 아닌 별도 객체)이 필요한 경우 함께 도입한다."
+          },
+          {
+            "id": 4,
+            "action": "service.py의 조회 경로에서 캐시 히트 시 저장소 폴백이 발생하지 않도록 정렬한다.",
+            "details": "캐시 조회 결과를 None/미스 신호로만 해석하던 규약을 캐시가 반환한 bool 값 자체를 신뢰하는 형태로 맞추고, 캐시 미스인 경우에만 FeatureFlagRepository를 조회해 캐시를 채우도록 한다. 호출 순서(캐시 조회 → 폴백)와 캐시 set 시점을 기존 계약에 맞게 유지한다(README.md:16-18)."
+          },
+          {
+            "id": 5,
+            "action": "_key(tenant_id, flag_name)의 테넌트 격리 결함을 함께 점검한다.",
+            "details": "캐시 키가 flag_name.casefold()만 사용하여 tenant_id를 제외하면 서로 다른 테넌트 간 값 누출이 발생할 수 있다. repository.py의 (tenant_id, name.casefold()) 키 규약과 일치시키되, 이번 이슈 범위(비활성 플래그 캐시 무시)와 분리해 별도 확인 항목으로 기록한다."
+          },
+          {
+            "id": 6,
+            "action": "수정 후 캐시 히트/미스 및 폴백 경로를 검증하는 테스트 세트를 추가한다.",
+            "details": "최소한 (a) False 저장 후 재조회 시 저장소 미호출, (b) True 저장 후 재조회 시 저장소 미호출, (c) 미스 시 저장소 조회 및 캐시 채움, (d) 저장소 값 변경 후 캐시 히트인 동안 이전 값 반환, (e) 테넌트별 키 분리 케이스를 검증한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "acceptance_criteria": [
+          "cache.py에서 false로 저장된 플래그를 동일 서비스 인스턴스로 재조회하면 저장소에 접근하지 않고 캐시된 False가 그대로 반환된다(벤치마크 케이스 cache-false-miss-detailed 통과).",
+          "캐시 미스일 때만 FeatureFlagRepository가 조회되며, 폴백 조회로 저장소의 갱신된 true 값이 반환되지 않는다.",
+          "캐시 히트 판정이 값의 진위값(truthiness)이 아니라 키 존재 여부(또는 명시적 sentinel)로 이루어지며, True/False 모두 히트로 처리된다.",
+          "위 6단계에서 정의한 5개 테스트 케이스가 모두 통과하고, 기존 공개 진입점(FeatureFlagCache, FeatureFlagRepository, FeatureFlagService, src/feature_flags/__init__.py:1-7) 시그니처가 변경되지 않는다.",
+          "재현 절차는 fixture 저장소(README.md:1-3) 기준으로 문서화되어 다른 사람이 독립적으로 실행해 동일 결과를 확인할 수 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 55,
+            "rationale": "README.md:16-18 기준 cache.py(조회 결과 캐시), service.py(플래그 조회 서비스), repository.py(저장소)로 구성된 단일 조회 경로 전체에 영향을 준다. false로 캐시된 모든 비활성 플래그가 캐시 미스로 처리되므로 테넌트별 플래그 조회 흐름 전반에 걸쳐 발생하며, __init__.py:1-7의 공개 진입점(FeatureFlagCache, FeatureFlagRepository, FeatureFlagService)이 모두 관여한다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 45,
+            "rationale": "stack_trace가 빈 배열이고 예외/크래시 증거 없이 반환값 불일치(ReportedBehaviorMismatch)만 보고되었다. 데이터 손실이나 보안 노출은 없으나, 비활성(false) 플래그가 활성(true)으로 잘못 반환되어 기능 플래그의 킬 스위치/게이트 신뢰성이 훼손된다(캐시 일관성 결함)."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 75,
+            "rationale": "재현 절차가 3단계로 결정적이다: false 저장·조회 → 저장소 값을 true로 변경 → 같은 플래그 재조회. 캐시에 False가 저장된 모든 케이스에서 truthiness 판정(가설 1, confidence 0.62)으로 캐시 히트가 누락되므로, false 캐시 항목에 대해 100% 재현되는 상시 결함이다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 50,
+            "rationale": "호출자가 캐시 계층을 직접 사용하지 않고 FeatureFlagRepository를 직접 조회하거나, false 값을 명시적 센티넬로 래핑/변환해야 우회 가능하다. README.md:1-3에 프로덕션 용도가 아닌 작은 라이브러리임이 명시되어 사용자 측 자체 우회 여지가 있으나, API 계약 차원의 정식 우회 수단은 없다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 45,
+            "rationale": "결제/계정 경로는 아니지만 기능 플래그 게이트가 핵심 판단 근거로 쓰인다. 비활성 플래그가 true로 반환되면 의도적으로 꺼둔 기능이 노출될 수 있고, 저장소 값을 변경해도 캐시된 false가 계속 반환되어야 한다는 기대 동작(캐시 계약)이 깨진다."
+          },
+          {
+            "name": "진단 신뢰도 (evidence_confidence)",
+            "score": 60,
+            "rationale": "confidence 0.6으로 근본 원인 표현식은 아직 미확정이다. kn_93b2b1eb2f5f59edb6f0d2fcb48037ae 발췌에는 get()의 캐시 히트 판정 방식이 없어 'if value'/'if cached' 오용(0.62)과 service.py의 미스 신호 해석 충돌(0.25) 중 어느 쪽인지 코드로 확정되지 않았다. 다만 cache-false-miss-detailed 벤치마크 케이스로 재현 가능성이 확보되어 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "'비활성 플래그 캐시가 무시됨' 이슈는 false로 캐시된 플래그가 cache hit으로 처리되지 않아 저장소(FeatureFlagRepository)의 변경값 true가 반환되는 반환값 불일치(ReportedBehaviorMismatch)로, 크래시·데이터 손실·보안 노출이 없어 P0/P1(70-84, 85-100)에는 해당하지 않는다. 핵심 조회 경로(cache.py → service.py → repository.py) 전체가 관여하고 false 캐시 케이스에서 결정적으로 100% 재현되지만, 캐시 계층을 우회하거나 저장소를 직접 조회하는 회피책이 존재하고 영향이 단일 라이브러리 API의 플래그 게이트로 국한된다. 또한 근본 원인 표현식이 발췌 범위에서 확인되지 않아(confidence 0.6) 원인 확정 전까지는 '부분 기능 결함 + 우회책 존재' 구간에 놓는 것이 타당하다. 이에 P2 보통(50-69) 밴드의 중간값인 55점으로 산정한다. 참고로 kn_93b2b1eb2f5f59edb6f0d2fcb48037ae의 _key가 tenant_id를 키에서 제외하고 repository.delete가 casefold 없이 pop하는 별도 결함은 이 이슈 범위 외이나, 테넌트 간 플래그 혼선으로 확대될 경우 재평가가 필요하다.",
+        "risk_score": 55
+      },
+      "workflow_run_id": 4
+    }
+  },
+  "workflow": {
+    "id": 4,
+    "project_id": 4,
+    "request_id": "process-bug-4",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "bug_context의 설명과 message에 따르면 false로 캐시된 플래그가 cache hit으로 처리되지 않아 저장소의 변경값 true가 반환된다(ReportedBehaviorMismatch, benchmark_case_id=cache-false-miss-detailed).",
+            "verified": false
+          },
+          {
+            "fact": "README.md는 저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이며 프로덕션 용도가 아님을 명시하고, cache.py를 '조회 결과 캐시', repository.py를 '테넌트별 플래그 저장소', service.py를 '플래그 조회 서비스'로 설명한다.",
+            "verified": true
+          },
+          {
+            "fact": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae에 따르면 FeatureFlagCache는 내부 dict[str, bool]에 get/set을 제공하고, _key(tenant_id, flag_name)가 flag_name.casefold()만 반환하여 tenant_id를 캐시 키에서 제외한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 캐시 관련 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에는 get()의 캐시 히트 판정 방식과 service.py의 캐시 조회 코드가 포함되어 있지 않아, False가 무시되는 정확한 표현식을 직접 확인할 수 없다.",
+            "verified": true
+          },
+          {
+            "fact": "kn_2c30f03ebc305d218cd604b413816bd8에 따르면 FeatureFlagRepository는 (tenant_id, name.casefold()) 키로 저장/조회하며, delete는 casefold 없이 pop하고 list_for_tenant는 내부 값 전체를 반환하는 별도 결함이 있다.",
+            "verified": true
+          },
+          {
+            "fact": "이 이슈의 stack_trace는 빈 배열이며, 예외/크래시 증거 없이 반환값 불일치만 보고되었다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "FeatureFlagCache는 내부 dict[str, bool]에 get/set을 제공하지만, _key(tenant_id, flag_name)가 flag_name.casefold()만 반환하여 tenant_id를 키에서 제외한다.",
+            "end_line": 16,
+            "location": "src/feature_flags/cache.py:1-16",
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "4",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "캐시 컴포넌트의 저장 키와 값 타입(bool)만 문서화되어 있고, False가 무시되는 히트 판정 로직은 이 발췌 범위에서 확인되지 않는다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/cache.py`: 조회 결과 캐시",
+            "end_line": 17,
+            "location": "README.md:17",
+            "file_path": "README.md",
+            "source_id": "4",
+            "start_line": 17,
+            "evidence_id": "README.md:17",
+            "observation": "cache.py가 조회 결과 캐시 역할을 담당하므로, false 캐시 미스는 캐시 계층 또는 이를 소비하는 service 계층 중 하나에 위치한다.",
+            "source_type": "repository",
+            "knowledge_id": "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소\n- `src/feature_flags/cache.py`: 조회 결과 캐시\n- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": "README.md:16-18",
+            "file_path": "README.md",
+            "source_id": "4",
+            "start_line": 16,
+            "evidence_id": "README.md:16-18",
+            "observation": "repository.py(저장소), cache.py(조회 결과 캐시), service.py(조회 서비스)로 계층이 분리되어 있어, 저장소 재조회 폴백이 발생하면 변경된 true 값이 반환된다.",
+            "source_type": "repository",
+            "knowledge_id": "kn_288f71187652506bbb070f1939d8b62f",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": "README.md:1-3",
+            "file_path": "README.md",
+            "source_id": "4",
+            "start_line": 1,
+            "evidence_id": "README.md:1-3",
+            "observation": "저장소가 Clio Benchmark 분석 대상 테스트 fixture임이 README 서두에 명시되어 있어, 보고된 동작은 재현 가능한 벤치마크 케이스(cache-false-miss-detailed)로 다룰 수 있다.",
+            "source_type": "repository",
+            "knowledge_id": "kn_288f71187652506bbb070f1939d8b62f",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "저장 키 및 조회: (tenant_id, name.casefold()) / get도 flag_name.casefold()로 조회.",
+            "end_line": 27,
+            "location": "src/feature_flags/repository.py:1-27",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "4",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "저장소 조회가 폴백 경로로 실행될 때 키 정규화가 일관되므로, 저장소에 true로 갱신된 값이 그대로 반환되어 증상과 일치한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_2c30f03ebc305d218cd604b413816bd8",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "FeatureFlagCache, FeatureFlagRepository, FeatureFlagService",
+            "end_line": 7,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "4",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "공개 진입점이 세 클래스로 한정되어 있어 캐시-서비스 상호작용이 이슈의 유효한 분석 범위임을 확인한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_e26d068cca8f59648495d1dfa337709a",
+            "repository_id": "4",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.6,
+        "evidence_counts": {
+          "code": 8,
+          "history": 0,
+          "documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_93b2b1eb2f5f59edb6f0d2fcb48037ae: cache.py는 내부 dict[str, bool]에 get/set을 제공하지만, 제공된 발췌에는 캐시 적중 판정이 저장값 자체인지 히트 플래그인지 구분되지 않는다.",
+              "버그 재현 절차: false 저장 후 같은 플래그 재조회 시 저장소의 true가 반환된다는 것은 캐시된 False가 조회 시 무시됨을 의미한다.",
+              "사용자 제공 코드 근거(README.md:17)는 cache.py가 '조회 결과 캐시'임을 확인시켜 주지만 반환 로직 자체는 발췌에 포함되어 있지 않다."
+            ],
+            "confidence": 0.62,
+            "hypothesis": "cache.py의 FeatureFlagCache가 get/set에서 'if value' 또는 'if cached'와 같이 저장된 bool 값을 진위값(truthiness)으로 검사하여, 캐시에 저장된 False가 '캐시 미스'로 오인되고 서비스가 저장소(FeatureFlagRepository)를 다시 조회해 변경된 true 값을 반환한다."
+          },
+          {
+            "evidence": [
+              "버그 제목 '비활성 플래그 캐시가 무시됨'과 재현 절차상 false 캐시 후 재조회 시 저장소 값 true가 반환되는 동작.",
+              "저장소가 (tenant_id, name.casefold()) 키로 플래그를 보관한다는 kn_2c30f03ebc305d218cd604b413816bd8는 폴백 시 저장소의 변경값이 그대로 반환됨을 설명한다."
+            ],
+            "confidence": 0.25,
+            "hypothesis": "service.py의 조회 경로가 캐시 조회 결과를 '없음(None/미스)' 신호로만 해석하는 규약을 사용하는데, 캐시에 False가 저장된 경우 이 규약과 충돌하여 캐시 히트를 감지하지 못하고 저장소 조회로 폴백한다."
+          },
+          {
+            "evidence": [
+              "재현 절차 3단계에서 저장소의 true가 반환된다는 보고.",
+              "다만 캐시 키 정규화 결함(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)이 별도로 존재해 이 가설만으로는 설명력이 제한적이다."
+            ],
+            "confidence": 0.13,
+            "hypothesis": "service.py가 캐시 조회 후 저장소를 조건 없이 재조회하여 결과를 항상 덮어쓰기 때문에 캐시된 값(특히 False)이 신뢰되지 않는다."
+          }
+        ]
+      },
+      "issue_id": "4",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "get() 히트 판정 로직이 제공된 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에 포함되지 않아, 정확한 수정 지점이 소스에 없거나 발췌 범위가 잘못 매핑되어 있을 수 있다.",
+            "mitigation": "수정 전 2단계에서 실제 소스의 get() 구현을 먼저 확인하고, 발췌에 로직이 없으면 해당 파일·라인을 근거로 분석 범위를 갱신한 뒤 수정에 착수한다."
+          },
+          {
+            "risk": "service.py가 캐시 결과를 조건 없이 저장소 조회로 덮어쓰는 구조일 경우(가설 3, 신뢰도 0.13), cache.py만 수정해도 재현 절차가 그대로 실패할 수 있다.",
+            "mitigation": "1단계 회귀 테스트가 캐시 수정 후에도 실패하면 service.py의 조회 경로를 우선 조사하여 호출 순서와 폴백 조건을 함께 수정한다."
+          },
+          {
+            "risk": "_key가 tenant_id를 제외한 채 flag_name.casefold()만 사용하여 테넌트 간 값 누출이 발생할 수 있다.",
+            "mitigation": "redis 키를 repository.py의 (tenant_id, name.casefold()) 규약과 일치시키고 테넌트별 분리 테스트(케이스 e)를 추가한다. 범위 분리를 위해 별도 이슈로 분리 기록하는 것을 검토한다."
+          },
+          {
+            "risk": "캐시 무효화 계약(값 변경 시 캐시 갱신 시점)이 문서화되어 있지 않아, 저장소 값 변경 후 캐시 히트로 이전 값이 반환되는 동작이 의도인지 불명확하다.",
+            "mitigation": "service.py 및 캐시 API를 확인해 무효화 정책을 명시하고, 정책이 다르면 폴백 반환이 아닌 명시적 무효화 경로로 처리하도록 조정한 뒤 테스트로 고정한다."
+          },
+          {
+            "risk": "빈 stack_trace로 예외/크래시 증거 없이 반환값 불일치만 보고되어, 캐시 외 다른 결함(예: repository.delete의 casefold 누락, list_for_tenant 전체 반환)이 함께 존재할 수 있다.",
+            "mitigation": "6단계 테스트 세트에 저장소 결함 확인 케이스를 포함하고, 이슈 범위를 벗어나는 결함은 별도 항목으로 분리해 추적한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 벤치마크 케이스(cache-false-miss-detailed)를 먼저 실행 가능한 형태로 고정한다.",
+            "details": "src/feature_flags/cache.py, repository.py, service.py로 구성된 fixture에서 false 저장 → 저장소 true 갱신 → 동일 플래그 재조회 절차를 그대로 재현하는 회귀 테스트를 작성한다. 현재는 저장소 값 true가 반환되어 실패해야 한다."
+          },
+          {
+            "id": 2,
+            "action": "cache.py의 get() 캐시 히트 판정 로직을 직접 확인한다.",
+            "details": "제공된 발췌(kn_93b2b1eb2f5f59edb6f0d2fcb48037ae)에는 저장 키(_key)와 값 타입만 문서화되어 있고 get() 히트 판정식이 포함되어 있지 않으므로, 소스에서 'if value', 'if cached', dict.get(...) or ... 형태의 진위값(truthiness) 검사를 찾아 저장된 False가 미스로 오인되는 지점을 특정한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 히트 여부를 값이 아닌 키 존재 여부로 판정하도록 수정한다.",
+            "details": "예: value = self._store.get(key) → if key in self._store / if value is not None 형태로 변경하여 bool False가 정상적인 캐시 히트로 처리되도록 하고, sentinel(None이 아닌 별도 객체)이 필요한 경우 함께 도입한다."
+          },
+          {
+            "id": 4,
+            "action": "service.py의 조회 경로에서 캐시 히트 시 저장소 폴백이 발생하지 않도록 정렬한다.",
+            "details": "캐시 조회 결과를 None/미스 신호로만 해석하던 규약을 캐시가 반환한 bool 값 자체를 신뢰하는 형태로 맞추고, 캐시 미스인 경우에만 FeatureFlagRepository를 조회해 캐시를 채우도록 한다. 호출 순서(캐시 조회 → 폴백)와 캐시 set 시점을 기존 계약에 맞게 유지한다(README.md:16-18)."
+          },
+          {
+            "id": 5,
+            "action": "_key(tenant_id, flag_name)의 테넌트 격리 결함을 함께 점검한다.",
+            "details": "캐시 키가 flag_name.casefold()만 사용하여 tenant_id를 제외하면 서로 다른 테넌트 간 값 누출이 발생할 수 있다. repository.py의 (tenant_id, name.casefold()) 키 규약과 일치시키되, 이번 이슈 범위(비활성 플래그 캐시 무시)와 분리해 별도 확인 항목으로 기록한다."
+          },
+          {
+            "id": 6,
+            "action": "수정 후 캐시 히트/미스 및 폴백 경로를 검증하는 테스트 세트를 추가한다.",
+            "details": "최소한 (a) False 저장 후 재조회 시 저장소 미호출, (b) True 저장 후 재조회 시 저장소 미호출, (c) 미스 시 저장소 조회 및 캐시 채움, (d) 저장소 값 변경 후 캐시 히트인 동안 이전 값 반환, (e) 테넌트별 키 분리 케이스를 검증한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "acceptance_criteria": [
+          "cache.py에서 false로 저장된 플래그를 동일 서비스 인스턴스로 재조회하면 저장소에 접근하지 않고 캐시된 False가 그대로 반환된다(벤치마크 케이스 cache-false-miss-detailed 통과).",
+          "캐시 미스일 때만 FeatureFlagRepository가 조회되며, 폴백 조회로 저장소의 갱신된 true 값이 반환되지 않는다.",
+          "캐시 히트 판정이 값의 진위값(truthiness)이 아니라 키 존재 여부(또는 명시적 sentinel)로 이루어지며, True/False 모두 히트로 처리된다.",
+          "위 6단계에서 정의한 5개 테스트 케이스가 모두 통과하고, 기존 공개 진입점(FeatureFlagCache, FeatureFlagRepository, FeatureFlagService, src/feature_flags/__init__.py:1-7) 시그니처가 변경되지 않는다.",
+          "재현 절차는 fixture 저장소(README.md:1-3) 기준으로 문서화되어 다른 사람이 독립적으로 실행해 동일 결과를 확인할 수 있다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:03:15.366938Z",
+    "completed_at": "2026-09-28T07:03:51.430857Z",
+    "created_at": "2026-09-28T07:03:15.354738Z",
+    "updated_at": "2026-09-28T07:03:51.432177Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 38.53
+  }
+}

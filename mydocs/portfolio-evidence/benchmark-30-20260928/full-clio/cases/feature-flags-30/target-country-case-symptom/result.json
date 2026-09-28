@@ -1,0 +1,340 @@
+{
+  "input": {
+    "id": "target-country-case-symptom",
+    "report": {
+      "title": "모바일 사용자의 국가 타기팅만 누락",
+      "description": "소문자 국가 코드를 보내는 클라이언트가 대문자 타기팅 규칙에서 제외됩니다.",
+      "steps_to_reproduce": [
+        "대문자 규칙을 저장합니다.",
+        "소문자 국가 코드로 요청합니다."
+      ],
+      "expected_behavior": "국가 코드 형식과 무관하게 포함되어야 합니다.",
+      "actual_behavior": "타기팅 대상에서 제외됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_country_matching_is_case_insensitive"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 21,
+    "name": "benchmark-20260928T065850Z-59223a30-target-country-case-symptom",
+    "description": "Clio Benchmark feature-flags-30: target-country-case-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:21:43.079769Z",
+    "updatedAt": "2026-09-28T07:21:43.079769Z"
+  },
+  "clio_repository": {
+    "id": 21,
+    "projectId": 21,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:22:16.506617Z",
+    "createdAt": "2026-09-28T07:21:43.090688Z",
+    "updatedAt": "2026-09-28T07:22:16.507854Z"
+  },
+  "bug": {
+    "id": 21,
+    "project_id": 21,
+    "issue_id": 21,
+    "title": "모바일 사용자의 국가 타기팅만 누락",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:22:17.549121Z",
+    "created_at": "2026-09-28T07:22:17.557227Z"
+  },
+  "analysis": {
+    "analysisResultId": 21,
+    "workflowRunId": 21,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": "matches_country(rule_country, request_country)는 두 값을 그대로 == 비교한다. 테스트 test_country_matching_is_case_insensitive는 대소문자를 구분하지 않는 매칭('KR' vs 'kr' -> True)을 기대하므로 현재 구현과 불일치한다.",
+          "end_line": 9,
+          "location": "src/feature_flags/targeting.py:1-9",
+          "file_path": "src/feature_flags/targeting.py",
+          "source_id": "21",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "matches_country가 두 국가 코드를 그대로 == 비교하며, test_country_matching_is_case_insensitive가 'KR' vs 'kr' -> True를 기대하므로 현재 구현과 불일치한다는 domain_rule 지식.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_9264a8d528b85a22b7616994b2a2dc94",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "matches_allowlist(user_id, allowed_user_ids)는 user_id가 목록에 포함되는지 검사한다. 빈 목록([])이면 제한 없음(True)을 반환한다는 규칙이 테스트 test_empty_allowlist_means_unrestricted로 확인된다.",
+          "end_line": 9,
+          "location": "tests/test_targeting.py:1-9",
+          "file_path": "tests/test_targeting.py",
+          "source_id": "21",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "matches_allowlist의 포함 검사와 빈 목록([])일 때 제한 없음(True) 규칙이 test_empty_allowlist_means_unrestricted로 확인된다는 지식.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_9264a8d528b85a22b7616994b2a2dc94",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "src/feature_flags/targeting.py: 국가·사용자 타기팅",
+          "end_line": 22,
+          "location": "README.md:1-22",
+          "file_path": "README.md",
+          "source_id": "21",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "저장소 구조상 src/feature_flags/targeting.py가 국가·사용자 타기팅을 담당한다는 architecture 지식.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5eeb9fe46a095603aca3ed6e7543b6ab",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "_key는 flag_name.casefold()만 반환하고 tenant_id를 무시한다. 따라서 서로 다른 테넌트의 동일 플래그 이름이 충돌하여 테넌트 간 값이 섞일 수 있다.",
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "21",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "FeatureFlagCache._key가 flag_name.casefold()만 반환하고 tenant_id를 무시해 테넌트 간 키 충돌이 가능하다는 component 지식. 국가 코드 정규화 부재와 대비되는 참조점.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_789e0ee5ca035e74a99e9cbc819f1a68",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "FeatureFlagRepository는 (tenant_id, name.casefold()) 튜플 키로 dict에 저장하며 save(), get(), delete(), list_for_tenant()를 제공한다.",
+          "end_line": 27,
+          "location": "src/feature_flags/repository.py:1-27",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "21",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "FeatureFlagRepository가 (tenant_id, name.casefold()) 키를 쓰고 delete()는 정규화 없이 pop하며 list_for_tenant()가 테넌트 필터링을 하지 않는다는 component 지식. 이름 정규화 관례의 근거.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_a84a0a80edd35152b0d6b24704abf77e",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+          "end_line": 21,
+          "location": "README.md:21",
+          "file_path": "README.md",
+          "source_id": "21",
+          "start_line": 21,
+          "evidence_id": "readme-targeting-line-21",
+          "observation": "targeting.py가 국가·사용자 타기팅 모듈임을 명시하는 저장소 코드 증거. 동일 라인이 3회 중복 제공되었다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "21",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 21은 '모바일 사용자의 국가 타기팅만 누락' 증상으로, 소문자 국가 코드를 보내는 클라이언트가 대문자 타기팅 규칙에서 제외된다고 보고된다.",
+          "verified": true
+        },
+        {
+          "fact": "targeting.py는 국가·사용자 타기팅을 담당하는 모듈이다.",
+          "verified": true
+        },
+        {
+          "fact": "matches_country(rule_country, request_country)는 두 값을 그대로 == 비교한다.",
+          "verified": true
+        },
+        {
+          "fact": "테스트 test_country_matching_is_case_insensitive는 'KR' vs 'kr' 매칭이 True(대소문자 무시)이기를 기대하므로 현재 구현과 불일치한다.",
+          "verified": true
+        },
+        {
+          "fact": "matches_allowlist(user_id, allowed_user_ids)는 user_id가 목록에 포함되는지 검사하고, 빈 목록([])이면 제한 없음(True)을 반환한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 code 증거에는 src/feature_flags/targeting.py 본문이 포함되어 있지 않고 README.md 21행 설명만 있으며, 동일 라인이 3회 중복 제공된다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context.stack_trace는 빈 배열이고 raw_payload에는 benchmark_case_id만 있어 실행 시점의 실제 국가 코드 입력값은 확인되지 않았다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 21,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.68,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_9264a8d528b85a22b7616994b2a2dc94: matches_country는 두 값을 그대로 == 비교",
+            "kn_9264a8d528b85a22b7616994b2a2dc94: test_country_matching_is_case_insensitive가 'KR' vs 'kr' -> True(대소문자 무시)를 기대하여 현재 구현과 불일치",
+            "code: README.md:21 targeting.py가 국가·사용자 타기팅 담당"
+          ],
+          "confidence": 0.78,
+          "hypothesis": "targeting.py의 matches_country(rule_country, request_country)가 두 국가 코드를 그대로 == 비교하므로, 소문자 국가 코드('kr')로 요청하는 모바일 클라이언트가 대문자 규칙 값('KR')과 매칭되지 않아 타기팅 대상에서 제외된다."
+        },
+        {
+          "evidence": [
+            "kn_789e0ee5ca035e74a99e9cbc819f1a68: cache._key는 flag_name.casefold()로 정규화",
+            "kn_a84a0a80edd35152b0d6b24704abf77e: repository는 (tenant_id, name.casefold()) 키 사용",
+            "kn_9264a8d528b85a22b7616994b2a2dc94: matches_country는 정규화 없이 == 비교"
+          ],
+          "confidence": 0.6,
+          "hypothesis": "국가 코드 문자열을 casefold()/upper() 등으로 정규화하지 않는 것이 근본 결함이며, 라이브러리의 다른 경로(cache의 flag_name.casefold(), repository의 (tenant_id, name.casefold()))와 달리 국가 코드에는 정규화가 적용되지 않아 일관성이 깨져 있다."
+        },
+        {
+          "evidence": [
+            "제공된 code 증거는 README.md의 targeting.py 설명 1개 라인(중복 3건)뿐이며 src/feature_flags/targeting.py 본문은 제공되지 않음",
+            "bug_context.stack_trace가 빈 배열이고 재현 절차가 문서 수준 설명에 그침"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "증상이 국가 매칭 단독 실패인지, 다른 타기팅 결함(matches_allowlist 동작, repository/cache 결함으로 인한 플래그 조회 실패)이 함께 작용한 것인지 현재 증거만으로는 분리할 수 없다."
+        }
+      ],
+      "project_id": 21,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 code 증거에 src/feature_flags/targeting.py 본문이 없어 실제 구현과 가설이 다를 수 있다(가설 신뢰도 0.78, 전체 신뢰도 0.68).",
+            "mitigation": "수정 전 실제 소스를 확보하고 재현 테스트를 먼저 작성해 현재 실패를 확인한 뒤 변경한다."
+          },
+          {
+            "risk": "bug_context.stack_trace가 빈 배열이고 실제 국가 코드 입력값이 확인되지 않아 재현이 불완전할 수 있다.",
+            "mitigation": "벤치마크/로그에서 실제 request_country 입력값을 수집하고, 소문자·대문자·혼합 케이스를 명시적 테스트 케이스로 고정한다."
+          },
+          {
+            "risk": "대소문자 정규화 방식(casefold vs upper)을 라이브러리 관례와 다르게 적용하면 cache/repository 정규화와 일관성이 깨질 수 있다.",
+            "mitigation": "기존 관례인 casefold()를 사용하고 정규화 헬퍼를 단일 지점으로 통합한다."
+          },
+          {
+            "risk": "국가 매칭 외 다른 타기팅 결함이 함께 작용한 복합 이슈일 가능성(가설 3, 신뢰도 0.3)을 놓칠 수 있다.",
+            "mitigation": "matches_allowlist 및 캐시/리포지토리 조회 경로에 대한 회귀 테스트를 함께 실행해 원인을 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/targeting.py의 matches_country(rule_country, request_country) 구현을 확인하고 재현 테스트를 먼저 추가한다.",
+            "details": "제공된 code 증거에는 src/feature_flags/targeting.py 본문이 없고 README.md:21 설명만 있으므로(중복 3건), 먼저 실제 구현을 확보한다. tests/test_targeting.py에 'KR' vs 'kr' -> True 및 'kr' vs 'KR' -> True를 기대하는 test_country_matching_is_case_insensitive를 명시적으로 배치하여 현재 == 비교에서 실패함을 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "국가 코드 비교를 대소문자 무시 비교로 변경한다.",
+            "details": "matches_country에서 양쪽 값을 casefold()(또는 upper())로 정규화한 뒤 비교한다. 라이브러리 내 기존 정규화 관례(cache._key의 flag_name.casefold(), repository의 (tenant_id, name.casefold()))와 일치시키고, None/비문자열 입력 방어를 추가해 기존 호출 경로를 깨지 않도록 한다."
+          },
+          {
+            "id": 3,
+            "action": "정규화 헬퍼를 도입해 국가 코드 정규화를 단일 지점으로 모은다.",
+            "details": "국가 코드 정규화 로직을 모듈 수준 함수(예: _normalize_country)로 추출하고 matches_country가 이를 사용하도록 한다. 동일 규칙이 다른 타기팅 경로에 재사용될 수 있도록 하여 일관성을 확보한다."
+          },
+          {
+            "id": 4,
+            "action": "matches_country 단독 실패인지, 다른 타기팅 결함과 복합인지 분리 검증한다.",
+            "details": "근본 원인 가설 3(신뢰도 0.3)을 검증하기 위해 matches_allowlist(빈 목록 []이면 True), 캐시 조회(flag_name.casefold()), repository 조회((tenant_id, name.casefold())) 경로에 대한 회귀 테스트를 함께 실행한다. bug_context.stack_trace가 빈 배열이고 실제 국가 코드 입력값이 확인되지 않았으므로, 로그/벤치마크 재현으로 실제 request_country 입력값을 수집한다."
+          },
+          {
+            "id": 5,
+            "action": "회귀 테스트 스위트를 실행하고 결과를 기록한다.",
+            "details": "tests/test_targeting.py와 cache/repository 관련 테스트를 실행하여 test_country_matching_is_case_insensitive를 포함한 전체 케이스가 통과하는지 확인한다. 통과/실패 로그와 재현 입력값을 이슈 21에 첨부한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "21",
+        "acceptance_criteria": [
+          "tests/test_targeting.py의 test_country_matching_is_case_insensitive가 통과한다('KR' vs 'kr' -> True, 'kr' vs 'KR' -> True).",
+          "matches_country(rule_country, request_country)가 대소문자만 다른 동일 국가 코드 쌍에 대해 True를 반환한다.",
+          "기존 대문자 규칙 값과 대문자 요청 값('KR' vs 'KR')의 매칭 동작이 회귀 없이 유지된다.",
+          "빈 문자열/None 등 비정상 국가 코드 입력 시 예외 없이 정의된 동작(불일치 또는 명시적 처리)을 반환한다.",
+          "matches_allowlist와 캐시/리포지토리 키 정규화 경로가 변경 후에도 기존 테스트를 모두 통과하여 결함이 국가 매칭 단독인지 확인된다.",
+          "테스트 실행 로그와 실제 request_country 재현 입력값이 이슈 21에 기록된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 58,
+            "rationale": "국가 타기팅을 사용하는 모든 플래그 평가 경로가 영향을 받는다. 다만 증상이 '모바일 사용자의 국가 타기팅만 누락'으로 한정 보고되어 있고, 소문자 국가 코드를 보내는 클라이언트로 범위가 제한된다. 사용자 타기팅(matches_allowlist)이나 플래그 조회 자체는 정상 동작하는 것으로 보아 전면 장애는 아니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 45,
+            "rationale": "크래시·데이터 손실·보안 노출은 없고, 국가 조건 불일치로 인한 평가 결과 오류(ReportedBehaviorMismatch)에 그친다. 다만 타기팅 누락은 잘못된 대상에게 기능이 노출되거나 노출되어야 할 대상에서 기능이 빠지는 형태의 결과 오류를 낳아 정합성 측면의 심각도는 중간 수준이다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 62,
+            "rationale": "재현 절차가 명확하다(대문자 규칙 저장 후 소문자 국가 코드로 요청 시 항상 제외). matches_country가 정규화 없이 그대로 == 비교하는 결정적 로직이므로 소문자 코드를 보내는 클라이언트에서는 100% 재현되는 결정적 결함이다. 다만 대문자 코드를 보내는 클라이언트는 영향을 받지 않아 전체 요청 기준 빈도는 다소 낮아진다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 40,
+            "rationale": "서버 측 수정 없이도 클라이언트가 국가 코드를 대문자로 정규화해 전송하거나, 규칙을 소문자로 저장하는 방식으로 우회할 수 있다. 그러나 클라이언트 배포·규칙 재저장이 필요하고 근본 해결이 아니라 임시 회피에 가깝다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 52,
+            "rationale": "국가 타기팅은 결제·계정과 직접 연결된 핵심 경로는 아니지만, 국가별 기능 노출/규제 대응·지역 한정 롤아웃을 좌우하는 플래그 평가의 핵심 조건이다. 누락 시 특정 지역 사용자에게 기능이 잘못 개방되거나 차단될 수 있어 임계성은 중간 수준이다."
+          },
+          {
+            "name": "근본 원인 확신도·정규화 일관성",
+            "score": 50,
+            "rationale": "confidence 0.78로 matches_country의 정규화 부재가 유력 원인이지만, targeting.py 본문이 증거에 포함되지 않아 확정되지 않았고 repository((tenant_id, name.casefold()))·cache(flag_name.casefold())와 달리 국가 코드에 정규화가 적용되지 않는 일관성 결함도 배제할 수 없다. stack_trace가 빈 배열이라 다른 타기팅 결함 동반 가능성도 남아 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "이슈 21은 크래시·데이터 손실·보안 노출이 없는 동작 불일치(ReportedBehaviorMismatch)로, 소문자 국가 코드('kr')가 대문자 규칙('KR')과 매칭되지 않아 소문자 코드를 보내는 클라이언트가 타기팅에서 제외되는 결함이다. matches_country가 정규화 없이 == 비교하는 결정적 로직이므로 해당 클라이언트에서는 항상 재현되지만, 대문자 코드를 보내는 경로는 정상이며 클라이언트 코드 정규화나 규칙 재저장으로 우회가 가능하다. 다만 국가 타기팅은 지역별 롤아웃·기능 노출을 좌우하는 핵심 조건이고, repository((tenant_id, name.casefold()))·cache(flag_name.casefold())와 달리 국가 코드에만 정규화가 빠진 일관성 결함이라는 점에서 단순 미미(P4)로 보기는 어렵다. stack_trace가 비어 있고 targeting.py 본문 증거가 없어 근본 원인이 단일 원인인지 확정되지 않은 점을 감안해, '부분 기능 손상 + 우회 존재' 구간인 P2(보통) 상단에 해당하는 57점으로 산정한다.",
+        "risk_score": 57
+      },
+      "workflow_run_id": 21
+    }
+  },
+  "workflow": {
+    "id": 21,
+    "project_id": 21,
+    "request_id": "process-bug-21",
+    "request_type": "process_report",
+    "status": "RUNNING",
+    "latest_checkpoint": null,
+    "result_snapshot": null,
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:22:18.626676Z",
+    "completed_at": null,
+    "created_at": "2026-09-28T07:22:18.615885Z",
+    "updated_at": "2026-09-28T07:22:18.627156Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.464
+  }
+}

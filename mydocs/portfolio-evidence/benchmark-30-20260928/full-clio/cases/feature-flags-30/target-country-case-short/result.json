@@ -1,0 +1,533 @@
+{
+  "input": {
+    "id": "target-country-case-short",
+    "report": {
+      "title": "kr 사용자가 KR 타기팅에서 제외",
+      "description": "국가 코드 비교가 표기 대소문자에 민감합니다.",
+      "steps_to_reproduce": [
+        "KR 규칙과 kr 요청을 비교합니다."
+      ],
+      "expected_behavior": "일치해야 합니다.",
+      "actual_behavior": "불일치로 판정됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_country_matching_is_case_insensitive"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 20,
+    "name": "benchmark-20260928T065850Z-59223a30-target-country-case-short",
+    "description": "Clio Benchmark feature-flags-30: target-country-case-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:20:38.031400Z",
+    "updatedAt": "2026-09-28T07:20:38.031400Z"
+  },
+  "clio_repository": {
+    "id": 20,
+    "projectId": 20,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:21:11.427668Z",
+    "createdAt": "2026-09-28T07:20:38.051332Z",
+    "updatedAt": "2026-09-28T07:21:11.428480Z"
+  },
+  "bug": {
+    "id": 20,
+    "project_id": 20,
+    "issue_id": 20,
+    "title": "kr 사용자가 KR 타기팅에서 제외",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:21:12.464073Z",
+    "created_at": "2026-09-28T07:21:12.472504Z"
+  },
+  "analysis": {
+    "analysisResultId": 20,
+    "workflowRunId": 20,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 22,
+          "location": "README.md:1-22",
+          "file_path": "README.md",
+          "source_id": "20",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "README.md는 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 명시하여, 이슈 20의 국가 코드 비교 결함이 위치할 모듈을 지목한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_ec797e1dec275c24a75917f4249f2851",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+          "end_line": 21,
+          "location": "README.md:21",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "README.md:21",
+          "observation": "저장소 20의 README가 국가 타기팅 모듈 경로를 `src/feature_flags/targeting.py`로 명시한다. 다만 저장소 도구는 호출하지 않았고 제공된 코드 증거만 인용한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "20",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 14,
+          "location": "src/feature_flags/authorization.py:1-14",
+          "file_path": "src/feature_flags/authorization.py",
+          "source_id": "20",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`can_manage_flag(role)`가 `role.casefold()`로 입력을 정규화하는 반면, 제공된 증거에는 국가 코드 비교에 해당 정규화가 적용된다는 근거가 없다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_ed39d81bbd1354858ca446420ec7c17e",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "20",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagCache._key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않아 테넌트 간 캐시 키 충돌이 가능하다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_e5ad96f1c0745c3ebd9985dbb3155f58",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 40,
+          "location": "src/feature_flags/service.py:1-40",
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "20",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`LegacyFeatureFlagService.is_enabled`가 캐시 검사를 `if cached:`로 수행하여 캐시된 `False`를 miss로 취급하는 버그가 있다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_96f9369dc0705fb787937586c215225b",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 20의 보고된 증상은 'KR 규칙과 kr 요청을 비교하면 불일치로 판정된다'이며, 오류 유형은 ReportdedBehaviorMismatch(오류 유형 값: `ReportedBehaviorMismatch`)이다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 리포트의 raw_payload는 `benchmark_case_id = target-country-case-short`로, 국가 코드 표기 대소문자 케이스를 지시한다.",
+          "verified": true
+        },
+        {
+          "fact": "저장소 20의 README.md 21행은 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 명시한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 증거에는 `targeting.py`의 실제 구현 코드나 타기팅 관련 테스트 본문이 포함되지 않아, 대소문자 비교 로직 자체를 코드 수준에서 직접 확인하지 못했다.",
+          "verified": false
+        },
+        {
+          "fact": "제공된 증거에는 국가 코드 정규화(casefold 등) 또는 국가 타기팅 관련 지식 문서가 존재하지 않으며, 사용 가능한 지식 문서는 auth/zation, repository, cache, rollout, service, 패키지 메타데이터, 공개 API 항목이다.",
+          "verified": true
+        },
+        {
+          "fact": "`rollout_bucket(user_id)`가 내장 `hash`를 사용해 `PYTHONHASHSEED`에 따라 프로세스 간 값이 달라질 수 있다는 별개의 결함이 문서화되어 있으나, 이는 국가 코드 대소문자 비교 이슈와 직접 관련이 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 20,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.4,
+      "hypotheses": [
+        {
+          "evidence": [
+            "bug_context.description: '국가 코드 비교가 표기 대소문자에 민감합니다.'",
+            "README.md line 21: `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "kn_ed39d81bbd1354858ca446420ec7c17e: `can_manage_flag(role)`처럼 `role.casefold()` 정규화를 사용하는 선례가 있으나 타기팅에는 동일 처리가 확인되지 않음"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "`src/feature_flags/targeting.py`의 국가 코드 비교가 대소문자를 구분하여 'KR' 규칙과 'kr' 요청이 불일치로 판정된다. `rollout_bucket`/`is_in_rollout`에서 사용자 속성 문자열에 `casefold()` 같은 정규화가 적용되지 않고, 테스트가 기대하는 정규화 비교와 구현이 어긋난다."
+        },
+        {
+          "evidence": [
+            "kn_e5ad96f1c0745c3ebd9985dbb3155f58: `_key`는 `flag_name.casefold()`만 반환하므로 `tenant_id`를 키에 포함하지 않아 테넌트 간 캐시 충돌이 발생할 수 있음",
+            "bug_context.raw_payload: `benchmark_case_id = target-country-case-short`"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "국가 타기팅이 `FeatureFlagCache._key`의 정규화 규칙을 재사용하면서 테넌트/국가 키가 충돌한다. `_key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않아, 서로 다른 테넌트·국가의 값이 섞여 'KR'과 'kr'이 동일 키로 오염될 수 있다."
+        },
+        {
+          "evidence": [
+            "kn_96f9369dc0705fb787937586c215225b: `LegacyFeatureFlagService`는 `if cached:`로 검사해 캐시된 `False`를 miss로 취급하는 버그가 있음"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "`LegacyFeatureFlagService.is_enabled`의 `if cached:` 검사가 캐시된 `False`를 miss로 취급하여, 국가 타기팅 결과가 재계산되며 규칙과 요청의 표기 차이가 노출된다."
+        }
+      ],
+      "project_id": 20,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`targeting.py`의 실제 구현 코드와 타기팅 테스트 본문이 제공된 증거에 없어(fact verified=false), 대소문자 비교 로직이 가설과 다를 수 있다.",
+            "mitigation": "1단계에서 코드와 테스트를 직접 인용해 확보한 뒤 재현 테스트가 실패하는지 확인하고, 실패하지 않으면 원인 가설을 재수립한다."
+          },
+          {
+            "risk": "`casefold()` 정규화를 모든 비교에 적용하면 의도적으로 대소문자를 구분하던 기존 동작이 변경되어 다른 타기팅 규칙이 깨질 수 있다.",
+            "mitigation": "국가 코드 등 정규화가 필요한 필드로 범위를 한정하고, 기존 타기팅 테스트로 회귀를 확인한다."
+          },
+          {
+            "risk": "캐시 키에 `tenant_id`를 추가하면 기존 캐시 항목과 키 형식이 달라져 캐시 미스가 일시적으로 증가하거나 저장소 재사용 코드와 불일치할 수 있다.",
+            "mitigation": "키 형식 변경을 문서화하고 콜드 스타트 비용을 허용 범위로 확인하며, 저장소 내 `_key` 호출부를 모두 갱신한다."
+          },
+          {
+            "risk": "증거에 국가 코드 정규화 관련 지식 문서가 없어(fact verified=true) 정규화 규칙의 표준(대소문자 외 로케일 변형 처리)이 불명확하다.",
+            "mitigation": "현재 이슈 범위를 대소문자 정규화로 한정하고, 추가 로케일 정규화는 별도 후속 이슈로 분리한다."
+          },
+          {
+            "risk": "`rollout_bucket(user_id)`의 내장 `hash` 사용으로 인한 `PYTHONHASHSEED` 의존성은 이슈 20과 직접 관련이 없으나 동일 파일의 별개 결함으로 남는다.",
+            "mitigation": "이번 변경에 포함하지 않고 별도 결함으로 문서화해 추적한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "증거 재현 경로 확보 및 실제 구현 코드 확인",
+            "details": "저장소 20(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)에서 `src/feature_flags/targeting.py` 본문과 국가 타기팅 관련 테스트를 직접 인용해 확보한다. `rollout_bucket`/`is_in_rollout`에서 사용자 속성 문자열 비교 로직(대소문자 구분 여부)을 코드 수준에서 확인하고, `benchmark_case_id = target-country-case-short` 케이스의 입력('KR' 규칙 vs 'kr' 요청)을 재현하는 실패 테스트를 먼저 작성한다."
+          },
+          {
+            "id": 2,
+            "action": "국가 코드 비교 정규화 적용",
+            "details": "`src/feature_flags/targeting.py`에서 규칙 측 국가 코드와 요청 측 국가 코드를 동일하게 정규화한다. `src/feature_flags/authorization.py:1-14`의 `can_manage_flag(role)`가 `role.casefold()`를 쓰는 선례를 따라 `casefold()` 기반 비교 헬퍼(예: `_normalize_country(value)`)를 도입하고, `rollout_bucket`/`is_in_rollout` 양쪽 경로에 적용해 'KR'과 'kr'이 동일 판정을 받도록 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키 정규화 충돌 검증 및 수정",
+            "details": "`src/feature_flags/cache.py:1-16`의 `FeatureFlagCache._key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않는지 확인한다. 테넌트/국가 간 키 충돌이 실제 발생하는지 재현 테스트로 확인하고, 충돌이 확인되면 `tenant_id`를 키에 포함하도록 수정한다(가설 신뢰도 0.3, 이슈 20의 직접 증상과 분리해 판단)."
+          },
+          {
+            "id": 4,
+            "action": "캐시된 False 처리 버그 재현 및 수정",
+            "details": "`src/feature_flags/service.py:1-40`의 `LegacyFeatureFlagService.is_enabled`에서 `if cached:` 검사가 캐시된 `False`를 miss로 취급하는 동작을 재현 테스트로 확인한다. `is not None` 형태의 명시적 검사로 수정하고, 캐시된 `False`가 재계산 없이 반환되는지 검증한다."
+          },
+          {
+            "id": 5,
+            "action": "회귀 테스트 및 경계 케이스 보강",
+            "details": "국가 코드 대소문자 변형('KR', 'kr', 'Kr'), 다중 테넌트 키 격리, 캐시된 `False`/`True` 반환, 그리고 `rollout_bucket(user_id)`의 `hash` 사용으로 인한 `PYTHONHASHSEED` 프로세스 간 변동(이슈와 직접 관련 없음, 별도 결함으로 문서화만)을 커버하는 테스트를 추가한다. 전체 테스트 스위트를 실행해 실패 0건을 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "acceptance_criteria": [
+          "국가 코드 'KR' 규칙과 'kr' 요청이 `src/feature_flags/targeting.py`의 타기팅 판정에서 동일한 결과를 반환한다.",
+          "`target-country-case-short` 재현 테스트가 수정 전 실패, 수정 후 통과한다.",
+          "`src/feature_flags/cache.py`의 `FeatureFlagCache._key`가 서로 다른 `tenant_id`에 대해 서로 다른 키를 반환하여 테넌트 간 캐시 충돌이 발생하지 않는다(또는 충돌 미발생이 테스트로 입증된다).",
+          "`LegacyFeatureFlagService.is_enabled`가 캐시된 `False`를 반환할 때 재계산 없이 그대로 반환하고, 캐시된 `True`와 구분해 처리한다.",
+          "전체 테스트 스위트가 실패 0건으로 통과하고, 추가된 회귀 테스트가 대소문자 변형·테넌트 격리·캐시 불리언 케이스를 모두 포함한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 70,
+            "rationale": "README.md:21이 명시한 `src/feature_flags/targeting.py`(국가·사용자 타기팅) 경로의 국가 타기팅 전반에 영향을 준다. 대소문자가 섞인 국가 코드(예: 'KR' 규칙 vs 'kr' 요청)를 쓰는 모든 플래그 평가가 잘못된 판정을 받을 수 있어 특정 기능 하나가 아닌 타기팅 계층 전체에 파급된다. 다만 사용자 타기팅 등 비국가 경로는 영향받지 않으므로 전면 장애 수준은 아니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 60,
+            "rationale": "크래시나 데이터 손상, 보안 노출은 아니지만 ReportedBehaviorMismatch(오류 유형 `ReportedBehaviorMismatch`)로 플래그 판정 결과 자체가 뒤집힌다. 잘못된 롤아웃/타기팅은 의도치 않은 사용자 노출 또는 기대한 사용자 미노출을 유발하는 논리적 오동작이다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 75,
+            "rationale": "재현 절차가 'KR 규칙과 kr 요청 비교' 한 단계로 매우 단순하고 결정적이라 재현성이 높다. `benchmark_case_id = target-country-case-short`가 대소문자 케이스를 지시하므로, 표기 대소문자가 어긋나는 요청에서는 항상 불일치로 재현된다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 65,
+            "rationale": "호출 측에서 국가 코드를 'KR' 등 특정 표기로 통일해 넣으면 우회가 가능하지만, 규칙 데이터와 요청 입력 양쪽의 표기를 모두 관리해야 하므로 취약하고 오류가 나기 쉽다. 서버 측 정규화(casefold) 부재가 원인이라 클라이언트에서는 완전한 우회가 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 70,
+            "rationale": "국가 기반 타기팅은 지역별 기능 오픈·규제 대응·결제/계정 노출 제어에 직결되는 코어 경로다. 국가 코드 오판정은 특정 국가 사용자에게 기능이 잘못 개방되거나 차단되는 결과로 이어져 비즈니스적으로 중요하다."
+          },
+          {
+            "name": "근거 신뢰도 (evidence_confidence)",
+            "score": 45,
+            "rationale": "`targeting.py`의 실제 구현 코드나 타기팅 테스트 본문이 증거에 포함되지 않아 대소문자 비교 로직을 코드 수준에서 직접 확인하지 못했다(검증된 fact 기준 verified=false). 정규화 선례(`can_manage_flag(role)`의 `role.casefold()`)와 문서만 근거로 한 가설이며, 롤아웃 `hash`/`PYTHONHASHSEED` 이슈나 `LegacyFeatureFlagService.is_enabled`의 `if cached:` 결함은 본 이슈와 직접 관련이 없어 위험 산정에서 제외했다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "국가 코드 대소문자 비교 결함('KR' 규칙 vs 'kr' 요청 불일치)은 `src/feature_flags/targeting.py`의 코어 타기팅 판정을 뒤집는 논리적 오동작이다. 크래시·데이터 손실·보안 사고는 아니므로 P0(85-100)는 아니지만, 재현이 결정적이고 단순하며(재현 절차 1단계, `benchmark_case_id = target-country-case-short`), 국가 기반 타기팅이 지역별 기능 오픈/노출을 제어하는 비즈니스 임계 경로라는 점에서 영향이 넓다. 서버 측 정규화(`casefold()`) 부재가 원인이라 호출 측 표기 통일로만 우회해야 하는 취약한 상황이며, 완전 우회가 어려워 P2 보통(50-69) 구간의 상단으로 판단해 68점으로 산정한다. 구현 코드/테스트 증거 부재로 근거 신뢰도는 낮은 편(45)이라 실제 코드 확인 시 ±조정 여지가 있다.",
+        "risk_score": 68
+      },
+      "workflow_run_id": 20
+    }
+  },
+  "workflow": {
+    "id": 20,
+    "project_id": 20,
+    "request_id": "process-bug-20",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 20의 보고된 증상은 'KR 규칙과 kr 요청을 비교하면 불일치로 판정된다'이며, 오류 유형은 ReportdedBehaviorMismatch(오류 유형 값: `ReportedBehaviorMismatch`)이다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 리포트의 raw_payload는 `benchmark_case_id = target-country-case-short`로, 국가 코드 표기 대소문자 케이스를 지시한다.",
+            "verified": true
+          },
+          {
+            "fact": "저장소 20의 README.md 21행은 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 명시한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 증거에는 `targeting.py`의 실제 구현 코드나 타기팅 관련 테스트 본문이 포함되지 않아, 대소문자 비교 로직 자체를 코드 수준에서 직접 확인하지 못했다.",
+            "verified": false
+          },
+          {
+            "fact": "제공된 증거에는 국가 코드 정규화(casefold 등) 또는 국가 타기팅 관련 지식 문서가 존재하지 않으며, 사용 가능한 지식 문서는 auth/zation, repository, cache, rollout, service, 패키지 메타데이터, 공개 API 항목이다.",
+            "verified": true
+          },
+          {
+            "fact": "`rollout_bucket(user_id)`가 내장 `hash`를 사용해 `PYTHONHASHSEED`에 따라 프로세스 간 값이 달라질 수 있다는 별개의 결함이 문서화되어 있으나, 이는 국가 코드 대소문자 비교 이슈와 직접 관련이 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 22,
+            "location": "README.md:1-22",
+            "file_path": "README.md",
+            "source_id": "20",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "README.md는 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 명시하여, 이슈 20의 국가 코드 비교 결함이 위치할 모듈을 지목한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_ec797e1dec275c24a75917f4249f2851",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "end_line": 21,
+            "location": "README.md:21",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "README.md:21",
+            "observation": "저장소 20의 README가 국가 타기팅 모듈 경로를 `src/feature_flags/targeting.py`로 명시한다. 다만 저장소 도구는 호출하지 않았고 제공된 코드 증거만 인용한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "20",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 14,
+            "location": "src/feature_flags/authorization.py:1-14",
+            "file_path": "src/feature_flags/authorization.py",
+            "source_id": "20",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`can_manage_flag(role)`가 `role.casefold()`로 입력을 정규화하는 반면, 제공된 증거에는 국가 코드 비교에 해당 정규화가 적용된다는 근거가 없다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_ed39d81bbd1354858ca446420ec7c17e",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 16,
+            "location": "src/feature_flags/cache.py:1-16",
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "20",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagCache._key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않아 테넌트 간 캐시 키 충돌이 가능하다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_e5ad96f1c0745c3ebd9985dbb3155f58",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 40,
+            "location": "src/feature_flags/service.py:1-40",
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "20",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`LegacyFeatureFlagService.is_enabled`가 캐시 검사를 `if cached:`로 수행하여 캐시된 `False`를 miss로 취급하는 버그가 있다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_96f9369dc0705fb787937586c215225b",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.4,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "bug_context.description: '국가 코드 비교가 표기 대소문자에 민감합니다.'",
+              "README.md line 21: `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+              "kn_ed39d81bbd1354858ca446420ec7c17e: `can_manage_flag(role)`처럼 `role.casefold()` 정규화를 사용하는 선례가 있으나 타기팅에는 동일 처리가 확인되지 않음"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "`src/feature_flags/targeting.py`의 국가 코드 비교가 대소문자를 구분하여 'KR' 규칙과 'kr' 요청이 불일치로 판정된다. `rollout_bucket`/`is_in_rollout`에서 사용자 속성 문자열에 `casefold()` 같은 정규화가 적용되지 않고, 테스트가 기대하는 정규화 비교와 구현이 어긋난다."
+          },
+          {
+            "evidence": [
+              "kn_e5ad96f1c0745c3ebd9985dbb3155f58: `_key`는 `flag_name.casefold()`만 반환하므로 `tenant_id`를 키에 포함하지 않아 테넌트 간 캐시 충돌이 발생할 수 있음",
+              "bug_context.raw_payload: `benchmark_case_id = target-country-case-short`"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "국가 타기팅이 `FeatureFlagCache._key`의 정규화 규칙을 재사용하면서 테넌트/국가 키가 충돌한다. `_key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않아, 서로 다른 테넌트·국가의 값이 섞여 'KR'과 'kr'이 동일 키로 오염될 수 있다."
+          },
+          {
+            "evidence": [
+              "kn_96f9369dc0705fb787937586c215225b: `LegacyFeatureFlagService`는 `if cached:`로 검사해 캐시된 `False`를 miss로 취급하는 버그가 있음"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "`LegacyFeatureFlagService.is_enabled`의 `if cached:` 검사가 캐시된 `False`를 miss로 취급하여, 국가 타기팅 결과가 재계산되며 규칙과 요청의 표기 차이가 노출된다."
+          }
+        ]
+      },
+      "issue_id": "20",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`targeting.py`의 실제 구현 코드와 타기팅 테스트 본문이 제공된 증거에 없어(fact verified=false), 대소문자 비교 로직이 가설과 다를 수 있다.",
+            "mitigation": "1단계에서 코드와 테스트를 직접 인용해 확보한 뒤 재현 테스트가 실패하는지 확인하고, 실패하지 않으면 원인 가설을 재수립한다."
+          },
+          {
+            "risk": "`casefold()` 정규화를 모든 비교에 적용하면 의도적으로 대소문자를 구분하던 기존 동작이 변경되어 다른 타기팅 규칙이 깨질 수 있다.",
+            "mitigation": "국가 코드 등 정규화가 필요한 필드로 범위를 한정하고, 기존 타기팅 테스트로 회귀를 확인한다."
+          },
+          {
+            "risk": "캐시 키에 `tenant_id`를 추가하면 기존 캐시 항목과 키 형식이 달라져 캐시 미스가 일시적으로 증가하거나 저장소 재사용 코드와 불일치할 수 있다.",
+            "mitigation": "키 형식 변경을 문서화하고 콜드 스타트 비용을 허용 범위로 확인하며, 저장소 내 `_key` 호출부를 모두 갱신한다."
+          },
+          {
+            "risk": "증거에 국가 코드 정규화 관련 지식 문서가 없어(fact verified=true) 정규화 규칙의 표준(대소문자 외 로케일 변형 처리)이 불명확하다.",
+            "mitigation": "현재 이슈 범위를 대소문자 정규화로 한정하고, 추가 로케일 정규화는 별도 후속 이슈로 분리한다."
+          },
+          {
+            "risk": "`rollout_bucket(user_id)`의 내장 `hash` 사용으로 인한 `PYTHONHASHSEED` 의존성은 이슈 20과 직접 관련이 없으나 동일 파일의 별개 결함으로 남는다.",
+            "mitigation": "이번 변경에 포함하지 않고 별도 결함으로 문서화해 추적한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "증거 재현 경로 확보 및 실제 구현 코드 확인",
+            "details": "저장소 20(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)에서 `src/feature_flags/targeting.py` 본문과 국가 타기팅 관련 테스트를 직접 인용해 확보한다. `rollout_bucket`/`is_in_rollout`에서 사용자 속성 문자열 비교 로직(대소문자 구분 여부)을 코드 수준에서 확인하고, `benchmark_case_id = target-country-case-short` 케이스의 입력('KR' 규칙 vs 'kr' 요청)을 재현하는 실패 테스트를 먼저 작성한다."
+          },
+          {
+            "id": 2,
+            "action": "국가 코드 비교 정규화 적용",
+            "details": "`src/feature_flags/targeting.py`에서 규칙 측 국가 코드와 요청 측 국가 코드를 동일하게 정규화한다. `src/feature_flags/authorization.py:1-14`의 `can_manage_flag(role)`가 `role.casefold()`를 쓰는 선례를 따라 `casefold()` 기반 비교 헬퍼(예: `_normalize_country(value)`)를 도입하고, `rollout_bucket`/`is_in_rollout` 양쪽 경로에 적용해 'KR'과 'kr'이 동일 판정을 받도록 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키 정규화 충돌 검증 및 수정",
+            "details": "`src/feature_flags/cache.py:1-16`의 `FeatureFlagCache._key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 키에 포함하지 않는지 확인한다. 테넌트/국가 간 키 충돌이 실제 발생하는지 재현 테스트로 확인하고, 충돌이 확인되면 `tenant_id`를 키에 포함하도록 수정한다(가설 신뢰도 0.3, 이슈 20의 직접 증상과 분리해 판단)."
+          },
+          {
+            "id": 4,
+            "action": "캐시된 False 처리 버그 재현 및 수정",
+            "details": "`src/feature_flags/service.py:1-40`의 `LegacyFeatureFlagService.is_enabled`에서 `if cached:` 검사가 캐시된 `False`를 miss로 취급하는 동작을 재현 테스트로 확인한다. `is not None` 형태의 명시적 검사로 수정하고, 캐시된 `False`가 재계산 없이 반환되는지 검증한다."
+          },
+          {
+            "id": 5,
+            "action": "회귀 테스트 및 경계 케이스 보강",
+            "details": "국가 코드 대소문자 변형('KR', 'kr', 'Kr'), 다중 테넌트 키 격리, 캐시된 `False`/`True` 반환, 그리고 `rollout_bucket(user_id)`의 `hash` 사용으로 인한 `PYTHONHASHSEED` 프로세스 간 변동(이슈와 직접 관련 없음, 별도 결함으로 문서화만)을 커버하는 테스트를 추가한다. 전체 테스트 스위트를 실행해 실패 0건을 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "20",
+        "acceptance_criteria": [
+          "국가 코드 'KR' 규칙과 'kr' 요청이 `src/feature_flags/targeting.py`의 타기팅 판정에서 동일한 결과를 반환한다.",
+          "`target-country-case-short` 재현 테스트가 수정 전 실패, 수정 후 통과한다.",
+          "`src/feature_flags/cache.py`의 `FeatureFlagCache._key`가 서로 다른 `tenant_id`에 대해 서로 다른 키를 반환하여 테넌트 간 캐시 충돌이 발생하지 않는다(또는 충돌 미발생이 테스트로 입증된다).",
+          "`LegacyFeatureFlagService.is_enabled`가 캐시된 `False`를 반환할 때 재계산 없이 그대로 반환하고, 캐시된 `True`와 구분해 처리한다.",
+          "전체 테스트 스위트가 실패 0건으로 통과하고, 추가된 회귀 테스트가 대소문자 변형·테넌트 격리·캐시 불리언 케이스를 모두 포함한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:21:13.492187Z",
+    "completed_at": "2026-09-28T07:21:41.548628Z",
+    "created_at": "2026-09-28T07:21:13.480826Z",
+    "updated_at": "2026-09-28T07:21:41.550969Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.608
+  }
+}

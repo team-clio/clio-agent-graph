@@ -1,0 +1,436 @@
+{
+  "input": {
+    "id": "rollout-boundary-short",
+    "report": {
+      "title": "percentage rollout 경계값 오류",
+      "description": "설정 비율과 같은 bucket이 잘못 포함됩니다.",
+      "steps_to_reproduce": [
+        "10% 설정에서 bucket 10을 평가합니다."
+      ],
+      "expected_behavior": "제외되어야 합니다.",
+      "actual_behavior": "포함됩니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_percentage_boundary_excludes_bucket_equal_to_percentage"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 14,
+    "name": "benchmark-20260928T073431Z-64ae54ac-rollout-boundary-short",
+    "description": "Clio Benchmark feature-flags-30: rollout-boundary-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:48:11.379306Z",
+    "updatedAt": "2026-09-28T07:48:11.379306Z"
+  },
+  "clio_repository": {
+    "id": 14,
+    "projectId": 14,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:48:47.265330Z",
+    "createdAt": "2026-09-28T07:48:11.400424Z",
+    "updatedAt": "2026-09-28T07:48:47.265692Z"
+  },
+  "bug": {
+    "id": 14,
+    "project_id": 14,
+    "issue_id": 14,
+    "title": "percentage rollout 경계값 오류",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:48:47.730618Z",
+    "created_at": "2026-09-28T07:48:47.740971Z"
+  },
+  "analysis": {
+    "analysisResultId": 14,
+    "workflowRunId": 14,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+          "end_line": 20,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 20,
+          "evidence_id": "README.md:20",
+          "observation": "README가 percentage rollout 계산 로직의 위치를 src/feature_flags/rollout.py로 안내한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "14",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "\"\"\"Percentage rollout helpers.\"\"\"",
+          "end_line": 1,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": null,
+          "start_line": 1,
+          "evidence_id": "src/feature_flags/rollout.py:1",
+          "observation": "rollout.py는 percentage rollout helpers 모듈이며, 제공된 코드 증거에는 경계 비교 연산자가 포함되어 있지 않다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "14",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 제보(issue 14)는 10% 설정에서 bucket 10을 평가하면 제외되어야 하는데 실제로는 포함된다고 보고한다.",
+          "verified": true
+        },
+        {
+          "fact": "제보된 오류 유형은 error_type=ReportedBehaviorMismatch, message는 \"포함됩니다.\"이다.",
+          "verified": true
+        },
+        {
+          "fact": "재현 payload의 benchmark_case_id는 \"rollout-boundary-short\"이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거는 README.md 20행과 src/feature_flags/rollout.py 1행(모듈 docstring)뿐이며, 비교 연산자가 포함된 실제 rollout 판정 로직은 제공되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "제공 증거만으로는 percentage rollout 판정에 사용되는 비교 연산자(예: <= vs <)나 bucket 계산 방식을 확인할 수 없다.",
+          "verified": false
+        },
+        {
+          "fact": "제공 증거에는 단위 테스트나 경계값 사례가 포함되어 있지 않다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 14,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.6,
+      "hypotheses": [
+        {
+          "evidence": [
+            "issue 14 설명: 10% 설정에서 bucket 10이 제외되어야 하나 포함됨",
+            "README.md 20행: src/feature_flags/rollout.py가 percentage rollout 계산을 담당한다는 안내"
+          ],
+          "confidence": 0.6,
+          "hypothesis": "percentage rollout 판정에서 경계값 비교가 폐구간으로 구현되어(예: bucket <= percentage) bucket == percentage인 경우가 포함된다. 10% 설정에서 bucket 10이 포함되는 증상과 일치한다."
+        },
+        {
+          "evidence": [
+            "issue 14 재현 절차가 bucket 10 단일 경계값만 명시하고 전체 분포 정보를 제공하지 않음"
+          ],
+          "confidence": 0.25,
+          "hypothesis": "bucket 계산 결과의 범위가 0~100 대신 1~100 또는 그에 준하는 스케일로 정규화되어 경계값 판정이 한 단계 밀렸을 가능성. 이 경우에도 bucket 10이 10% 구간에 포함되는 증상이 나타난다."
+        },
+        {
+          "evidence": [
+            "제공 증거에 rollout 판정 로직과 테스트가 없어 단위 처리 방식을 확인할 수 없음"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "테스트/설정 해석 단계에서 percentage 값이 bucket과 다른 단위(비율 vs 정수)로 비교되어 경계가 어긋났을 가능성."
+        }
+      ],
+      "project_id": 14,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거가 README.md 20행과 rollout.py 1행(docstring)뿐이어서 실제 비교 연산자와 bucket 계산 방식을 확정할 수 없어, 추정 기반 수정이 빗나갈 수 있다.",
+            "mitigation": "수정 이전에 src/feature_flags/rollout.py 전체와 관련 호출부를 직접 읽어 경계 비교 구현을 확인하고, 확인 결과를 테스트로 먼저 고정한 뒤 수정한다."
+          },
+          {
+            "risk": "boundary 비교를 <= 에서 < 로 바꾸면 다른 percentage 값 구간에서 분포가 한 단계 이동하여 광범위한 동작 변화를 유발할 수 있다.",
+            "mitigation": "percentage 0, 10, 100 및 다수 bucket 값에 대한 테이블 기반 테스트로 회귀를 검출하고, 변경 전후 판정 분포를 비교한다."
+          },
+          {
+            "risk": "bucket 스케일이 1~100으로 정규화되어 있어 경계 수정만으로는 부족하고 계산 단계까지 변경해야 할 수 있다.",
+            "mitigation": "bucket 계산 범위를 먼저 확정하고(스케일 확인 단계), 스케일 불일치로 판명되면 정규화 지점을 일관되게 조정한 뒤 경계 비교를 재검증한다."
+          },
+          {
+            "risk": "percentage가 비율(0.0~1.0)과 정수(0~100)로 혼용되어 단위 비교 오류가 발생할 수 있다.",
+            "mitigation": "입력 타입과 단위를 명시적으로 검증(validation)하고, 단위 변환 지점을 한 곳으로 단일화하여 테스트로 커버한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트 작성",
+            "details": "benchmark_case_id \"rollout-boundary-short\" 시나리오를 단위 테스트로 고정한다. percentage=10 설정에서 bucket 9는 포함, bucket 10은 제외되어야 함을 명시적으로 단정(assert)하는 테스트를 추가한다. error_type=ReportedBehaviorMismatch, message \"포함됩니다.\" 케이스를 회귀 테스트로 등록한다."
+          },
+          {
+            "id": 2,
+            "action": "rollout 판정 로직에서 비교 연산자 확인",
+            "details": "src/feature_flags/rollout.py에서 percentage 비교 연산자(<= vs <)를 실제로 확인한다. 제공된 증거에는 비교 연산자를 포함한 로직이 없으므로 파일 전체와 관련 헬퍼를 직접 읽어 경계 비교 구현을 특정한다."
+          },
+          {
+            "id": 3,
+            "action": "bucket 계산 범위와 스케일 확인",
+            "details": "bucket 산출 범위가 0~100인지 1~100인지, 또는 다른 스케일로 정규화되는지 확인한다. 0~99 범위라면 percentage 비교 시 단위가 어긋나 경계가 한 단계 밀릴 수 있으므로 계산식과 정규화 지점을 문서화한다."
+          },
+          {
+            "id": 4,
+            "action": "경계 판정 수정",
+            "details": "bucket 10이 10% 구간에 포함되지 않도록 경계 비교를 수정한다. 예: bucket <= percentage를 bucket < percentage로 변경하거나, bucket을 0~99 스케일로 정규화한 뒤 비교하도록 일관되게 정리한다. 수정은 판정 함수 한 곳에서만 이루어지도록 하고 호출부는 변경하지 않는다."
+          },
+          {
+            "id": 5,
+            "action": "단위 테스트 및 회귀 검증",
+            "details": "경계값(bucket 0, 9, 10, 99, 100)과 percentage 0, 10, 100 조합에 대한 테이블 기반 테스트를 추가하고, 재현 테스트와 기존 테스트 스위트를 모두 실행하여 통과를 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "문서 정합성 확인",
+            "details": "README.md 20행의 src/feature_flags/rollout.py 안내와 실제 경계 규칙이 일치하는지 확인하고, 경계 의미(포함/제외)를 README 또는 모듈 docstring에 명시한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "acceptance_criteria": [
+          "percentage=10 설정에서 bucket=10 판정 결과가 '제외'로 반환된다.",
+          "percentage=10 설정에서 bucket=9 판정 결과가 '포함'으로 반환된다.",
+          "benchmark_case_id \"rollout-boundary-short\" 재현 케이스가 수정 후 통과한다.",
+          "경계값 테이블 테스트(bucket 0, 9, 10, 99, 100 × percentage 0, 10, 100)가 모두 통과한다.",
+          "기존 테스트 스위트에 회귀(regression)가 없다.",
+          "경계 포함/제외 규칙이 README.md 또는 src/feature_flags/rollout.py docstring에 명시되어 코드와 일치한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 40,
+            "rationale": "src/feature_flags/rollout.py의 percentage rollout 판정은 모든 플래그 평가 경로에 공통 적용되는 로직이므로 잠재적으로 넓은 사용자/기능에 영향을 줄 수 있다. 다만 실제 영향은 특정 percentage 설정의 단일 경계 bucket(예: 10%에서 bucket == 10)에 한정되며, bucket 값이 정확히 경계에 떨어지는 소수 케이스에서만 증상이 발생한다."
+          },
+          {
+            "name": "심각도",
+            "score": 35,
+            "rationale": "크래시나 데이터 손실, 보안 노출은 없다. 영향은 percentage rollout이 설정 비율보다 미세하게 넓게(경계값 1개 분량) 적용되는 편향이며, 제보된 error_type=ReportedBehaviorMismatch, message \"포함됩니다.\" 수준의 동작 불일치다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 45,
+            "rationale": "재현 절차가 명확하다: 10% 설정에서 bucket 10을 평가하면 재현되며 benchmark_case_id는 \"rollout-boundary-short\"로 경계값 케이스가 정형화되어 있다. 다만 경계값에 정확히 일치하는 bucket에서만 발생하므로 실제 트래픽 비율로는 드물게 나타난다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 55,
+            "rationale": "제공 증거에는 우회 방법이 문서화되어 있지 않고, percentage 값을 1 낮춰 설정하는 식의 임시 보정은 가능하지만 전 사용자 대상 정확한 비율 제어가 필요한 경우 신뢰할 수 있는 우회가 아니다. 또한 비교 연산자(<= vs <)가 코드 증거로 확인되지 않아(rollout.py 1행 docstring만 제공) 원인 특정과 우회 판단이 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 45,
+            "rationale": "percentage rollout은 점진적 배포·실험·신규 기능 노출 제어 등 비즈니스 의사결정과 직접 연결된다. 결제·계정과 같은 핵심 경로 자체가 중단되지는 않지만, 노출 비율이 설정보다 넓어지면 실험 결과 신뢰도와 배포 안전성(blamestorm 시 롤아웃 대상 초과)에 영향을 준다."
+          }
+        ],
+        "priority": "P3",
+        "rationale": "percentage rollout 경계값 오류로, 심각도·임계성은 중간 수준이나 영향이 경계 bucket에 국한되고 크래시/데이터 손실/보안 이슈가 없어 P3 낮음~P2 보통 경계의 위험으로 판단한다. 근본 원인으로는 폐구간 비교(bucket <= percentage)로 인해 bucket == percentage가 포함되는 가능성(confidence 0.6)이 가장 유력하며, bucket 스케일 정규화 오차(0.25)나 단위 불일치(0.15) 가능성도 배제할 수 없다. 다만 제공된 코드 증거는 README.md 20행과 src/feature_flags/rollout.py 1행 docstring뿐이어서 실제 비교 연산자와 bucket 계산 방식을 확인할 수 없고, 테스트나 이력 증거도 없어(evidence_counts: code 2, documents 0, history 0) 영향 범위와 재현 폭을 확정하기 어렵다. 종합 점수 42는 \\\"P3 낮음\\\" 구간에 해당하며, rollout.py의 경계 비교 연산자와 bucket 분포(0~100 vs 1~100)를 코드로 확인하고 경계값 회귀 테스트를 추가하는 것을 권장한다.",
+        "risk_score": 42
+      },
+      "workflow_run_id": 14
+    }
+  },
+  "workflow": {
+    "id": 14,
+    "project_id": 14,
+    "request_id": "process-bug-14",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 제보(issue 14)는 10% 설정에서 bucket 10을 평가하면 제외되어야 하는데 실제로는 포함된다고 보고한다.",
+            "verified": true
+          },
+          {
+            "fact": "제보된 오류 유형은 error_type=ReportedBehaviorMismatch, message는 \"포함됩니다.\"이다.",
+            "verified": true
+          },
+          {
+            "fact": "재현 payload의 benchmark_case_id는 \"rollout-boundary-short\"이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거는 README.md 20행과 src/feature_flags/rollout.py 1행(모듈 docstring)뿐이며, 비교 연산자가 포함된 실제 rollout 판정 로직은 제공되지 않았다.",
+            "verified": true
+          },
+          {
+            "fact": "제공 증거만으로는 percentage rollout 판정에 사용되는 비교 연산자(예: <= vs <)나 bucket 계산 방식을 확인할 수 없다.",
+            "verified": false
+          },
+          {
+            "fact": "제공 증거에는 단위 테스트나 경계값 사례가 포함되어 있지 않다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/rollout.py`: percentage rollout 계산",
+            "end_line": 20,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 20,
+            "evidence_id": "README.md:20",
+            "observation": "README가 percentage rollout 계산 로직의 위치를 src/feature_flags/rollout.py로 안내한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "14",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "\"\"\"Percentage rollout helpers.\"\"\"",
+            "end_line": 1,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": null,
+            "start_line": 1,
+            "evidence_id": "src/feature_flags/rollout.py:1",
+            "observation": "rollout.py는 percentage rollout helpers 모듈이며, 제공된 코드 증거에는 경계 비교 연산자가 포함되어 있지 않다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "14",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.6,
+        "evidence_counts": {
+          "code": 2,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "issue 14 설명: 10% 설정에서 bucket 10이 제외되어야 하나 포함됨",
+              "README.md 20행: src/feature_flags/rollout.py가 percentage rollout 계산을 담당한다는 안내"
+            ],
+            "confidence": 0.6,
+            "hypothesis": "percentage rollout 판정에서 경계값 비교가 폐구간으로 구현되어(예: bucket <= percentage) bucket == percentage인 경우가 포함된다. 10% 설정에서 bucket 10이 포함되는 증상과 일치한다."
+          },
+          {
+            "evidence": [
+              "issue 14 재현 절차가 bucket 10 단일 경계값만 명시하고 전체 분포 정보를 제공하지 않음"
+            ],
+            "confidence": 0.25,
+            "hypothesis": "bucket 계산 결과의 범위가 0~100 대신 1~100 또는 그에 준하는 스케일로 정규화되어 경계값 판정이 한 단계 밀렸을 가능성. 이 경우에도 bucket 10이 10% 구간에 포함되는 증상이 나타난다."
+          },
+          {
+            "evidence": [
+              "제공 증거에 rollout 판정 로직과 테스트가 없어 단위 처리 방식을 확인할 수 없음"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "테스트/설정 해석 단계에서 percentage 값이 bucket과 다른 단위(비율 vs 정수)로 비교되어 경계가 어긋났을 가능성."
+          }
+        ]
+      },
+      "issue_id": "14",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거가 README.md 20행과 rollout.py 1행(docstring)뿐이어서 실제 비교 연산자와 bucket 계산 방식을 확정할 수 없어, 추정 기반 수정이 빗나갈 수 있다.",
+            "mitigation": "수정 이전에 src/feature_flags/rollout.py 전체와 관련 호출부를 직접 읽어 경계 비교 구현을 확인하고, 확인 결과를 테스트로 먼저 고정한 뒤 수정한다."
+          },
+          {
+            "risk": "boundary 비교를 <= 에서 < 로 바꾸면 다른 percentage 값 구간에서 분포가 한 단계 이동하여 광범위한 동작 변화를 유발할 수 있다.",
+            "mitigation": "percentage 0, 10, 100 및 다수 bucket 값에 대한 테이블 기반 테스트로 회귀를 검출하고, 변경 전후 판정 분포를 비교한다."
+          },
+          {
+            "risk": "bucket 스케일이 1~100으로 정규화되어 있어 경계 수정만으로는 부족하고 계산 단계까지 변경해야 할 수 있다.",
+            "mitigation": "bucket 계산 범위를 먼저 확정하고(스케일 확인 단계), 스케일 불일치로 판명되면 정규화 지점을 일관되게 조정한 뒤 경계 비교를 재검증한다."
+          },
+          {
+            "risk": "percentage가 비율(0.0~1.0)과 정수(0~100)로 혼용되어 단위 비교 오류가 발생할 수 있다.",
+            "mitigation": "입력 타입과 단위를 명시적으로 검증(validation)하고, 단위 변환 지점을 한 곳으로 단일화하여 테스트로 커버한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트 작성",
+            "details": "benchmark_case_id \"rollout-boundary-short\" 시나리오를 단위 테스트로 고정한다. percentage=10 설정에서 bucket 9는 포함, bucket 10은 제외되어야 함을 명시적으로 단정(assert)하는 테스트를 추가한다. error_type=ReportedBehaviorMismatch, message \"포함됩니다.\" 케이스를 회귀 테스트로 등록한다."
+          },
+          {
+            "id": 2,
+            "action": "rollout 판정 로직에서 비교 연산자 확인",
+            "details": "src/feature_flags/rollout.py에서 percentage 비교 연산자(<= vs <)를 실제로 확인한다. 제공된 증거에는 비교 연산자를 포함한 로직이 없으므로 파일 전체와 관련 헬퍼를 직접 읽어 경계 비교 구현을 특정한다."
+          },
+          {
+            "id": 3,
+            "action": "bucket 계산 범위와 스케일 확인",
+            "details": "bucket 산출 범위가 0~100인지 1~100인지, 또는 다른 스케일로 정규화되는지 확인한다. 0~99 범위라면 percentage 비교 시 단위가 어긋나 경계가 한 단계 밀릴 수 있으므로 계산식과 정규화 지점을 문서화한다."
+          },
+          {
+            "id": 4,
+            "action": "경계 판정 수정",
+            "details": "bucket 10이 10% 구간에 포함되지 않도록 경계 비교를 수정한다. 예: bucket <= percentage를 bucket < percentage로 변경하거나, bucket을 0~99 스케일로 정규화한 뒤 비교하도록 일관되게 정리한다. 수정은 판정 함수 한 곳에서만 이루어지도록 하고 호출부는 변경하지 않는다."
+          },
+          {
+            "id": 5,
+            "action": "단위 테스트 및 회귀 검증",
+            "details": "경계값(bucket 0, 9, 10, 99, 100)과 percentage 0, 10, 100 조합에 대한 테이블 기반 테스트를 추가하고, 재현 테스트와 기존 테스트 스위트를 모두 실행하여 통과를 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "문서 정합성 확인",
+            "details": "README.md 20행의 src/feature_flags/rollout.py 안내와 실제 경계 규칙이 일치하는지 확인하고, 경계 의미(포함/제외)를 README 또는 모듈 docstring에 명시한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "acceptance_criteria": [
+          "percentage=10 설정에서 bucket=10 판정 결과가 '제외'로 반환된다.",
+          "percentage=10 설정에서 bucket=9 판정 결과가 '포함'으로 반환된다.",
+          "benchmark_case_id \"rollout-boundary-short\" 재현 케이스가 수정 후 통과한다.",
+          "경계값 테이블 테스트(bucket 0, 9, 10, 99, 100 × percentage 0, 10, 100)가 모두 통과한다.",
+          "기존 테스트 스위트에 회귀(regression)가 없다.",
+          "경계 포함/제외 규칙이 README.md 또는 src/feature_flags/rollout.py docstring에 명시되어 코드와 일치한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:48:48.821267Z",
+    "completed_at": "2026-09-28T07:49:11.199622Z",
+    "created_at": "2026-09-28T07:48:48.809037Z",
+    "updated_at": "2026-09-28T07:49:11.200639Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 24.438
+  }
+}

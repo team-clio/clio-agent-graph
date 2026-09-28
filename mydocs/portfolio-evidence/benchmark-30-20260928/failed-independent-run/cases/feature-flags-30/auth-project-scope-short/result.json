@@ -1,0 +1,529 @@
+{
+  "input": {
+    "id": "auth-project-scope-short",
+    "report": {
+      "title": "프로젝트 경계를 넘는 플래그 편집",
+      "description": "한 프로젝트의 owner가 다른 프로젝트 리소스를 수정할 수 있습니다.",
+      "steps_to_reproduce": [
+        "alpha owner로 beta 대상 권한을 평가합니다."
+      ],
+      "expected_behavior": "false가 반환되어야 합니다.",
+      "actual_behavior": "true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_owner_cannot_edit_another_project"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 11,
+    "name": "benchmark-20260928T063309Z-033dfb2f-auth-project-scope-short",
+    "description": "Clio Benchmark feature-flags-30: auth-project-scope-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T06:44:49.886792Z",
+    "updatedAt": "2026-09-28T06:44:49.886792Z"
+  },
+  "clio_repository": {
+    "id": 11,
+    "projectId": 11,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T06:45:28.966374Z",
+    "createdAt": "2026-09-28T06:44:49.896266Z",
+    "updatedAt": "2026-09-28T06:45:28.966989Z"
+  },
+  "bug": {
+    "id": 11,
+    "project_id": 11,
+    "issue_id": 11,
+    "title": "프로젝트 경계를 넘는 플래그 편집",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T06:45:30.763847Z",
+    "created_at": "2026-09-28T06:45:30.772057Z"
+  },
+  "analysis": {
+    "analysisResultId": 11,
+    "workflowRunId": 11,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": "`can_edit_project_flag(*, user_project_id, target_project_id, role)`: 키워드 인자로 `user_project_id`, `target_project_id`, `role`을 받지만 `role.casefold() == \"owner\"`인 경우에만 True를 반환한다.",
+          "end_line": 14,
+          "location": "src/feature_flags/authorization.py:1-14 (해시 sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)",
+          "file_path": "src/feature_flags/authorization.py",
+          "source_id": "11",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "프로젝트 범위 도메인 규칙이 can_edit_project_flag의 계약을 정의한다. alpha owner로 beta를 편집하면 true가 반환된다는 보고는 이 계약과 불일치한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_b08200da266c56c59e1890b36fcca9df",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "테스트 기대 동작: `can_manage_flag(\"admin\")`는 False여야 한다(현재 구현은 True를 반환해 불일치).",
+          "end_line": 16,
+          "location": "tests/test_authorization.py:1-16",
+          "file_path": "tests/test_authorization.py",
+          "source_id": "11",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "테스트 기대 동작이 can_manage_flag 규칙과 현재 구현의 불일치를 명시한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_b08200da266c56c59e1890b36fcca9df",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.",
+          "end_line": 5,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 5,
+          "evidence_id": "README.md:5",
+          "observation": "이 저장소는 벤치마크 fixture이며 프로덕션 서비스가 아니므로, 이슈는 권한 로직의 단위 수준 결함으로 한정된다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "11",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+          "end_line": 19,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 19,
+          "evidence_id": "README.md:19",
+          "observation": "README가 프로젝트 범위 검사를 authorization.py의 책임으로 명시하므로, 본 이슈의 결함 위치는 authorization.py로 좁혀진다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "11",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 11은 MANUAL 소스의 ReportedBehaviorMismatch로, alpha owner로 beta 대상 권한을 평가할 때 false가 아닌 true가 반환된다고 보고한다.",
+          "verified": true
+        },
+        {
+          "fact": "raw_payload의 benchmark_case_id는 \"auth-project-scope-short\"이다.",
+          "verified": true
+        },
+        {
+          "fact": "도메인 규칙 kn_b08200da266c56c59e1890b36fcca9df에 따르면 can_edit_project_flag(*, user_project_id, target_project_id, role)는 role.casefold() == \"owner\"인 경우에만 True를 반환하며, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 src/feature_flags/authorization.py를 관리자 권한과 프로젝트 범위 검사를 담당하는 모듈로 규정한다.",
+          "verified": true
+        },
+        {
+          "fact": "knowledge citation kn_b08200da266c56c59e1890b36fcca9df가 지목한 소스는 src/feature_flags/authorization.py 1~14행(해시 sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)과 tests/test_authorization.py 1~16행이다.",
+          "verified": true
+        },
+        {
+          "fact": "동일 도메인 규칙 문서는 can_manage_flag(\"admin\")가 False여야 하는데 현재 구현이 True를 반환한다고 서술하지만, 제공된 코드 근거에는 authorization.py 본문이 포함되어 있지 않아 이 부분은 코드로 직접 확인되지 않았다.",
+          "verified": false
+        },
+        {
+          "fact": "제공된 code 근거는 README.md 4건(5행 1건, 19행 3건)뿐이며 authorization.py의 can_edit_project_flag 구현 본문은 포함되어 있지 않다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 11,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.66,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_b08200da266c56c59e1890b36fcca9df: can_edit_project_flag는 user_project_id, target_project_id, role을 받지만 role.casefold() == \"owner\"인 경우에만 True를 반환하고, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다는 규칙과 실제 반환값 true가 불일치한다.",
+            "재현 절차: alpha owner로 beta 대상 권한 평가 시 기대 false, 실제 true (ReportedBehaviorMismatch)."
+          ],
+          "confidence": 0.62,
+          "hypothesis": "src/feature_flags/authorization.py의 can_edit_project_flag가 user_project_id와 target_project_id를 비교하지 않고(또는 두 값을 동일한 것으로 취급하고) role.casefold() == \"owner\" 조건만으로 True를 반환하여, alpha 프로젝트 owner가 beta 프로젝트 같은 다른 프로젝트의 플래그를 편집할 수 있게 된다."
+        },
+        {
+          "evidence": [
+            "kn_b08200da266c56c59e1890b36fcca9df: can_manage_flag(\"admin\")가 False여야 하는데 현재 구현은 True를 반환해 불일치한다는 서술이 문서화되어 있어 authorization.py 구현이 규칙과 어긋나 있음을 뒷받침한다.",
+            "README.md:19는 src/feature_flags/authorization.py를 \"관리자 권한과 프로젝트 범위 검사\" 모듈로 명시한다."
+          ],
+          "confidence": 0.35,
+          "hypothesis": "동일 모듈의 can_manage_flag 관련 결함(규칙상 admin은 False여야 하는데 현재 구현은 True 반환)과 프로젝트 경계 검사 누락이 같은 authorization 모듈에서 함께 발생한 상태로, 권한 평가 시 프로젝트 스코프 인자가 실제 비교에 사용되지 않는 것이 이 이슈의 직접 원인이다."
+        },
+        {
+          "evidence": [
+            "제공된 근거는 authorization.py 규칙 수준이며 호출부 코드 근거가 없어, 호출 인자 전달 오류 가능성은 검증되지 않았다."
+          ],
+          "confidence": 0.18,
+          "hypothesis": "호출 계층(서비스/엔드포인트)에서 권한 평가 시 target_project_id에 user_project_id와 동일한 값을 전달해 프로젝트 경계 검사가 사실상 무력화된다."
+        }
+      ],
+      "project_id": 11,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "authorization.py의 can_edit_project_flag 구현 본문이 제공된 code 근거에 포함되어 있지 않아, 실제 코드가 이미 프로젝트 경계를 검사하고 있을 가능성이 있다(팩트 verified=true). 이 경우 수정 대상이 잘못 특정된다.",
+            "mitigation": "수정 전 1단계에서 실제 소스를 읽고 재현 테스트(3단계)로 결함을 먼저 확정한 뒤에만 코드를 변경한다."
+          },
+          {
+            "risk": "can_manage_flag(\"admin\") 불일치 가설(가설 2, confidence 0.35)은 코드로 직접 확인되지 않았고(verified=false), 실제로는 규칙 문서 서술만 존재할 수 있다.",
+            "mitigation": "코드 확인 결과 불일치가 없으면 가설을 기각하고 근거를 기록하며, 불필요한 변경을 하지 않는다."
+          },
+          {
+            "risk": "호출 계층(가설 3)에서 target_project_id에 user_project_id와 동일한 값을 전달하면 authorization.py 수정만으로는 프로젝트 경계 검사가 여전히 무력화될 수 있다.",
+            "mitigation": "authorization.py 수정 후 재현 테스트가 실패하면 호출부 인자 전달 경로를 점검하고, 필요 시 서비스/엔드포인트 계층 테스트를 추가한다."
+          },
+          {
+            "risk": "role 비교 로직(casefold 등)을 변경할 때 다른 role 값이나 대소문자 처리 회귀가 발생할 수 있다.",
+            "mitigation": "owner/admin 및 대소문자 변형 케이스를 포함한 테스트로 회귀를 확인한다."
+          },
+          {
+            "risk": "이 이슈는 벤치마크 fixture 저장소(README.md:5)이며 프로덕션 서비스가 아니므로, 수정 범위를 문서화된 권한 로직 수준으로 한정하지 않으면 과잉 변경이 발생할 수 있다.",
+            "mitigation": "변경을 authorization.py의 권한 판정 로직과 그 테스트로 한정하고, 그 외 리팩터링은 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/authorization.py의 can_edit_project_flag 현재 구현 본문을 확보하고 can_manage_flag 구현 본문도 함께 읽어 두 함수의 실제 반환 로직을 확인한다.",
+            "details": "제공된 code 근거에는 README.md만 포함되어 있고 authorization.py 본문은 포함되지 않았으므로(팩트: '제공된 code 근거는 README.md 4건뿐이며 authorization.py의 can_edit_project_flag 구현 본문은 포함되어 있지 않다'), 먼저 실제 소스를 읽어 결함 존재 여부를 확정한다. 해시 기준: src/feature_flags/authorization.py 1~14행(sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)."
+          },
+          {
+            "id": 2,
+            "action": "도메인 규칙 kn_b08200da266c56c59e1890b36fcca9df의 계약을 테스트 케이스로 고정한다.",
+            "details": "규칙: can_edit_project_flag(*, user_project_id, target_project_id, role)는 role.casefold() == \"owner\"인 경우에만 True를 반환하며, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다. 회귀 방지를 위해 alpha owner / beta 대상 케이스를 테스트로 명시한다(raw_payload benchmark_case_id: auth-project-scope-short)."
+          },
+          {
+            "id": 3,
+            "action": "재현 테스트를 작성해 alpha owner로 beta 대상 권한 평가 시 기대 false / 실제 true인지 확인한다.",
+            "details": "tests/test_authorization.py 1~16행에 ReportedBehaviorMismatch 재현 케이스를 추가한다. 이 단계에서 실패(실제 true)가 관찰되어야 결함이 확정된다. 관찰되지 않으면 호출 계층의 인자 전달(가설 3)을 조사 대상으로 전환한다."
+          },
+          {
+            "id": 4,
+            "action": "can_edit_project_flag에서 target_project_id와 user_project_id 비교(프로젝트 경계 검사)를 구현에 반영한다.",
+            "details": "role.casefold() == \"owner\"이면서 user_project_id == target_project_id인 경우에만 True를 반환하도록 수정한다. 두 값이 동일하게 취급되거나 비교가 누락된 부분을 제거하고, 경계 불일치 시 명시적으로 False를 반환한다."
+          },
+          {
+            "id": 5,
+            "action": "can_manage_flag(\"admin\") 반환값이 규칙(False)과 일치하는지 검증하고 불일치 시 함께 수정한다.",
+            "details": "동일 도메인 규칙 문서는 can_manage_flag(\"admin\")이 False여야 한다고 서술하지만 현재 구현이 True를 반환한다고 서술되어 있다(팩트 verified=false: authorization.py 본문 미포함으로 코드로 직접 확인되지 않음). 확인 결과 불일치가 사실이면 role 판정 로직을 수정하고, 아니면 해당 가설(가설 2)을 기각 처리하고 근거를 기록한다."
+          },
+          {
+            "id": 6,
+            "action": "호출 계층(서비스/엔드포인트)에서 target_project_id에 user_project_id와 동일한 값이 전달되는지 점검한다.",
+            "details": "가설 3(confidence 0.18)은 코드 근거가 없어 검증되지 않았다. authorization.py 수정 후에도 재현이 남으면 호출부 인자 전달 경로를 확인해 프로젝트 경계 검사가 무력화되는 지점을 찾는다."
+          },
+          {
+            "id": 7,
+            "action": "수정 결과와 테스트 실행 결과를 기록하고 결함 위치를 README.md에 명시된 authorization.py 책임 범위와 대조해 문서화한다.",
+            "details": "README.md:19는 authorization.py를 '관리자 권한과 프로젝트 범위 검사' 모듈로 규정한다. 변경 후 이 책임과 구현이 일치함을 확인하고, 검증되지 않은 가설(2, 3)의 처리 결과(채택/기각)를 남긴다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "acceptance_criteria": [
+          "tests/test_authorization.py에서 alpha owner / beta 대상(target_project_id != user_project_id) 권한 평가가 기대값 false를 반환한다.",
+          "can_edit_project_flag(*, user_project_id, target_project_id, role)가 user_project_id == target_project_id이고 role.casefold() == \"owner\"인 경우에만 True를 반환한다.",
+          "target_project_id != user_project_id인 모든 경우에 can_edit_project_flag가 False를 반환한다.",
+          "can_manage_flag(\"admin\")의 반환값이 도메인 규칙(False)과 일치하거나, 코드 확인 결과 불일치가 없음이 근거와 함께 기록된다.",
+          "benchmark_case_id \"auth-project-scope-short\" 재현 테스트가 통과한다.",
+          "수정/기각된 가설과 그 근거가 기록되고, 호출 계층(가설 3) 점검 결과가 남는다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 72,
+            "rationale": "src/feature_flags/authorization.py의 can_edit_project_flag가 프로젝트 스코프를 검사하지 않아 모든 프로젝트 owner가 타 프로젝트 플래그 편집 권한을 갖는 것으로 평가된다. 권한 평가 결과가 전 프로젝트·전 플래그 편집 플로우에 파급되는 구조적 결함이나, 대상 저장소가 벤치마크 fixture(README.md:5)라 실제 사용자 규모는 제한적이다."
+          },
+          {
+            "name": "심각도",
+            "score": 82,
+            "rationale": "단순 오표시가 아니라 권한 상승(privilege escalation) 취약점으로, 타 프로젝트 리소스 무단 수정이 가능하다. 크래시나 데이터 손실은 아니지만 접근 통제 실패이므로 보안 노출에 준하는 심각도를 갖는다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 85,
+            "rationale": "재현 절차가 'alpha owner로 beta 대상 권한을 평가'하는 단일 호출로 결정적이며, 조건 분기(role.casefold() == \"owner\")만 통과하면 항상 true가 반환되어 100% 재현된다. 벤치마크 케이스 ID도 auth-project-scope-short로 경계 검사 누락이 상시 발생함을 시사한다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 78,
+            "rationale": "권한 판정 자체가 잘못된 값(true)을 반환하므로 사용자·호출 계층에서 우회할 수단이 없다. 상위 서비스/엔드포인트에서 별도 스코프 검증을 추가하지 않는 한 편집이 그대로 허용된다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 80,
+            "rationale": "플래그 편집 권한은 계정·프로젝트 경계 보호의 핵심 경로이며, 프로젝트 격리 실패는 멀티테넌시 신뢰의 근간을 훼손한다. 다만 결제 로직 직접 영향은 확인되지 않았다."
+          },
+          {
+            "name": "근거 신뢰도·검증 공백",
+            "score": 65,
+            "rationale": "도메인 규칙(kn_b08200da266c56c59e1890b36fcca9df)과 ReportedBehaviorMismatch 보고가 일치하나, 제공된 code 근거는 README.md 4건뿐이고 authorization.py 본문이 포함되지 않아 can_edit_project_flag 구현 결함은 코드로 직접 확인되지 않았다(confidence 0.66). 동일 모듈에서 can_manage_flag(\"admin\")가 규칙상 False여야 하는데 True를 반환한다는 복합 불일치도 문서화되어 있다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "프로젝트 경계를 넘는 플래그 편집은 접근 통제(인가) 실패로 분류되며, can_edit_project_flag(*, user_project_id, target_project_id, role)가 user_project_id와 target_project_id를 비교하지 않고 role.casefold() == \\\"owner\\\" 조건만으로 True를 반환해 alpha owner가 beta 프로젝트 플래그를 편집할 수 있다. 단일 호출로 100% 재현되는 결정적 권한 상승이며 우회 수단이 없고, 프로젝트 격리라는 핵심 경로를 훼손하므로 P1 높음(70-84) 구간의 상단으로 산정한다. 다만 README.md:5가 명시하듯 이 저장소는 Clio Benchmark용 테스트 fixture로 프로덕션 서비스가 아니고, 제공된 code 근거가 README.md 4건뿐이어서 authorization.py 본문 결함이 코드로 직접 확인되지 않았으며(confidence 0.66) 결제·실사용자 규모 영향은 확인되지 않아 P0 긴급(85+) 수준의 전면 장애나 데이터 손실에는 이르지 않는다고 판단해 85 미만으로 조정했다. 권장 조치로는 can_edit_project_flag에 target_project_id != user_project_id 시 False를 반환하는 스코프 검사 추가와 함께, 동일 모듈의 can_manage_flag(\\\"admin\\\") 불일치 및 호출부 인자 전달 경로를 함께 점검해야 한다.",
+        "risk_score": 74
+      },
+      "workflow_run_id": 11
+    }
+  },
+  "workflow": {
+    "id": 11,
+    "project_id": 11,
+    "request_id": "process-bug-11",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 11은 MANUAL 소스의 ReportedBehaviorMismatch로, alpha owner로 beta 대상 권한을 평가할 때 false가 아닌 true가 반환된다고 보고한다.",
+            "verified": true
+          },
+          {
+            "fact": "raw_payload의 benchmark_case_id는 \"auth-project-scope-short\"이다.",
+            "verified": true
+          },
+          {
+            "fact": "도메인 규칙 kn_b08200da266c56c59e1890b36fcca9df에 따르면 can_edit_project_flag(*, user_project_id, target_project_id, role)는 role.casefold() == \"owner\"인 경우에만 True를 반환하며, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 src/feature_flags/authorization.py를 관리자 권한과 프로젝트 범위 검사를 담당하는 모듈로 규정한다.",
+            "verified": true
+          },
+          {
+            "fact": "knowledge citation kn_b08200da266c56c59e1890b36fcca9df가 지목한 소스는 src/feature_flags/authorization.py 1~14행(해시 sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)과 tests/test_authorization.py 1~16행이다.",
+            "verified": true
+          },
+          {
+            "fact": "동일 도메인 규칙 문서는 can_manage_flag(\"admin\")가 False여야 하는데 현재 구현이 True를 반환한다고 서술하지만, 제공된 코드 근거에는 authorization.py 본문이 포함되어 있지 않아 이 부분은 코드로 직접 확인되지 않았다.",
+            "verified": false
+          },
+          {
+            "fact": "제공된 code 근거는 README.md 4건(5행 1건, 19행 3건)뿐이며 authorization.py의 can_edit_project_flag 구현 본문은 포함되어 있지 않다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": "`can_edit_project_flag(*, user_project_id, target_project_id, role)`: 키워드 인자로 `user_project_id`, `target_project_id`, `role`을 받지만 `role.casefold() == \"owner\"`인 경우에만 True를 반환한다.",
+            "end_line": 14,
+            "location": "src/feature_flags/authorization.py:1-14 (해시 sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)",
+            "file_path": "src/feature_flags/authorization.py",
+            "source_id": "11",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "프로젝트 범위 도메인 규칙이 can_edit_project_flag의 계약을 정의한다. alpha owner로 beta를 편집하면 true가 반환된다는 보고는 이 계약과 불일치한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_b08200da266c56c59e1890b36fcca9df",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": "테스트 기대 동작: `can_manage_flag(\"admin\")`는 False여야 한다(현재 구현은 True를 반환해 불일치).",
+            "end_line": 16,
+            "location": "tests/test_authorization.py:1-16",
+            "file_path": "tests/test_authorization.py",
+            "source_id": "11",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "테스트 기대 동작이 can_manage_flag 규칙과 현재 구현의 불일치를 명시한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_b08200da266c56c59e1890b36fcca9df",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.",
+            "end_line": 5,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 5,
+            "evidence_id": "README.md:5",
+            "observation": "이 저장소는 벤치마크 fixture이며 프로덕션 서비스가 아니므로, 이슈는 권한 로직의 단위 수준 결함으로 한정된다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "11",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+            "end_line": 19,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 19,
+            "evidence_id": "README.md:19",
+            "observation": "README가 프로젝트 범위 검사를 authorization.py의 책임으로 명시하므로, 본 이슈의 결함 위치는 authorization.py로 좁혀진다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "11",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.66,
+        "evidence_counts": {
+          "code": 4,
+          "history": 0,
+          "documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_b08200da266c56c59e1890b36fcca9df: can_edit_project_flag는 user_project_id, target_project_id, role을 받지만 role.casefold() == \"owner\"인 경우에만 True를 반환하고, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다는 규칙과 실제 반환값 true가 불일치한다.",
+              "재현 절차: alpha owner로 beta 대상 권한 평가 시 기대 false, 실제 true (ReportedBehaviorMismatch)."
+            ],
+            "confidence": 0.62,
+            "hypothesis": "src/feature_flags/authorization.py의 can_edit_project_flag가 user_project_id와 target_project_id를 비교하지 않고(또는 두 값을 동일한 것으로 취급하고) role.casefold() == \"owner\" 조건만으로 True를 반환하여, alpha 프로젝트 owner가 beta 프로젝트 같은 다른 프로젝트의 플래그를 편집할 수 있게 된다."
+          },
+          {
+            "evidence": [
+              "kn_b08200da266c56c59e1890b36fcca9df: can_manage_flag(\"admin\")가 False여야 하는데 현재 구현은 True를 반환해 불일치한다는 서술이 문서화되어 있어 authorization.py 구현이 규칙과 어긋나 있음을 뒷받침한다.",
+              "README.md:19는 src/feature_flags/authorization.py를 \"관리자 권한과 프로젝트 범위 검사\" 모듈로 명시한다."
+            ],
+            "confidence": 0.35,
+            "hypothesis": "동일 모듈의 can_manage_flag 관련 결함(규칙상 admin은 False여야 하는데 현재 구현은 True 반환)과 프로젝트 경계 검사 누락이 같은 authorization 모듈에서 함께 발생한 상태로, 권한 평가 시 프로젝트 스코프 인자가 실제 비교에 사용되지 않는 것이 이 이슈의 직접 원인이다."
+          },
+          {
+            "evidence": [
+              "제공된 근거는 authorization.py 규칙 수준이며 호출부 코드 근거가 없어, 호출 인자 전달 오류 가능성은 검증되지 않았다."
+            ],
+            "confidence": 0.18,
+            "hypothesis": "호출 계층(서비스/엔드포인트)에서 권한 평가 시 target_project_id에 user_project_id와 동일한 값을 전달해 프로젝트 경계 검사가 사실상 무력화된다."
+          }
+        ]
+      },
+      "issue_id": "11",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "authorization.py의 can_edit_project_flag 구현 본문이 제공된 code 근거에 포함되어 있지 않아, 실제 코드가 이미 프로젝트 경계를 검사하고 있을 가능성이 있다(팩트 verified=true). 이 경우 수정 대상이 잘못 특정된다.",
+            "mitigation": "수정 전 1단계에서 실제 소스를 읽고 재현 테스트(3단계)로 결함을 먼저 확정한 뒤에만 코드를 변경한다."
+          },
+          {
+            "risk": "can_manage_flag(\"admin\") 불일치 가설(가설 2, confidence 0.35)은 코드로 직접 확인되지 않았고(verified=false), 실제로는 규칙 문서 서술만 존재할 수 있다.",
+            "mitigation": "코드 확인 결과 불일치가 없으면 가설을 기각하고 근거를 기록하며, 불필요한 변경을 하지 않는다."
+          },
+          {
+            "risk": "호출 계층(가설 3)에서 target_project_id에 user_project_id와 동일한 값을 전달하면 authorization.py 수정만으로는 프로젝트 경계 검사가 여전히 무력화될 수 있다.",
+            "mitigation": "authorization.py 수정 후 재현 테스트가 실패하면 호출부 인자 전달 경로를 점검하고, 필요 시 서비스/엔드포인트 계층 테스트를 추가한다."
+          },
+          {
+            "risk": "role 비교 로직(casefold 등)을 변경할 때 다른 role 값이나 대소문자 처리 회귀가 발생할 수 있다.",
+            "mitigation": "owner/admin 및 대소문자 변형 케이스를 포함한 테스트로 회귀를 확인한다."
+          },
+          {
+            "risk": "이 이슈는 벤치마크 fixture 저장소(README.md:5)이며 프로덕션 서비스가 아니므로, 수정 범위를 문서화된 권한 로직 수준으로 한정하지 않으면 과잉 변경이 발생할 수 있다.",
+            "mitigation": "변경을 authorization.py의 권한 판정 로직과 그 테스트로 한정하고, 그 외 리팩터링은 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/authorization.py의 can_edit_project_flag 현재 구현 본문을 확보하고 can_manage_flag 구현 본문도 함께 읽어 두 함수의 실제 반환 로직을 확인한다.",
+            "details": "제공된 code 근거에는 README.md만 포함되어 있고 authorization.py 본문은 포함되지 않았으므로(팩트: '제공된 code 근거는 README.md 4건뿐이며 authorization.py의 can_edit_project_flag 구현 본문은 포함되어 있지 않다'), 먼저 실제 소스를 읽어 결함 존재 여부를 확정한다. 해시 기준: src/feature_flags/authorization.py 1~14행(sha256:5875427c4ed733c2bfa4a0898417ae8fbaadcadfb39fb8d1808fd2ec52d8e829)."
+          },
+          {
+            "id": 2,
+            "action": "도메인 규칙 kn_b08200da266c56c59e1890b36fcca9df의 계약을 테스트 케이스로 고정한다.",
+            "details": "규칙: can_edit_project_flag(*, user_project_id, target_project_id, role)는 role.casefold() == \"owner\"인 경우에만 True를 반환하며, owner가 다른 프로젝트(target_project_id != user_project_id)를 편집할 수 없어야 한다. 회귀 방지를 위해 alpha owner / beta 대상 케이스를 테스트로 명시한다(raw_payload benchmark_case_id: auth-project-scope-short)."
+          },
+          {
+            "id": 3,
+            "action": "재현 테스트를 작성해 alpha owner로 beta 대상 권한 평가 시 기대 false / 실제 true인지 확인한다.",
+            "details": "tests/test_authorization.py 1~16행에 ReportedBehaviorMismatch 재현 케이스를 추가한다. 이 단계에서 실패(실제 true)가 관찰되어야 결함이 확정된다. 관찰되지 않으면 호출 계층의 인자 전달(가설 3)을 조사 대상으로 전환한다."
+          },
+          {
+            "id": 4,
+            "action": "can_edit_project_flag에서 target_project_id와 user_project_id 비교(프로젝트 경계 검사)를 구현에 반영한다.",
+            "details": "role.casefold() == \"owner\"이면서 user_project_id == target_project_id인 경우에만 True를 반환하도록 수정한다. 두 값이 동일하게 취급되거나 비교가 누락된 부분을 제거하고, 경계 불일치 시 명시적으로 False를 반환한다."
+          },
+          {
+            "id": 5,
+            "action": "can_manage_flag(\"admin\") 반환값이 규칙(False)과 일치하는지 검증하고 불일치 시 함께 수정한다.",
+            "details": "동일 도메인 규칙 문서는 can_manage_flag(\"admin\")이 False여야 한다고 서술하지만 현재 구현이 True를 반환한다고 서술되어 있다(팩트 verified=false: authorization.py 본문 미포함으로 코드로 직접 확인되지 않음). 확인 결과 불일치가 사실이면 role 판정 로직을 수정하고, 아니면 해당 가설(가설 2)을 기각 처리하고 근거를 기록한다."
+          },
+          {
+            "id": 6,
+            "action": "호출 계층(서비스/엔드포인트)에서 target_project_id에 user_project_id와 동일한 값이 전달되는지 점검한다.",
+            "details": "가설 3(confidence 0.18)은 코드 근거가 없어 검증되지 않았다. authorization.py 수정 후에도 재현이 남으면 호출부 인자 전달 경로를 확인해 프로젝트 경계 검사가 무력화되는 지점을 찾는다."
+          },
+          {
+            "id": 7,
+            "action": "수정 결과와 테스트 실행 결과를 기록하고 결함 위치를 README.md에 명시된 authorization.py 책임 범위와 대조해 문서화한다.",
+            "details": "README.md:19는 authorization.py를 '관리자 권한과 프로젝트 범위 검사' 모듈로 규정한다. 변경 후 이 책임과 구현이 일치함을 확인하고, 검증되지 않은 가설(2, 3)의 처리 결과(채택/기각)를 남긴다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "11",
+        "acceptance_criteria": [
+          "tests/test_authorization.py에서 alpha owner / beta 대상(target_project_id != user_project_id) 권한 평가가 기대값 false를 반환한다.",
+          "can_edit_project_flag(*, user_project_id, target_project_id, role)가 user_project_id == target_project_id이고 role.casefold() == \"owner\"인 경우에만 True를 반환한다.",
+          "target_project_id != user_project_id인 모든 경우에 can_edit_project_flag가 False를 반환한다.",
+          "can_manage_flag(\"admin\")의 반환값이 도메인 규칙(False)과 일치하거나, 코드 확인 결과 불일치가 없음이 근거와 함께 기록된다.",
+          "benchmark_case_id \"auth-project-scope-short\" 재현 테스트가 통과한다.",
+          "수정/기각된 가설과 그 근거가 기록되고, 호출 계층(가설 3) 점검 결과가 남는다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T06:45:31.530033Z",
+    "completed_at": "2026-09-28T06:46:06.510680Z",
+    "created_at": "2026-09-28T06:45:31.516636Z",
+    "updated_at": "2026-09-28T06:46:06.513368Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 36.435
+  }
+}

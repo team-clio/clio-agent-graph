@@ -1,0 +1,480 @@
+{
+  "input": {
+    "id": "cache-false-miss-symptom",
+    "report": {
+      "title": "비활성 플래그가 갑자기 활성화됨",
+      "description": "캐시 TTL이 남아 있는데도 false 플래그가 저장소 수정 직후 true로 보입니다.",
+      "steps_to_reproduce": [
+        "비활성 값을 조회합니다.",
+        "DB 값을 활성으로 수정합니다.",
+        "즉시 재조회합니다."
+      ],
+      "expected_behavior": "캐시 만료 전에는 비활성 상태여야 합니다.",
+      "actual_behavior": "즉시 활성 상태가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_cached_false_value_is_not_treated_as_a_miss"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 6,
+    "name": "benchmark-20260928T073431Z-64ae54ac-cache-false-miss-symptom",
+    "description": "Clio Benchmark feature-flags-30: cache-false-miss-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:39:44.500965Z",
+    "updatedAt": "2026-09-28T07:39:44.500965Z"
+  },
+  "clio_repository": {
+    "id": 6,
+    "projectId": 6,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:40:22.073865Z",
+    "createdAt": "2026-09-28T07:39:44.512743Z",
+    "updatedAt": "2026-09-28T07:40:22.074158Z"
+  },
+  "bug": {
+    "id": 6,
+    "project_id": 6,
+    "issue_id": 6,
+    "title": "비활성 플래그가 갑자기 활성화됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:40:23.106685Z",
+    "created_at": "2026-09-28T07:40:23.123996Z"
+  },
+  "analysis": {
+    "analysisResultId": 6,
+    "workflowRunId": 6,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "README.md:3",
+          "observation": "서비스가 테넌트별 기능 플래그 조회를 제공하는 Python 라이브러리임을 확인. 테넌트 단위 스코프의 존재를 시사하나 캐시 키 구성은 이 줄만으로 단정할 수 없다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/cache.py`: 조회 결과 캐시",
+          "end_line": 17,
+          "location": "README.md:17",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 17,
+          "evidence_id": "README.md:17",
+          "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시를 담당함을 명시. TTL 관리·무효화 로직이 이 모듈에 있을 것으로 추정되나 실제 구현은 제공되지 않았다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": "README.md:18",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "README.md:18",
+          "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스를 담당함을 명시. 저장소 수정 경로와의 캐시 무효화 연계 여부는 이 줄만으로 확인할 수 없다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "제공된 증거에 문서(0건)와 이력(0건)은 없고, 코드 증거 3건은 모두 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 17, 18행이다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md:3은 이 서비스가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'임을 설명하며, 이는 테넌트 단위 스코프가 존재함을 시사한다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md:17은 `src/feature_flags/cache.py`를 '조회 결과 캐시'로, README.md:18은 `src/feature_flags/service.py`를 '플래그 조회 서비스'로 기술한다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 설명은 캐시 TTL이 남아 있는데도 DB 값을 활성으로 수정한 직후 재조회 시 true(활성)가 반환된다고 보고하며, 이는 'TTL 이내 재조회 시 비활성 상태여야 한다'는 기대 동작과 모순된다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context.raw_payload.benchmark_case_id는 \"cache-false-miss-symptom\"으로, 거짓값(false) 미스 증상을 가리킨다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context.stack_trace는 빈 배열([])로, 크래시·예외 프레임 근거는 제공되지 않았다(동작 불일치 유형: ReportedBehaviorMismatch).",
+          "verified": true
+        }
+      ],
+      "issue_id": 6,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.35,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:17 — `src/feature_flags/cache.py`: 조회 결과 캐시 (repository_id 6, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+            "README.md:18 — `src/feature_flags/service.py`: 플래그 조회 서비스 (repository_id 6, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+            "재현 절차: 캐시 TTL 이내의 2차 조회에서 false(비활성)가 아닌 수정된 값이 반환됨"
+          ],
+          "confidence": 0.5,
+          "hypothesis": "조회 결과 캐시가 값(false)과 함께 테넌트/플래그 단위로 저장되지만, TTL·키 무효화가 적용되지 않거나 DB 수정 경로가 캐시를 무효화하지 않아, 저장소 수정 직후 재조회 시에도 남아 있는 캐시 항목이 아니라 새로 읽은 DB 값이 반환된다 — 즉 'false 미스(false miss)'로 인해 캐시 TTL이 남아 있음에도 활성 값이 즉시 노출된다."
+        },
+        {
+          "evidence": [
+            "bug_context.raw_payload.benchmark_case_id = \"cache-false-miss-symptom\": 거짓값 미스(falsy miss) 증상이 케이스로 명시됨"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "캐시가 false/None 등 거짓값(falsy)을 '미스'로 오인해 캐시 저장을 건너뛰거나 즉시 재조회로 우회하여, 비활성 상태가 캐시되지 않고 매번 저장소를 다시 읽는다."
+        },
+        {
+          "evidence": [
+            "README.md:18 — `src/feature_flags/service.py`: 플래그 조회 서비스가 저장소 수정 경로와 분리되어 존재함"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "서비스 계층이 저장소 수정 후 캐시 엔트리를 삭제(무효화)하는 로직을 누락했거나, 수정과 캐시 키/TTL이 동일하지 않아 수정 값이 즉시 반영된다."
+        }
+      ],
+      "project_id": 6,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거가 README.md 3·17·18행 코드 증거 3건뿐이고 실제 구현 파일 내용이 없어, 거짓값 미스 원인이 캐시 판정 로직인지 무효화 누락인지 단정할 수 없다(3개 가설 신뢰도 0.5/0.3/0.2).",
+            "mitigation": "1단계에서 두 파일의 실제 구현을 먼저 확인하고, 3·5단계 수정을 각각 독립적으로 적용·검증해 어느 가설이 실제 원인인지 테스트로 확정한다."
+          },
+          {
+            "risk": "캐시 키 또는 TTL 정의를 캐시 모듈과 서비스 모듈에서 각각 관리하면 다시 키 불일치가 발생할 수 있다.",
+            "mitigation": "키 생성·TTL을 단일 모듈의 공용 함수/상수로 통합하고, 무효화 로직도 동일 정의를 참조하도록 한다."
+          },
+          {
+            "risk": "캐시 무효화를 쓰기 경로에 연결하면서 모든 쓰기 지점을 누락하면 일부 경로에서 여전히 스테일 값이 반환된다.",
+            "mitigation": "수정 경로를 전수 조사하고, 가능하면 단일 쓰기 진입점에 무효화를 배치하며 회귀 테스트로 각 경로를 커버한다."
+          },
+          {
+            "risk": "거짓값까지 캐시에 저장하면서 TTL이 길거나 무한이면 비활성 상태 변경이 반영되지 않을 수 있다.",
+            "mitigation": "거짓값 저장 시에도 TTL을 필수 적용하고, 무효화 경로 미호출 시를 대비해 보수적 TTL 기본값을 설정한다."
+          },
+          {
+            "risk": "실제 크래시·예외 스택이 제공되지 않아 런타임 환경에서 다른 예외가 함께 발생할 수 있다.",
+            "mitigation": "변경 후 저장소 fake와 실제 저장소 양쪽에서 재조회/수정 시나리오를 실행해 예외 발생 여부를 별도로 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 코드 상태와 재현 경로를 확정한다",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 `src/feature_flags/cache.py`(조회 결과 캐시)와 `src/feature_flags/service.py`(플래그 조회 서비스)의 실제 구현을 확인한다. 특히 캐시 저장 여부를 판정하는 조건식(예: `if value:` / `if value is not None:`), 캐시 키 구성(테넌트 단위 스코프 포함 여부), TTL 설정, 그리고 저장소 수정 경로에서 캐시 무효화(invalidate/delete)를 호출하는지 여부를 각각 라인 단위로 기록한다."
+          },
+          {
+            "id": 2,
+            "action": "거짓값 미스 시나리오를 재현하는 회귀 테스트를 먼저 작성한다",
+            "details": "benchmark_case_id=\"cache-false-miss-symptom\" 증상을 그대로 고정한다. 테스트는 (1) 플래그 값이 false(비활성)일 때 조회 → (2) TTL 이내에 재조회 → 수정된 값이 아닌 캐시된 false가 반환되고 저장소 재조회가 발생하지 않는지 검증, (3) 저장소 값 수정 직후 재조회 → 수정된 값이 반환되는지 검증하는 3개 케이스로 구성한다. 서비스 계층은 저장소를 fake로 주입해 호출 횟수를 카운트한다."
+          },
+          {
+            "id": 3,
+            "action": "거짓값(falsy)을 '미스'로 오인하는 캐시 판정 로직을 수정한다",
+            "details": "`src/feature_flags/cache.py`의 캐시 조회/저장 판정에서 truthy 검사(`if value:`)를 명시적 None 검사(`if value is not None:`)로 교체하고, 저장 여부는 캐시 히트 여부 플래그로 분기하도록 리팩터링한다. false/None 등 거짓값 저장 시에도 TTL이 동일하게 적용되도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "캐시 키에 테넌트/플래그 단위 스코프를 포함하고 TTL을 적용한다",
+            "details": "캐시 키가 `(tenant_id, flag_key)` 형태로 테넌트·플래그 단위로 분리되도록 구성하고, README.md:3에 시사된 테넌트별 스코프가 코드에 반영되었는지 확인한다. TTL이 설정된 경우 만료 시 재조회가 일어나도록 하고, TTL 미설정 시 무기한 잔존하지 않도록 기본 정책을 명시한다."
+          },
+          {
+            "id": 5,
+            "action": "저장소 수정 경로에서 캐시 무효화를 연결한다",
+            "details": "`src/feature_flags/service.py`에서 플래그 값 수정(쓰기) 경로가 캐시 무효화를 호출하도록 연결한다. 무효화는 해당 `(tenant_id, flag_key)` 키만 삭제하고, 캐시와 저장소의 키/TTL 정의가 동일한 모듈 상수를 공유하도록 하여 불일치를 제거한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 테스트 스위트를 실행하고 증상을 검증한다",
+            "details": "2단계에서 작성한 테스트와 기존 테스트를 함께 실행하여, TTL 이내 재조회 시 저장소 재조회가 발생하지 않고 저장소 수정 직후에는 수정 값이 반환되는지 확인한다. 실패 시 3~5단계 수정 내용을 재점검하고, 통과 시 변경 사항을 요약 보고한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "acceptance_criteria": [
+          "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 `src/feature_flags/cache.py`의 캐시 저장/조회 판정이 false·None 등 거짓값을 '미스'로 오인하지 않고 명시적 None 검사로 캐시에 저장하며, 저장된 거짓값이 TTL 동안 유지된다.",
+          "TTL 이내 동일 `(tenant_id, flag_key)` 재조회 시 저장소(DB) 재조회가 발생하지 않고 캐시된 값이 반환된다(fake 저장소 호출 횟수로 검증).",
+          "저장소 값 수정 경로 호출 직후 동일 키 재조회 시 수정된 값이 반환된다(캐시 무효화 동작 검증).",
+          "서로 다른 테넌트의 동일 flag_key 조회가 서로의 캐시 값을 오염시키지 않는다(테넌트 단위 스코프 분리 검증).",
+          "benchmark_case_id=\"cache-false-miss-symptom\" 시나리오를 재현하는 회귀 테스트가 신규 추가되어 통과하고, 기존 테스트 스위트도 모두 통과한다.",
+          "bug_context.stack_trace가 빈 배열(크래시·예외 프레임 미제공)이므로, 변경이 예외를 유발하지 않음을 확인하고 동작 불일치 유형(ReportedBehaviorMismatch)이 해소되었음을 보고한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 40,
+            "rationale": "README.md:3에 따르면 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'로, 테넌트 단위 스코프에 걸쳐 플래그 조회 결과가 잘못 반환될 수 있다. 다만 캐시 관련 모듈(`src/feature_flags/cache.py`, `src/feature_flags/service.py`) 국소 범위이며 전 기능 장애로 번지는 증거는 없다(문서 0건, 이력 0건)."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 30,
+            "rationale": "bug_context.error_type은 ReportedBehaviorMismatch이고 stack_trace는 빈 배열([])로 크래시·예외 프레임 근거가 없다. 데이터 손실이나 보안 노출은 아니고, 잘못된 플래그 상태(true/false)가 반환되는 정합성 문제에 그친다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 55,
+            "rationale": "재현 절차(비활성 조회 → DB 활성 수정 → 즉시 재조회)가 결정적으로 재현되며, raw_payload.benchmark_case_id = \"cache-false-miss-symptom\"로 거짓값 미스 증상이 케이스로 명시되어 재현 신뢰도가 높다. 다만 '저장소 수정 직후'라는 특정 조건에서만 발현된다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 45,
+            "rationale": "TTL 만료를 기다리거나 재조회 타이밍을 늦추면 우회 가능하다는 점에서 즉각적 차단 수준은 아니다. 그러나 근본 원인이 캐시 무효화/거짓값 미스(`src/feature_flags/cache.py`)로 추정되어, 잘못된 값이 TTL 동안 지속될 수 있어 우회 비용이 낮지 않다(추정 신뢰도 0.35)."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 35,
+            "rationale": "기능 플래그는 결제·계정 같은 핵심 경로 자체가 아니라 릴리스·기능 노출 제어 계층이다. 다만 플래그 상태 오판은 잘못된 기능 노출/차단으로 이어질 수 있으나, 결제나 계정 데이터를 직접 훼손한다는 근거는 없다."
+          }
+        ],
+        "priority": "P3",
+        "rationale": "캐시 TTL이 남아 있는데도 저장소 수정 직후 비활성(false) 플래그가 활성(true)으로 반환되는 동작 불일치(ReportedBehaviorMismatch) 이슈로, 캐시 TTL·키 무효화 누락 또는 거짓값 미스(false miss, benchmark_case_id = \\\"cache-false-miss-symptom\\\")가 원인으로 추정된다(코드 증거 3건 모두 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 17, 18행; 문서 0건, 이력 0건, stack_trace 빈 배열). 테넌트별 플래그 조회 결과의 정합성이 깨지고 재현 절차가 결정적으로 재현된다는 점에서 P3 구간 상한에 근접한 위험이다. 다만 크래시·데이터 손실·보안 노출 근거가 없고, 전면 장애가 아닌 캐시 계층 국소 문제이며 TTL 만료로 회복 가능한 우회 경로가 존재한다는 점을 반영해 38점(P3 낮음)으로 산정한다. 가설 신뢰도가 0.35~0.5로 낮은 만큼, 실제 캐시 무효화 경로(`src/feature_flags/service.py`)와 캐시 키/TTL 구현 확인 시 영향도가 상향될 수 있다.",
+        "risk_score": 38
+      },
+      "workflow_run_id": 6
+    }
+  },
+  "workflow": {
+    "id": 6,
+    "project_id": 6,
+    "request_id": "process-bug-6",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "제공된 증거에 문서(0건)와 이력(0건)은 없고, 코드 증거 3건은 모두 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 3, 17, 18행이다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md:3은 이 서비스가 '테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리'임을 설명하며, 이는 테넌트 단위 스코프가 존재함을 시사한다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md:17은 `src/feature_flags/cache.py`를 '조회 결과 캐시'로, README.md:18은 `src/feature_flags/service.py`를 '플래그 조회 서비스'로 기술한다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 설명은 캐시 TTL이 남아 있는데도 DB 값을 활성으로 수정한 직후 재조회 시 true(활성)가 반환된다고 보고하며, 이는 'TTL 이내 재조회 시 비활성 상태여야 한다'는 기대 동작과 모순된다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context.raw_payload.benchmark_case_id는 \"cache-false-miss-symptom\"으로, 거짓값(false) 미스 증상을 가리킨다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context.stack_trace는 빈 배열([])로, 크래시·예외 프레임 근거는 제공되지 않았다(동작 불일치 유형: ReportedBehaviorMismatch).",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "README.md:3",
+            "observation": "서비스가 테넌트별 기능 플래그 조회를 제공하는 Python 라이브러리임을 확인. 테넌트 단위 스코프의 존재를 시사하나 캐시 키 구성은 이 줄만으로 단정할 수 없다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/cache.py`: 조회 결과 캐시",
+            "end_line": 17,
+            "location": "README.md:17",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 17,
+            "evidence_id": "README.md:17",
+            "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시를 담당함을 명시. TTL 관리·무효화 로직이 이 모듈에 있을 것으로 추정되나 실제 구현은 제공되지 않았다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": "README.md:18",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "README.md:18",
+            "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스를 담당함을 명시. 저장소 수정 경로와의 캐시 무효화 연계 여부는 이 줄만으로 확인할 수 없다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.35,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:17 — `src/feature_flags/cache.py`: 조회 결과 캐시 (repository_id 6, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+              "README.md:18 — `src/feature_flags/service.py`: 플래그 조회 서비스 (repository_id 6, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+              "재현 절차: 캐시 TTL 이내의 2차 조회에서 false(비활성)가 아닌 수정된 값이 반환됨"
+            ],
+            "confidence": 0.5,
+            "hypothesis": "조회 결과 캐시가 값(false)과 함께 테넌트/플래그 단위로 저장되지만, TTL·키 무효화가 적용되지 않거나 DB 수정 경로가 캐시를 무효화하지 않아, 저장소 수정 직후 재조회 시에도 남아 있는 캐시 항목이 아니라 새로 읽은 DB 값이 반환된다 — 즉 'false 미스(false miss)'로 인해 캐시 TTL이 남아 있음에도 활성 값이 즉시 노출된다."
+          },
+          {
+            "evidence": [
+              "bug_context.raw_payload.benchmark_case_id = \"cache-false-miss-symptom\": 거짓값 미스(falsy miss) 증상이 케이스로 명시됨"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "캐시가 false/None 등 거짓값(falsy)을 '미스'로 오인해 캐시 저장을 건너뛰거나 즉시 재조회로 우회하여, 비활성 상태가 캐시되지 않고 매번 저장소를 다시 읽는다."
+          },
+          {
+            "evidence": [
+              "README.md:18 — `src/feature_flags/service.py`: 플래그 조회 서비스가 저장소 수정 경로와 분리되어 존재함"
+            ],
+            "confidence": 0.2,
+            "hypothesis": "서비스 계층이 저장소 수정 후 캐시 엔트리를 삭제(무효화)하는 로직을 누락했거나, 수정과 캐시 키/TTL이 동일하지 않아 수정 값이 즉시 반영된다."
+          }
+        ]
+      },
+      "issue_id": "6",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거가 README.md 3·17·18행 코드 증거 3건뿐이고 실제 구현 파일 내용이 없어, 거짓값 미스 원인이 캐시 판정 로직인지 무효화 누락인지 단정할 수 없다(3개 가설 신뢰도 0.5/0.3/0.2).",
+            "mitigation": "1단계에서 두 파일의 실제 구현을 먼저 확인하고, 3·5단계 수정을 각각 독립적으로 적용·검증해 어느 가설이 실제 원인인지 테스트로 확정한다."
+          },
+          {
+            "risk": "캐시 키 또는 TTL 정의를 캐시 모듈과 서비스 모듈에서 각각 관리하면 다시 키 불일치가 발생할 수 있다.",
+            "mitigation": "키 생성·TTL을 단일 모듈의 공용 함수/상수로 통합하고, 무효화 로직도 동일 정의를 참조하도록 한다."
+          },
+          {
+            "risk": "캐시 무효화를 쓰기 경로에 연결하면서 모든 쓰기 지점을 누락하면 일부 경로에서 여전히 스테일 값이 반환된다.",
+            "mitigation": "수정 경로를 전수 조사하고, 가능하면 단일 쓰기 진입점에 무효화를 배치하며 회귀 테스트로 각 경로를 커버한다."
+          },
+          {
+            "risk": "거짓값까지 캐시에 저장하면서 TTL이 길거나 무한이면 비활성 상태 변경이 반영되지 않을 수 있다.",
+            "mitigation": "거짓값 저장 시에도 TTL을 필수 적용하고, 무효화 경로 미호출 시를 대비해 보수적 TTL 기본값을 설정한다."
+          },
+          {
+            "risk": "실제 크래시·예외 스택이 제공되지 않아 런타임 환경에서 다른 예외가 함께 발생할 수 있다.",
+            "mitigation": "변경 후 저장소 fake와 실제 저장소 양쪽에서 재조회/수정 시나리오를 실행해 예외 발생 여부를 별도로 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 코드 상태와 재현 경로를 확정한다",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 `src/feature_flags/cache.py`(조회 결과 캐시)와 `src/feature_flags/service.py`(플래그 조회 서비스)의 실제 구현을 확인한다. 특히 캐시 저장 여부를 판정하는 조건식(예: `if value:` / `if value is not None:`), 캐시 키 구성(테넌트 단위 스코프 포함 여부), TTL 설정, 그리고 저장소 수정 경로에서 캐시 무효화(invalidate/delete)를 호출하는지 여부를 각각 라인 단위로 기록한다."
+          },
+          {
+            "id": 2,
+            "action": "거짓값 미스 시나리오를 재현하는 회귀 테스트를 먼저 작성한다",
+            "details": "benchmark_case_id=\"cache-false-miss-symptom\" 증상을 그대로 고정한다. 테스트는 (1) 플래그 값이 false(비활성)일 때 조회 → (2) TTL 이내에 재조회 → 수정된 값이 아닌 캐시된 false가 반환되고 저장소 재조회가 발생하지 않는지 검증, (3) 저장소 값 수정 직후 재조회 → 수정된 값이 반환되는지 검증하는 3개 케이스로 구성한다. 서비스 계층은 저장소를 fake로 주입해 호출 횟수를 카운트한다."
+          },
+          {
+            "id": 3,
+            "action": "거짓값(falsy)을 '미스'로 오인하는 캐시 판정 로직을 수정한다",
+            "details": "`src/feature_flags/cache.py`의 캐시 조회/저장 판정에서 truthy 검사(`if value:`)를 명시적 None 검사(`if value is not None:`)로 교체하고, 저장 여부는 캐시 히트 여부 플래그로 분기하도록 리팩터링한다. false/None 등 거짓값 저장 시에도 TTL이 동일하게 적용되도록 한다."
+          },
+          {
+            "id": 4,
+            "action": "캐시 키에 테넌트/플래그 단위 스코프를 포함하고 TTL을 적용한다",
+            "details": "캐시 키가 `(tenant_id, flag_key)` 형태로 테넌트·플래그 단위로 분리되도록 구성하고, README.md:3에 시사된 테넌트별 스코프가 코드에 반영되었는지 확인한다. TTL이 설정된 경우 만료 시 재조회가 일어나도록 하고, TTL 미설정 시 무기한 잔존하지 않도록 기본 정책을 명시한다."
+          },
+          {
+            "id": 5,
+            "action": "저장소 수정 경로에서 캐시 무효화를 연결한다",
+            "details": "`src/feature_flags/service.py`에서 플래그 값 수정(쓰기) 경로가 캐시 무효화를 호출하도록 연결한다. 무효화는 해당 `(tenant_id, flag_key)` 키만 삭제하고, 캐시와 저장소의 키/TTL 정의가 동일한 모듈 상수를 공유하도록 하여 불일치를 제거한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 테스트 스위트를 실행하고 증상을 검증한다",
+            "details": "2단계에서 작성한 테스트와 기존 테스트를 함께 실행하여, TTL 이내 재조회 시 저장소 재조회가 발생하지 않고 저장소 수정 직후에는 수정 값이 반환되는지 확인한다. 실패 시 3~5단계 수정 내용을 재점검하고, 통과 시 변경 사항을 요약 보고한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "acceptance_criteria": [
+          "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 `src/feature_flags/cache.py`의 캐시 저장/조회 판정이 false·None 등 거짓값을 '미스'로 오인하지 않고 명시적 None 검사로 캐시에 저장하며, 저장된 거짓값이 TTL 동안 유지된다.",
+          "TTL 이내 동일 `(tenant_id, flag_key)` 재조회 시 저장소(DB) 재조회가 발생하지 않고 캐시된 값이 반환된다(fake 저장소 호출 횟수로 검증).",
+          "저장소 값 수정 경로 호출 직후 동일 키 재조회 시 수정된 값이 반환된다(캐시 무효화 동작 검증).",
+          "서로 다른 테넌트의 동일 flag_key 조회가 서로의 캐시 값을 오염시키지 않는다(테넌트 단위 스코프 분리 검증).",
+          "benchmark_case_id=\"cache-false-miss-symptom\" 시나리오를 재현하는 회귀 테스트가 신규 추가되어 통과하고, 기존 테스트 스위트도 모두 통과한다.",
+          "bug_context.stack_trace가 빈 배열(크래시·예외 프레임 미제공)이므로, 변경이 예외를 유발하지 않음을 확인하고 동작 불일치 유형(ReportedBehaviorMismatch)이 해소되었음을 보고한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:40:24.199691Z",
+    "completed_at": "2026-09-28T07:40:52.353126Z",
+    "created_at": "2026-09-28T07:40:24.160664Z",
+    "updated_at": "2026-09-28T07:40:52.355047Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 30.475
+  }
+}

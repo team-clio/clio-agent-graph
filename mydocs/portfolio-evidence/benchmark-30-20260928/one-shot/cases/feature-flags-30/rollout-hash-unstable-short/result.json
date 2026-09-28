@@ -1,0 +1,435 @@
+{
+  "input": {
+    "id": "rollout-hash-unstable-short",
+    "report": {
+      "title": "rollout bucket이 재시작마다 변경",
+      "description": "동일 사용자의 percentage rollout 배정이 안정적이지 않습니다.",
+      "steps_to_reproduce": [
+        "두 Python 프로세스에서 같은 사용자 bucket을 계산합니다."
+      ],
+      "expected_behavior": "항상 같은 숫자여야 합니다.",
+      "actual_behavior": "프로세스별 결과가 다릅니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_rollout_bucket_is_stable_across_processes"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 17,
+    "name": "benchmark-20260928T073431Z-64ae54ac-rollout-hash-unstable-short",
+    "description": "Clio Benchmark feature-flags-30: rollout-hash-unstable-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:51:21.541337Z",
+    "updatedAt": "2026-09-28T07:51:21.541337Z"
+  },
+  "clio_repository": {
+    "id": 17,
+    "projectId": 17,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:51:57.413894Z",
+    "createdAt": "2026-09-28T07:51:21.550121Z",
+    "updatedAt": "2026-09-28T07:51:57.414224Z"
+  },
+  "bug": {
+    "id": 17,
+    "project_id": 17,
+    "issue_id": 17,
+    "title": "rollout bucket이 재시작마다 변경",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:51:57.875624Z",
+    "created_at": "2026-09-28T07:51:57.882709Z"
+  },
+  "analysis": {
+    "analysisResultId": 17,
+    "workflowRunId": 17,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 20,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 20,
+          "evidence_id": "README.md:20",
+          "observation": "README가 percentage rollout 계산 파일로 `src/feature_flags/rollout.py`를 지목한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "17",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 1,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": null,
+          "start_line": 1,
+          "evidence_id": "src/feature_flags/rollout.py:1",
+          "observation": "rollout 모듈의 docstring만 제공되어 버킷 계산 구현 세부는 확인되지 않는다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "17",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 리포트 제목은 \"rollout bucket이 재시작마다 변경\"이며, 오류 유형은 ReportedBehaviorMismatch이다.",
+          "verified": true
+        },
+        {
+          "fact": "리포트에 따르면 두 Python 프로세스에서 같은 사용자 bucket을 계산하면 결과가 다르고, 기대 동작은 항상 같은 숫자여야 한다는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 근거에 따르면 percentage rollout 계산은 repository_id 17, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 `src/feature_flags/rollout.py`에 위치한다.",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/rollout.py`의 첫 줄은 `\"\"\"Percentage rollout helpers.\"\"\"` docstring이며, 제공된 근거만으로는 실제 해시/버킷 계산 구현을 확인할 수 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 17,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.35,
+      "hypotheses": [
+        {
+          "evidence": [
+            "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+            "README.md: `src/feature_flags/rollout.py`: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "`src/feature_flags/rollout.py`의 percentage rollout bucket 계산이 프로세스 수준에서 불안정한 해시 시드를 사용하고 있어, Python 프로세스마다 `PYTHONHASHSEED`가 달라져 동일 사용자의 bucket 값이 프로세스별로 달라진다."
+        },
+        {
+          "evidence": [
+            "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+          ],
+          "confidence": 0.25,
+          "hypothesis": "bucket 계산이 문자열 해시 대신 프로세스 의존적인 값(예: 메모리 주소 기반 `hash()`/`id()` 또는 순서가 보장되지 않는 dict/set 순회)에 의존해 재시작마다 결과가 달라진다."
+        },
+        {
+          "evidence": [
+            "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "bucket 계산에 사용되는 입력(사용자 식별자, salt/flag key)이 프로세스마다 달라지거나 누락되어 결정적이지 않은 배정이 이루어진다."
+        }
+      ],
+      "project_id": 17,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "해시 알고리즘을 교체하면 기존에 특정 percentage로 노출되던 사용자 집합이 변경되어, 사용자가 갑자기 기능 노출 또는 비노출로 전환될 수 있다.",
+            "mitigation": "salt에 버전 접두사(예: salt v2)를 사용해 마이그레이션하고, 변경 사실과 영향 범위를 릴리스 노트에 명시하며, 필요 시 단계적 percentage 조정으로 전환한다."
+          },
+          {
+            "risk": "제공된 근거가 docstring 1행뿐이어서 실제 버킷 계산 로직과 입력 파라미터를 확인하지 못한 상태로 수정할 수 있다.",
+            "mitigation": "코드 전체와 호출 지점을 우선 확인하고, 가정(입력값 종류, 반환 범위)을 테스트로 명시적으로 고정한 뒤에만 구현을 변경한다."
+          },
+          {
+            "risk": "결정적 해시로 바꿔도 salt 또는 flag key가 설정/환경에서 프로세스마다 달리 로드되면 비결정성이 남을 수 있다.",
+            "mitigation": "salt/flag key 로딩 경로를 함께 점검하고, 설정 소스의 우선순위와 기본값을 테스트로 검증한다."
+          },
+          {
+            "risk": "해시 연산 방식 변경으로 대량 사용자에 대한 bucket 계산 성능이 저하될 수 있다.",
+            "mitigation": "해시 연산 비용을 측정하고, 필요 시 결과 캐싱 또는 경량 해시 사용을 검토한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 percentage rollout bucket 계산 구현을 확보하고 재현 경로를 고정한다",
+            "details": "repository_id 17, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 파일 전체를 읽는다. 제공된 근거는 docstring 1행뿐이므로, 해시/버킷 계산에 쓰이는 함수 시그니처, 입력값(사용자 식별자, salt, flag key), 반환 타입을 코드에서 직접 확인한다. 동일 입력에 대한 현재 동작을 기록해 회귀 기준선(baseline)을 만든다."
+          },
+          {
+            "id": 2,
+            "action": "프로세스 간 비결정성 재현 테스트를 작성한다",
+            "details": "서로 다른 PYTHONHASHSEED(예: PYTHONHASHSEED=0, PYTHONHASHSEED=1)로 두 개의 별도 Python 프로세스를 실행하고, 동일 사용자 식별자와 동일 flag key/salt에 대해 bucket 계산 결과를 stdout으로 출력해 비교한다. 또한 단일 프로세스 내에서도 set/dict 순회 기반 계산 여부를 확인하기 위해 반복 호출 결과의 안정성을 검증한다."
+          },
+          {
+            "id": 3,
+            "action": "salt/flag key 입력의 프로세스 의존 여부를 확인한다",
+            "details": "salt, flag key, 사용자 식별자가 프로세스 시작 시각, 난수 시드, 환경변수, 메모리 주소 기반 값에서 파생되는지 코드에서 추적한다. 파생 지점이 있으면 고정 상수 또는 설정값에서 오도록 변경 대상으로 표시한다."
+          },
+          {
+            "id": 4,
+            "action": "문자열 기반의 안정적 해시로 bucket 계산을 교체한다",
+            "details": "내장 `hash()` 대신 `hashlib.sha256`(또는 `hashlib.md5` 등 결정적 해시)로 정규화된 문자열(예: f\"{flag_key}:{salt}:{user_id}\")을 해싱하고, 이를 0~99(또는 0~10000) 범위로 모듈로 매핑해 bucket을 산출한다. Python 버전 및 프로세스와 무관하게 동일 결과가 나오도록 인코딩(utf-8)을 명시한다."
+          },
+          {
+            "id": 5,
+            "action": "bucket 범위 및 경계 처리를 검증한다",
+            "details": "bucket 값이 0 이상 100 미만(PYTHONHASHSEED 및 프로세스 무관)임을 assert하고, percentage=0이면 아무도 포함되지 않고 percentage=100이면 전원 포함되는 경계 조건을 확인한다. 입력 누락/None 처리도 정의한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 방지 테스트를 추가한다",
+            "details": "동일 입력에 대한 결정성 테스트, PYTHONHASHSEED를 달리한 서브프로세스 교차 검증 테스트, 경계값 테스트를 `src/feature_flags/` 인접 테스트 디렉터리에 추가한다. 입력값의 순서가 바뀌어도 동일 bucket이 나오는지도 확인한다."
+          },
+          {
+            "id": 7,
+            "action": "문서 및 릴리스 노트를 갱신한다",
+            "details": "README.md:20이 지목하는 percentage rollout 계산 경로와 bucket 산출 방식(결정적 해시 사용)을 문서화하고, 기존 프로세스별 비결정 동작에서 변경됨을 릴리스 노트에 명시한다. 기존 노출 사용자 집합이 변동될 수 있음을 함께 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "acceptance_criteria": [
+          "동일한 사용자 식별자, flag key, salt에 대해 서로 다른 Python 프로세스(PYTHONHASHSEED=0 및 PYTHONHASHSEED=1)에서 계산한 bucket 값이 완전히 일치한다.",
+          "단일 프로세스 내에서 동일 입력에 대해 반복 호출한 bucket 값이 항상 동일하다(결정성 보장).",
+          "bucket 계산이 `hash()`/`id()` 또는 순서가 보장되지 않는 dict/set 순회 결과에 의존하지 않는다는 것이 코드 상에서 확인된다.",
+          "bucket 값이 정의된 범위(예: 0 <= bucket < 100)를 벗어나지 않으며, percentage=0일 때 어떤 사용자도 포함되지 않고 percentage=100일 때 모든 사용자가 포함된다.",
+          "추가된 테스트가 수정 전 코드에서는 실패하고 수정 후 코드에서는 통과함을 확인할 수 있다.",
+          "README.md 및 릴리스 노트가 변경된 bucket 계산 방식과 사용자 노출 집합 변동 가능성을 기술한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 70,
+            "rationale": "percentage rollout은 기능 플래그의 사용자 노출을 결정하는 핵심 경로로, 배정이 비결정적이면 해당 플래그를 사용하는 모든 기능과 전체 사용자 집합에 영향이 파급된다. 다만 리포트는 특정 사용자 bucket의 불안정만 언급하고 장애 플래그 범위가 한정적일 수 있다."
+          },
+          {
+            "name": "심각도",
+            "score": 55,
+            "rationale": "크래시나 데이터 손실/보안 노출은 아니지만, 사용자별 플래그 노출이 재시작마다 뒤집히면 A/B 테스트 오염, 점진적 배포의 일관성 붕괴, 잘못된 그룹 노출을 유발한다. 데이터 무결성 수준의 손상은 아니므로 중간 수준으로 평가한다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 80,
+            "rationale": "리포트에 따르면 두 Python 프로세스에서 동일 사용자 bucket을 계산하면 결과가 다르며 이는 PYTHONHASHSEED 등 프로세스 시드가 매 기동마다 달라지는 한 100% 재현된다. 재시작마다 반복 발생하는 결정적 재현성 높음 상태."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 65,
+            "rationale": "운영 측면에서 PYTHONHASHSEED를 고정하거나 자체 해시(예: SHA-256 기반 결정적 해시)로 교체하는 우회가 가능하지만, 사용자·운영자가 즉시 적용할 수 있는 손쉬운 우회는 아니며 코드 수정 없이는 안정적 회피가 어렵다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 70,
+            "rationale": "percentage rollout은 결제/계정과 직접 연결되진 않으나 신규 기능의 점진적 노출 통제 수단으로, 배정 불안정은 배포 안전성과 실험 신뢰성을 훼손한다. 핵심 경로 일부를 차단하는 수준으로 판단한다."
+          },
+          {
+            "name": "근거 신뢰도",
+            "score": 35,
+            "rationale": "제공된 코드 근거는 `src/feature_flags/rollout.py:1`의 docstring(\"\"\"Percentage rollout helpers.\"\"\")과 README 인용뿐이라 실제 해시/버킷 구현을 확인할 수 없다. 최상위 가설(PYTHONHASHSEED 의존)의 confidence도 0.45로 낮아 확정적 진단에는 한계가 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "`src/feature_flags/rollout.py`(commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)의 percentage rollout bucket 계산이 프로세스마다 다른 결과를 내는 ReportedBehaviorMismatch 이슈로, 두 Python 프로세스에서 동일 사용자 bucket이 불일치하며 재시작마다 값이 바뀐다. 크래시·데이터 손실·보안 노출은 아니므로 P0는 아니지만, (1) 모든 플래그 노출 결정에 영향을 주는 핵심 경로이고, (2) 프로세스 시드 차이로 100% 재현되며, (3) 코드 수정(결정적 해시 도입 또는 PYTHONHASHSEED 고정) 없이는 안정적 우회가 어렵다는 점에서 P1(70-84) 하한에 해당한다고 판단했다. 다만 제공된 근거가 rollout.py의 docstring과 README 인용에 그쳐 실제 해시 구현을 확인할 수 없고 최상위 가설(PYTHONHASHSEED 의존, confidence 0.45)도 미확정이라, P1 중에서도 낮은 68점으로 산정한다. 권장 조치: bucket 계산을 SHA-256 등 결정적 해시 기반으로 교체하고, 동일 입력에 대한 프로세스 간 일관성을 검증하는 회귀 테스트를 추가할 것.",
+        "risk_score": 68
+      },
+      "workflow_run_id": 17
+    }
+  },
+  "workflow": {
+    "id": 17,
+    "project_id": 17,
+    "request_id": "process-bug-17",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 리포트 제목은 \"rollout bucket이 재시작마다 변경\"이며, 오류 유형은 ReportedBehaviorMismatch이다.",
+            "verified": true
+          },
+          {
+            "fact": "리포트에 따르면 두 Python 프로세스에서 같은 사용자 bucket을 계산하면 결과가 다르고, 기대 동작은 항상 같은 숫자여야 한다는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 근거에 따르면 percentage rollout 계산은 repository_id 17, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 `src/feature_flags/rollout.py`에 위치한다.",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/rollout.py`의 첫 줄은 `\"\"\"Percentage rollout helpers.\"\"\"` docstring이며, 제공된 근거만으로는 실제 해시/버킷 계산 구현을 확인할 수 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 20,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 20,
+            "evidence_id": "README.md:20",
+            "observation": "README가 percentage rollout 계산 파일로 `src/feature_flags/rollout.py`를 지목한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "17",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 1,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": null,
+            "start_line": 1,
+            "evidence_id": "src/feature_flags/rollout.py:1",
+            "observation": "rollout 모듈의 docstring만 제공되어 버킷 계산 구현 세부는 확인되지 않는다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "17",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.35,
+        "evidence_counts": {
+          "code": 2,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)",
+              "README.md: `src/feature_flags/rollout.py`: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "`src/feature_flags/rollout.py`의 percentage rollout bucket 계산이 프로세스 수준에서 불안정한 해시 시드를 사용하고 있어, Python 프로세스마다 `PYTHONHASHSEED`가 달라져 동일 사용자의 bucket 값이 프로세스별로 달라진다."
+          },
+          {
+            "evidence": [
+              "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+            ],
+            "confidence": 0.25,
+            "hypothesis": "bucket 계산이 문자열 해시 대신 프로세스 의존적인 값(예: 메모리 주소 기반 `hash()`/`id()` 또는 순서가 보장되지 않는 dict/set 순회)에 의존해 재시작마다 결과가 달라진다."
+          },
+          {
+            "evidence": [
+              "src/feature_flags/rollout.py: percentage rollout 계산 (commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "bucket 계산에 사용되는 입력(사용자 식별자, salt/flag key)이 프로세스마다 달라지거나 누락되어 결정적이지 않은 배정이 이루어진다."
+          }
+        ]
+      },
+      "issue_id": "17",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "해시 알고리즘을 교체하면 기존에 특정 percentage로 노출되던 사용자 집합이 변경되어, 사용자가 갑자기 기능 노출 또는 비노출로 전환될 수 있다.",
+            "mitigation": "salt에 버전 접두사(예: salt v2)를 사용해 마이그레이션하고, 변경 사실과 영향 범위를 릴리스 노트에 명시하며, 필요 시 단계적 percentage 조정으로 전환한다."
+          },
+          {
+            "risk": "제공된 근거가 docstring 1행뿐이어서 실제 버킷 계산 로직과 입력 파라미터를 확인하지 못한 상태로 수정할 수 있다.",
+            "mitigation": "코드 전체와 호출 지점을 우선 확인하고, 가정(입력값 종류, 반환 범위)을 테스트로 명시적으로 고정한 뒤에만 구현을 변경한다."
+          },
+          {
+            "risk": "결정적 해시로 바꿔도 salt 또는 flag key가 설정/환경에서 프로세스마다 달리 로드되면 비결정성이 남을 수 있다.",
+            "mitigation": "salt/flag key 로딩 경로를 함께 점검하고, 설정 소스의 우선순위와 기본값을 테스트로 검증한다."
+          },
+          {
+            "risk": "해시 연산 방식 변경으로 대량 사용자에 대한 bucket 계산 성능이 저하될 수 있다.",
+            "mitigation": "해시 연산 비용을 측정하고, 필요 시 결과 캐싱 또는 경량 해시 사용을 검토한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 percentage rollout bucket 계산 구현을 확보하고 재현 경로를 고정한다",
+            "details": "repository_id 17, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 파일 전체를 읽는다. 제공된 근거는 docstring 1행뿐이므로, 해시/버킷 계산에 쓰이는 함수 시그니처, 입력값(사용자 식별자, salt, flag key), 반환 타입을 코드에서 직접 확인한다. 동일 입력에 대한 현재 동작을 기록해 회귀 기준선(baseline)을 만든다."
+          },
+          {
+            "id": 2,
+            "action": "프로세스 간 비결정성 재현 테스트를 작성한다",
+            "details": "서로 다른 PYTHONHASHSEED(예: PYTHONHASHSEED=0, PYTHONHASHSEED=1)로 두 개의 별도 Python 프로세스를 실행하고, 동일 사용자 식별자와 동일 flag key/salt에 대해 bucket 계산 결과를 stdout으로 출력해 비교한다. 또한 단일 프로세스 내에서도 set/dict 순회 기반 계산 여부를 확인하기 위해 반복 호출 결과의 안정성을 검증한다."
+          },
+          {
+            "id": 3,
+            "action": "salt/flag key 입력의 프로세스 의존 여부를 확인한다",
+            "details": "salt, flag key, 사용자 식별자가 프로세스 시작 시각, 난수 시드, 환경변수, 메모리 주소 기반 값에서 파생되는지 코드에서 추적한다. 파생 지점이 있으면 고정 상수 또는 설정값에서 오도록 변경 대상으로 표시한다."
+          },
+          {
+            "id": 4,
+            "action": "문자열 기반의 안정적 해시로 bucket 계산을 교체한다",
+            "details": "내장 `hash()` 대신 `hashlib.sha256`(또는 `hashlib.md5` 등 결정적 해시)로 정규화된 문자열(예: f\"{flag_key}:{salt}:{user_id}\")을 해싱하고, 이를 0~99(또는 0~10000) 범위로 모듈로 매핑해 bucket을 산출한다. Python 버전 및 프로세스와 무관하게 동일 결과가 나오도록 인코딩(utf-8)을 명시한다."
+          },
+          {
+            "id": 5,
+            "action": "bucket 범위 및 경계 처리를 검증한다",
+            "details": "bucket 값이 0 이상 100 미만(PYTHONHASHSEED 및 프로세스 무관)임을 assert하고, percentage=0이면 아무도 포함되지 않고 percentage=100이면 전원 포함되는 경계 조건을 확인한다. 입력 누락/None 처리도 정의한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 방지 테스트를 추가한다",
+            "details": "동일 입력에 대한 결정성 테스트, PYTHONHASHSEED를 달리한 서브프로세스 교차 검증 테스트, 경계값 테스트를 `src/feature_flags/` 인접 테스트 디렉터리에 추가한다. 입력값의 순서가 바뀌어도 동일 bucket이 나오는지도 확인한다."
+          },
+          {
+            "id": 7,
+            "action": "문서 및 릴리스 노트를 갱신한다",
+            "details": "README.md:20이 지목하는 percentage rollout 계산 경로와 bucket 산출 방식(결정적 해시 사용)을 문서화하고, 기존 프로세스별 비결정 동작에서 변경됨을 릴리스 노트에 명시한다. 기존 노출 사용자 집합이 변동될 수 있음을 함께 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "17",
+        "acceptance_criteria": [
+          "동일한 사용자 식별자, flag key, salt에 대해 서로 다른 Python 프로세스(PYTHONHASHSEED=0 및 PYTHONHASHSEED=1)에서 계산한 bucket 값이 완전히 일치한다.",
+          "단일 프로세스 내에서 동일 입력에 대해 반복 호출한 bucket 값이 항상 동일하다(결정성 보장).",
+          "bucket 계산이 `hash()`/`id()` 또는 순서가 보장되지 않는 dict/set 순회 결과에 의존하지 않는다는 것이 코드 상에서 확인된다.",
+          "bucket 값이 정의된 범위(예: 0 <= bucket < 100)를 벗어나지 않으며, percentage=0일 때 어떤 사용자도 포함되지 않고 percentage=100일 때 모든 사용자가 포함된다.",
+          "추가된 테스트가 수정 전 코드에서는 실패하고 수정 후 코드에서는 통과함을 확인할 수 있다.",
+          "README.md 및 릴리스 노트가 변경된 bucket 계산 방식과 사용자 노출 집합 변동 가능성을 기술한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:51:58.949512Z",
+    "completed_at": "2026-09-28T07:52:24.010984Z",
+    "created_at": "2026-09-28T07:51:58.940684Z",
+    "updated_at": "2026-09-28T07:52:24.012070Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.494
+  }
+}

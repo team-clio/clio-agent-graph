@@ -1,0 +1,499 @@
+{
+  "input": {
+    "id": "cache-false-miss-detailed",
+    "report": {
+      "title": "비활성 플래그 캐시가 무시됨",
+      "description": "false로 캐시된 플래그가 cache hit로 처리되지 않아 저장소의 변경값을 다시 읽습니다.",
+      "steps_to_reproduce": [
+        "플래그를 false로 저장하고 조회합니다.",
+        "저장소 값을 true로 바꿉니다.",
+        "같은 플래그를 다시 조회합니다."
+      ],
+      "expected_behavior": "캐시된 false가 계속 반환되어야 합니다.",
+      "actual_behavior": "저장소의 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_cached_false_value_is_not_treated_as_a_miss"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 4,
+    "name": "benchmark-20260928T073431Z-64ae54ac-cache-false-miss-detailed",
+    "description": "Clio Benchmark feature-flags-30: cache-false-miss-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:37:48.737666Z",
+    "updatedAt": "2026-09-28T07:37:48.737666Z"
+  },
+  "clio_repository": {
+    "id": 4,
+    "projectId": 4,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:38:18.093666Z",
+    "createdAt": "2026-09-28T07:37:48.749067Z",
+    "updatedAt": "2026-09-28T07:38:18.094183Z"
+  },
+  "bug": {
+    "id": 4,
+    "project_id": 4,
+    "issue_id": 4,
+    "title": "비활성 플래그 캐시가 무시됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:38:19.076668Z",
+    "created_at": "2026-09-28T07:38:19.093721Z"
+  },
+  "analysis": {
+    "analysisResultId": 4,
+    "workflowRunId": 4,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "README.md:3",
+          "observation": "라이브러리가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "4",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "README.md:16",
+          "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "4",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 17,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 17,
+          "evidence_id": "README.md:17",
+          "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시 모듈임을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "4",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "README.md:18",
+          "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스 모듈임을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "4",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "저장소는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이며, README는 테넌트별 플래그 저장소(`src/feature_flags/repository.py`), 조회 결과 캐시(`src/feature_flags/cache.py`), 플래그 조회 서비스(`src/feature_flags/service.py`) 모듈을 열거합니다.",
+          "verified": true
+        },
+        {
+          "fact": "리포트된 이슈는 `false`로 저장된 플래그가 cache hit로 처리되지 않아 저장소의 변경값을 다시 읽는 동작이며, 재현 절차는 (1) 플래그를 false로 저장·조회, (2) 저장소 값을 true로 변경, (3) 같은 플래그를 다시 조회하는 3단계입니다.",
+          "verified": true
+        },
+        {
+          "fact": "기대 동작은 캐시된 `false`가 계속 반환되는 것이고, 실제 동작은 저장소의 `true`가 반환되는 것이며, 오류 유형은 `ReportedBehaviorMismatch`, 오류 메시지는 \"저장소의 true가 반환됩니다.\", 원천 payload는 {\"benchmark_case_id\": \"cache-false-miss-detailed\"}입니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 증거에는 `cache.py`, `service.py`, `repository.py`의 실제 소스 코드 라인이 포함되어 있지 않아, truthiness 검사 여부나 캐시 키 구성 방식은 코드로 직접 확인되지 않았습니다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 4,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.5,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md line 17: `src/feature_flags/cache.py`: 조회 결과 캐시",
+            "버그 설명의 기대 동작: 캐시된 false가 계속 반환되어야 함",
+            "버그 설명의 실제 동작: 저장소의 true가 반환됨"
+          ],
+          "confidence": 0.62,
+          "hypothesis": "캐시 계층이 저장된 플래그 값을 조회 시 `if value` 또는 `if cache_value:` 형태의 truthiness 검사로 존재 여부를 판정하여, `False`로 캐시된 항목이 캐시 miss로 잘못 처리됩니다. 그 결과 캐시된 `false`가 반환되지 않고 저장소(repository)의 변경된 값 `true`를 다시 읽어 반환합니다."
+        },
+        {
+          "evidence": [
+            "README.md line 18: `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "README.md line 16: `src/feature_flags/repository.py`: 테넌트별 플래그 저장소"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "서비스 계층(`src/feature_flags/service.py`)이 캐시 조회 결과를 `None`과 비교하지 않고 falsy 여부로 판정하거나, 캐시 미스 시에만 저장소를 조회해야 하는 분기에서 캐시된 `False`를 미스로 간주해 `src/feature_flags/repository.py`를 다시 호출합니다."
+        },
+        {
+          "evidence": [
+            "README.md line 3: 테넌트별 기능 플래그 조회를 제공하는 서비스",
+            "버그 설명 재현 절차 3단계"
+          ],
+          "confidence": 0.18,
+          "hypothesis": "캐시 저장/조회 키가 테넌트·플래그 단위로 일관되게 구성되지 않아, 동일 플래그 재조회 시 캐시 항목이 다른 키로 조회되어 사실상 항상 miss가 발생합니다."
+        }
+      ],
+      "project_id": 4,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거에 실제 소스 라인이 포함되어 있지 않아(verified=false) truthiness 검사 위치나 캐시 키 구성 방식을 잘못 추정할 수 있다.",
+            "mitigation": "가설(0.62/0.45/0.18)에 의존하지 않고 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 코드를 직접 읽어 수정 대상을 확정한 뒤 진행한다."
+          },
+          {
+            "risk": "`is not None`으로 존재 판정을 바꾸면서 캐시 미스 처리 분기가 깨져 저장소 조회가 누락될 수 있다.",
+            "mitigation": "캐시된 True/False/None 및 키 불일치 경계 케이스 테스트를 추가하고 전체 테스트 스위트로 회귀를 확인한다."
+          },
+          {
+            "risk": "캐시 키가 테넌트·플래그 단위로 일관되지 않으면 수정 후에도 사실상 항상 miss가 발생할 수 있다(가설 3).",
+            "mitigation": "캐시 저장/조회 키 구성을 테넌트·플래그 단위로 검증하는 테스트를 포함한다."
+          },
+          {
+            "risk": "캐시된 false를 유지하면 저장소 값 변경(true)이 반영되지 않아, 캐시 무효화 정책이 의도된 동작과 충돌할 수 있다.",
+            "mitigation": "현재 이슈의 기대 동작(캐시된 false 유지)을 기준으로 테스트를 고정하고, 캐시 무효화 정책은 별도 이슈로 분리해 검토한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소를 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 체크아웃하고 관련 모듈(README.md, src/feature_flags/repository.py, src/feature_flags/cache.py, src/feature_flags/service.py)을 읽어 현재 구현을 파악한다.",
+            "details": "README.md 16~18행이 가리키는 세 모듈의 캐시 조회·저장 경로를 확인한다. 증거 팩트에 따르면 실제 소스 라인은 아직 검증되지 않았으므로(verified=false), 추정에 의존하지 말고 코드 전체를 직접 읽는다."
+          },
+          {
+            "id": 2,
+            "action": "재현 절차 3단계를 자동화 테스트로 고정한다: (1) 플래그를 false로 저장·조회, (2) 저장소 값(src/feature_flags/repository.py)을 true로 변경, (3) 동일 플래그를 재조회.",
+            "details": "기대 동작은 캐시된 false의 반환이고 실제 동작은 저장소의 true 반환이며 오류 유형은 `ReportedBehaviorMismatch`, 오류 메시지는 \"저장소의 true가 반환됩니다.\", 원천 payload는 {\"benchmark_case_id\": \"cache-false-miss-detailed\"}이다. 이 케이스를 먼저 실패하는 테스트로 작성한다."
+          },
+          {
+            "id": 3,
+            "action": "src/feature_flags/cache.py의 캐시 조회 경로에서 `if value` / `if cache_value:` 형태의 truthiness 검사를 찾아 `is not None` 기반 존재 판정으로 교체한다.",
+            "details": "가설 1(confidence 0.62)에 대응하는 수정이다. 캐시된 `False`가 miss로 오인되지 않도록 하고, 캐시 저장/조회 키가 테넌트·플래그 단위로 일관되게 구성되는지 함께 확인한다(가설 3, confidence 0.18)."
+          },
+          {
+            "id": 4,
+            "action": "src/feature_flags/service.py에서 캐시 조회 결과를 None과 비교해 분기하도록 수정하고, 캐시 미스일 때만 src/feature_flags/repository.py를 호출하도록 보장한다.",
+            "details": "가설 2(confidence 0.45)에 대응한다. 캐시된 `False`가 저장소 재조회를 유발하지 않도록 분기 조건을 명시적으로 만든다."
+          },
+          {
+            "id": 5,
+            "action": "3단계 재현 테스트와 함께 경계 케이스 테스트를 추가한다: 캐시된 True, 캐시된 False, 캐시 미스(None), 캐시 키 불일치 시나리오.",
+            "details": "수정이 truthiness 오인이 아닌 실제 존재 판정으로 동작하는지 확인하고, 저장소 값 변경 후에도 캐시된 false가 반환되는지 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하여 기존 기능 회귀가 없는지 확인하고 결과를 기록한다.",
+            "details": "회귀 실패가 있으면 캐시 키·분기 변경 범위를 재검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "acceptance_criteria": [
+          "재현 절차 3단계(플래그 false 저장·조회 → 저장소 true 변경 → 동일 플래그 재조회)에서 캐시된 false가 반환되며, 저장소의 true가 반환되지 않는다.",
+          "오류 유형 `ReportedBehaviorMismatch`와 메시지 \"저장소의 true가 반환됩니다.\"에 해당하는 실패 재현 테스트가 수정 후 통과한다.",
+          "payload {\"benchmark_case_id\": \"cache-false-miss-detailed\"}에 대응하는 벤치마크 케이스가 통과한다.",
+          "src/feature_flags/cache.py에서 캐시 존재 판정이 truthiness 검사가 아닌 None 비교(`is not None`)로 수행된다.",
+          "src/feature_flags/service.py가 캐시 미스일 때만 src/feature_flags/repository.py를 호출한다.",
+          "캐시된 True/False/None 및 캐시 키 불일치 경계 케이스 테스트가 모두 통과한다.",
+          "전체 테스트 스위트가 회귀 없이 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 30,
+            "rationale": "테넌트별 기능 플래그 조회 라이브러리 전반의 캐시 계층(`src/feature_flags/cache.py`)에 해당하는 동작이나, `false`로 저장된 플래그에만 국한된 조건부 결함입니다. `true` 플래그는 truthiness 검사에서 정상 hit로 처리되므로 영향 범위는 제한적입니다."
+          },
+          {
+            "name": "심각도",
+            "score": 25,
+            "rationale": "크래시나 데이터 손실, 보안 노출은 없습니다. 다만 저장소 값 변경이 플래그 서비스 소비자에게 즉시 노출되어 캐시 일관성 계약이 깨지는 정확성 결함이며, `ReportedBehaviorMismatch` 유형에 해당합니다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 55,
+            "rationale": "재현 절차 3단계(플래그 false 저장·조회 → 저장소 값 true 변경 → 재조회)로 100% 재현 가능한 결정적 결함이며, `false` 값 플래그에 대해 항상 발생합니다. 다만 `true` 값 경로에서는 재현되지 않는 조건부 재현성입니다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 40,
+            "rationale": "캐시 계층을 우회하여 `src/feature_flags/repository.py`를 직접 조회하거나, 캐시 값을 별도 sentinel로 저장하도록 소비 측에서 조정하는 우회가 이론상 가능합니다. 다만 라이브러리 내부 결함이라 소비자 입장의 우회는 코드 수정을 요구합니다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 25,
+            "rationale": "결제나 계정 등 핵심 경로가 아닌 기능 플래그 조회 유틸리티로, 소규모 Python 서비스 라이브러리입니다. 플래그 오판정은 기능 노출 제어에 영향을 줄 수 있으나 즉각적 매출·계정 피해와는 거리가 있습니다."
+          },
+          {
+            "name": "근거 확실성",
+            "score": 45,
+            "rationale": "가설 1(truthiness 검사, confidence 0.62)이 유력하나 `cache.py`, `service.py`, `repository.py`의 실제 소스 라인이 증거에 포함되지 않아 직접 확인되지 않았습니다(facts 중 verified=false). 진단 정확도가 중간 수준입니다."
+          }
+        ],
+        "priority": "P3",
+        "rationale": "`false`로 캐시된 플래그가 cache hit로 처리되지 않아 저장소의 변경값 `true`가 반환되는 조건부 정확성 결함입니다. 재현 절차가 3단계로 확정적이고 `false` 값 경로에서 항상 발생하지만, 크래시·데이터 손실·보안 노출이 없고 특정 값(`false`)에 국한되며 결제·계정 등 핵심 경로와 무관한 소규모 테넌트 기능 플래그 조회 라이브러리입니다. 근거도 `README.md:16-18` 수준의 모듈 열거에 그쳐 실제 코드 라인(`cache.py`, `service.py`, `repository.py`)이 확인되지 않아 가설 신뢰도가 0.62에 머뭅니다. 종합적으로 0-29(P4 미미)보다는 명확한 동작 계약 위반이 있어 높지만, 50-69(P2 보통, 부분 기능 파손 + 우회 존재)까지는 이르지 않아 P3 낮음 밴드의 상단인 33으로 산정합니다.",
+        "risk_score": 33
+      },
+      "workflow_run_id": 4
+    }
+  },
+  "workflow": {
+    "id": 4,
+    "project_id": 4,
+    "request_id": "process-bug-4",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "저장소는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이며, README는 테넌트별 플래그 저장소(`src/feature_flags/repository.py`), 조회 결과 캐시(`src/feature_flags/cache.py`), 플래그 조회 서비스(`src/feature_flags/service.py`) 모듈을 열거합니다.",
+            "verified": true
+          },
+          {
+            "fact": "리포트된 이슈는 `false`로 저장된 플래그가 cache hit로 처리되지 않아 저장소의 변경값을 다시 읽는 동작이며, 재현 절차는 (1) 플래그를 false로 저장·조회, (2) 저장소 값을 true로 변경, (3) 같은 플래그를 다시 조회하는 3단계입니다.",
+            "verified": true
+          },
+          {
+            "fact": "기대 동작은 캐시된 `false`가 계속 반환되는 것이고, 실제 동작은 저장소의 `true`가 반환되는 것이며, 오류 유형은 `ReportedBehaviorMismatch`, 오류 메시지는 \"저장소의 true가 반환됩니다.\", 원천 payload는 {\"benchmark_case_id\": \"cache-false-miss-detailed\"}입니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 증거에는 `cache.py`, `service.py`, `repository.py`의 실제 소스 코드 라인이 포함되어 있지 않아, truthiness 검사 여부나 캐시 키 구성 방식은 코드로 직접 확인되지 않았습니다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "README.md:3",
+            "observation": "라이브러리가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "4",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "README.md:16",
+            "observation": "`src/feature_flags/repository.py`가 테넌트별 플래그 저장소임을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "4",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 17,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 17,
+            "evidence_id": "README.md:17",
+            "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시 모듈임을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "4",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "README.md:18",
+            "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스 모듈임을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "4",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.5,
+        "evidence_counts": {
+          "code": 9,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md line 17: `src/feature_flags/cache.py`: 조회 결과 캐시",
+              "버그 설명의 기대 동작: 캐시된 false가 계속 반환되어야 함",
+              "버그 설명의 실제 동작: 저장소의 true가 반환됨"
+            ],
+            "confidence": 0.62,
+            "hypothesis": "캐시 계층이 저장된 플래그 값을 조회 시 `if value` 또는 `if cache_value:` 형태의 truthiness 검사로 존재 여부를 판정하여, `False`로 캐시된 항목이 캐시 miss로 잘못 처리됩니다. 그 결과 캐시된 `false`가 반환되지 않고 저장소(repository)의 변경된 값 `true`를 다시 읽어 반환합니다."
+          },
+          {
+            "evidence": [
+              "README.md line 18: `src/feature_flags/service.py`: 플래그 조회 서비스",
+              "README.md line 16: `src/feature_flags/repository.py`: 테넌트별 플래그 저장소"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "서비스 계층(`src/feature_flags/service.py`)이 캐시 조회 결과를 `None`과 비교하지 않고 falsy 여부로 판정하거나, 캐시 미스 시에만 저장소를 조회해야 하는 분기에서 캐시된 `False`를 미스로 간주해 `src/feature_flags/repository.py`를 다시 호출합니다."
+          },
+          {
+            "evidence": [
+              "README.md line 3: 테넌트별 기능 플래그 조회를 제공하는 서비스",
+              "버그 설명 재현 절차 3단계"
+            ],
+            "confidence": 0.18,
+            "hypothesis": "캐시 저장/조회 키가 테넌트·플래그 단위로 일관되게 구성되지 않아, 동일 플래그 재조회 시 캐시 항목이 다른 키로 조회되어 사실상 항상 miss가 발생합니다."
+          }
+        ]
+      },
+      "issue_id": "4",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거에 실제 소스 라인이 포함되어 있지 않아(verified=false) truthiness 검사 위치나 캐시 키 구성 방식을 잘못 추정할 수 있다.",
+            "mitigation": "가설(0.62/0.45/0.18)에 의존하지 않고 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 코드를 직접 읽어 수정 대상을 확정한 뒤 진행한다."
+          },
+          {
+            "risk": "`is not None`으로 존재 판정을 바꾸면서 캐시 미스 처리 분기가 깨져 저장소 조회가 누락될 수 있다.",
+            "mitigation": "캐시된 True/False/None 및 키 불일치 경계 케이스 테스트를 추가하고 전체 테스트 스위트로 회귀를 확인한다."
+          },
+          {
+            "risk": "캐시 키가 테넌트·플래그 단위로 일관되지 않으면 수정 후에도 사실상 항상 miss가 발생할 수 있다(가설 3).",
+            "mitigation": "캐시 저장/조회 키 구성을 테넌트·플래그 단위로 검증하는 테스트를 포함한다."
+          },
+          {
+            "risk": "캐시된 false를 유지하면 저장소 값 변경(true)이 반영되지 않아, 캐시 무효화 정책이 의도된 동작과 충돌할 수 있다.",
+            "mitigation": "현재 이슈의 기대 동작(캐시된 false 유지)을 기준으로 테스트를 고정하고, 캐시 무효화 정책은 별도 이슈로 분리해 검토한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소를 commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 체크아웃하고 관련 모듈(README.md, src/feature_flags/repository.py, src/feature_flags/cache.py, src/feature_flags/service.py)을 읽어 현재 구현을 파악한다.",
+            "details": "README.md 16~18행이 가리키는 세 모듈의 캐시 조회·저장 경로를 확인한다. 증거 팩트에 따르면 실제 소스 라인은 아직 검증되지 않았으므로(verified=false), 추정에 의존하지 말고 코드 전체를 직접 읽는다."
+          },
+          {
+            "id": 2,
+            "action": "재현 절차 3단계를 자동화 테스트로 고정한다: (1) 플래그를 false로 저장·조회, (2) 저장소 값(src/feature_flags/repository.py)을 true로 변경, (3) 동일 플래그를 재조회.",
+            "details": "기대 동작은 캐시된 false의 반환이고 실제 동작은 저장소의 true 반환이며 오류 유형은 `ReportedBehaviorMismatch`, 오류 메시지는 \"저장소의 true가 반환됩니다.\", 원천 payload는 {\"benchmark_case_id\": \"cache-false-miss-detailed\"}이다. 이 케이스를 먼저 실패하는 테스트로 작성한다."
+          },
+          {
+            "id": 3,
+            "action": "src/feature_flags/cache.py의 캐시 조회 경로에서 `if value` / `if cache_value:` 형태의 truthiness 검사를 찾아 `is not None` 기반 존재 판정으로 교체한다.",
+            "details": "가설 1(confidence 0.62)에 대응하는 수정이다. 캐시된 `False`가 miss로 오인되지 않도록 하고, 캐시 저장/조회 키가 테넌트·플래그 단위로 일관되게 구성되는지 함께 확인한다(가설 3, confidence 0.18)."
+          },
+          {
+            "id": 4,
+            "action": "src/feature_flags/service.py에서 캐시 조회 결과를 None과 비교해 분기하도록 수정하고, 캐시 미스일 때만 src/feature_flags/repository.py를 호출하도록 보장한다.",
+            "details": "가설 2(confidence 0.45)에 대응한다. 캐시된 `False`가 저장소 재조회를 유발하지 않도록 분기 조건을 명시적으로 만든다."
+          },
+          {
+            "id": 5,
+            "action": "3단계 재현 테스트와 함께 경계 케이스 테스트를 추가한다: 캐시된 True, 캐시된 False, 캐시 미스(None), 캐시 키 불일치 시나리오.",
+            "details": "수정이 truthiness 오인이 아닌 실제 존재 판정으로 동작하는지 확인하고, 저장소 값 변경 후에도 캐시된 false가 반환되는지 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하여 기존 기능 회귀가 없는지 확인하고 결과를 기록한다.",
+            "details": "회귀 실패가 있으면 캐시 키·분기 변경 범위를 재검토한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "4",
+        "acceptance_criteria": [
+          "재현 절차 3단계(플래그 false 저장·조회 → 저장소 true 변경 → 동일 플래그 재조회)에서 캐시된 false가 반환되며, 저장소의 true가 반환되지 않는다.",
+          "오류 유형 `ReportedBehaviorMismatch`와 메시지 \"저장소의 true가 반환됩니다.\"에 해당하는 실패 재현 테스트가 수정 후 통과한다.",
+          "payload {\"benchmark_case_id\": \"cache-false-miss-detailed\"}에 대응하는 벤치마크 케이스가 통과한다.",
+          "src/feature_flags/cache.py에서 캐시 존재 판정이 truthiness 검사가 아닌 None 비교(`is not None`)로 수행된다.",
+          "src/feature_flags/service.py가 캐시 미스일 때만 src/feature_flags/repository.py를 호출한다.",
+          "캐시된 True/False/None 및 캐시 키 불일치 경계 케이스 테스트가 모두 통과한다.",
+          "전체 테스트 스위트가 회귀 없이 통과한다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:38:20.170145Z",
+    "completed_at": "2026-09-28T07:38:44.425324Z",
+    "created_at": "2026-09-28T07:38:20.154685Z",
+    "updated_at": "2026-09-28T07:38:44.427055Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.44
+  }
+}

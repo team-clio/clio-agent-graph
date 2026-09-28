@@ -1,0 +1,498 @@
+{
+  "input": {
+    "id": "auth-role-escalation-detailed",
+    "report": {
+      "title": "관리자가 owner 전용 플래그를 수정할 수 있음",
+      "description": "owner만 수행해야 하는 플래그 관리 작업이 admin 역할에도 허용됩니다.",
+      "steps_to_reproduce": [
+        "admin 역할로 로그인합니다.",
+        "owner 전용 플래그 관리 권한을 확인합니다."
+      ],
+      "expected_behavior": "권한 검사가 false를 반환해야 합니다.",
+      "actual_behavior": "admin에게 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 7,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-role-escalation-detailed",
+    "description": "Clio Benchmark feature-flags-30: auth-role-escalation-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:40:53.592890Z",
+    "updatedAt": "2026-09-28T07:40:53.592890Z"
+  },
+  "clio_repository": {
+    "id": 7,
+    "projectId": 7,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:41:28.389212Z",
+    "createdAt": "2026-09-28T07:40:53.603031Z",
+    "updatedAt": "2026-09-28T07:41:28.392067Z"
+  },
+  "bug": {
+    "id": 7,
+    "project_id": 7,
+    "issue_id": 7,
+    "title": "관리자가 owner 전용 플래그를 수정할 수 있음",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:41:30.138312Z",
+    "created_at": "2026-09-28T07:41:30.145767Z"
+  },
+  "analysis": {
+    "analysisResultId": 7,
+    "workflowRunId": 7,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "code-7-README.md-3",
+          "observation": "프로젝트 성격(테넌트별 기능 플래그 조회 라이브러리)을 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "7",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "code-7-README.md-16",
+          "observation": "플래그 저장 계층의 위치를 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "7",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "code-7-README.md-18",
+          "observation": "플래그 조회 서비스 계층의 위치를 확인했다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "7",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+          "end_line": 19,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 19,
+          "evidence_id": "code-7-README.md-19",
+          "observation": "권한 검사가 authorization.py에 위치함을 확인했으나 구현 본문은 증거에 없어 결함 조건식은 미확인이다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "7",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "프로젝트는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이다 (README.md:3).",
+          "verified": true
+        },
+        {
+          "fact": "저장소 구조상 `src/feature_flags/repository.py`는 테넌트별 플래그 저장소, `src/feature_flags/service.py`는 플래그 조회 서비스를 담당한다 (README.md:16, README.md:18).",
+          "verified": true
+        },
+        {
+          "fact": "`src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당하는 모듈로 문서화되어 있다 (README.md:19). 즉 신고된 결함의 권한 판정 위치는 이 모듈로 한정된다.",
+          "verified": false
+        },
+        {
+          "fact": "신고된 증상은 admin 역할로 owner 전용 플래그 관리 권한을 확인했을 때 false가 아니라 true가 반환되는 것이다 (bug_context 재현 절차 및 message).",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거에는 authorization.py의 실제 구현 본문이 포함되어 있지 않아, 권한 검사가 어떤 조건식/연산자로 owner 여부를 판정하는지는 확인되지 않았다.",
+          "verified": false
+        },
+        {
+          "fact": "러닝 중 발생한 오류가 아니므로 stack_trace는 비어 있고 error_type는 ReportedBehaviorMismatch이다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 7,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.4,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:19 - `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+            "제공된 코드 증거는 README.md 3, 16, 18, 19행의 파일 설명만 포함하며 authorization.py 내부 구현은 포함되지 않음"
+          ],
+          "confidence": 0.4,
+          "hypothesis": "src/feature_flags/authorization.py의 권한 검사 로직에서 owner 전용 플래그 관리 조건과 admin 역할 조건을 함께 평가(OR 결합 또는 role 목록에 admin 포함)하여, admin 역할에도 owner 전용 플래그 관리 권한이 true로 반환된다."
+        },
+        {
+          "evidence": [
+            "README.md:3 - 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리",
+            "README.md:19 - 관리자 권한과 프로젝트 범위 검사"
+          ],
+          "confidence": 0.25,
+          "hypothesis": "authorization.py의 검사 함수가 순수한 역할 비교 대신 권한/기능 플래그 조회 결과를 반환값으로 사용해, admin 역할에 대해서도 true가 산출된다."
+        },
+        {
+          "evidence": [
+            "README.md:19 - 관리자 권한과 프로젝트 범위 검사"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "owner 판정이 프로젝트 소유권(예: owner_id) 비교가 아니라 관리자 권한 여부로 대체 구현되어 있어, admin이 owner 전용 검사를 통과한다."
+        }
+      ],
+      "project_id": 7,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "코드 증거에 authorization.py 구현 본문이 없어(사실: 구현 본문 미포함, verified=false) 실제 결함 조건식이 가설과 다를 수 있다.",
+            "mitigation": "1단계에서 실제 소스를 먼저 확보한 뒤 수정 범위를 확정하고, 세 가설을 모두 검증한 후에만 코드를 변경한다."
+          },
+          {
+            "risk": "역할 검사와 owner 소유권 검사를 분리하는 과정에서 admin의 정당한 관리 권한까지 차단될 수 있다.",
+            "mitigation": "admin 역할의 별도 권한 경로를 명시적으로 유지하고, admin 전용 경로에 대한 테스트를 함께 작성한다."
+          },
+          {
+            "risk": "권한 검사 로직 변경이 src/feature_flags/service.py 및 repository.py의 호출부에 회귀를 유발할 수 있다.",
+            "mitigation": "5단계에서 전체 테스트 스위트를 실행하고 인접 계층의 호출 경로를 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 src/feature_flags/authorization.py의 권한 검사 구현 본문을 확보한다.",
+            "details": "증거(evidence_id: code-7-README.md-19)에는 파일 설명만 존재하고 구현 본문이 없으므로, owner 전용 플래그 관리 권한 판정 함수와 admin 역할 판정 함수의 실제 조건식을 먼저 읽어 결함 위치를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "admin 역할에 대해 owner 전용 플래그 관리 권한이 true로 반환되는 재현 테스트를 작성한다.",
+            "details": "bug_context 재현 절차 및 message에 대응하는 회귀 테스트를 추가한다. admin 역할 입력 시 owner 전용 관리 권한 검사가 true가 되는지, 그리고 project owner_id 기반 소유권 비교가 올바르게 false를 반환하는지를 각각 단정한다."
+          },
+          {
+            "id": 3,
+            "action": "owner 판정 로직과 admin 역할 조건의 결합(OR 결합 또는 role 목록에 admin 포함) 여부를 확인하고 분리한다.",
+            "details": "root_cause_hypotheses 1(신뢰도 0.4)과 3(신뢰도 0.2)을 검증한다. owner 전용 검사는 project 소유권 비교(예: owner_id)만으로 판정하고, admin 역할은 별도 권한 경로로 분리하여 owner 전용 검사가 admin에게 true를 반환하지 않도록 수정한다."
+          },
+          {
+            "id": 4,
+            "action": "검사 함수 반환값이 역할 비교가 아닌 권한/기능 플래그 조회 결과로 산출되는지 점검하고 정정한다.",
+            "details": "root_cause_hypotheses 2(신뢰도 0.25)를 검증한다. role 비교 대신 플래그 조회 결과를 그대로 반환하는 경로가 있으면, admin 역할에 대해 owner 전용 권한이 true로 새지 않도록 역할 게이팅을 명시적으로 적용한다."
+          },
+          {
+            "id": 5,
+            "action": "수정 후 1단계에서 추가한 회귀 테스트와 기존 테스트 스위트를 실행하여 회귀 여부를 확인한다.",
+            "details": "src/feature_flags/repository.py(저장소), src/feature_flags/service.py(조회 서비스) 등 인접 계층에 영향이 없는지 함께 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "재현 절차를 수정된 코드 기준으로 재실행하여 admin 역할에서 owner 전용 플래그 관리 권한이 false로 반환됨을 확인하고 결과를 기록한다.",
+            "details": "error_type: ReportedBehaviorMismatch 결함이 해소되었음을 확인하고, 동일 결함의 재발 방지를 위해 테스트를 영구 보존한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "acceptance_criteria": [
+          "admin 역할로 owner 전용 플래그 관리 권한을 확인했을 때 true가 아닌 false가 반환된다(신고된 증상의 역전 확인).",
+          "project 소유권(예: owner_id)이 일치하는 owner 역할에 대해서는 owner 전용 플래그 관리 권한이 true로 반환된다.",
+          "admin 역할은 owner 전용 검사와 분리된 권한 경로로 평가되며, owner 판정 조건식에 OR 결합이나 role 목록 내 admin 포함이 존재하지 않는다.",
+          "추가한 회귀 테스트와 기존 테스트 스위트가 모두 통과한다.",
+          "수정된 커밋 기준으로 재현 절차를 재실행했을 때 ReportedBehaviorMismatch가 더 이상 발생하지 않는다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 75,
+            "rationale": "admin 역할을 보유한 모든 사용자에게 owner 전용 플래그 관리 권한이 열린다. 테넌트별 기능 플래그 조회 라이브러리(src/feature_flags/service.py, repository.py) 전반의 플래그 관리 흐름이 영향을 받으며, 단일 사용자가 아닌 admin 역할 전체가 대상이므로 범위가 넓다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 80,
+            "rationale": "크래시나 데이터 손상은 아니지만 권한 상승(role escalation)에 해당하는 접근 제어 결함이다. owner 전용 플래그를 admin이 수정/관리할 수 있게 되면 테넌트별 플래그 상태가 비인가 주체에 의해 변경될 수 있어 보안 노출로 직결된다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "재현 절차가 'admin 로그인 후 owner 전용 플래그 관리 권한 확인' 2단계로 매우 단순하고, 실제 동작이 항상 true를 반환하는 결정적(deterministic) 결함으로 보인다. 특정 조건 없이 100% 재현되는 유형이다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 80,
+            "rationale": "admin 역할에 권한이 부여되는 구조이므로 사용자/운영 레벨에서 우회가 어렵다. 완화하려면 admin 역할 자체를 제거하거나 src/feature_flags/authorization.py의 판정 로직을 수정해야 하므로 코드 수정 없이는 실질적 우회책이 없다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 70,
+            "rationale": "src/feature_flags/authorization.py가 관리자 권한과 프로젝트 범위 검사를 담당하는 보안 경계 모듈이며, 기능 플래그는 테넌트별 기능 노출을 제어하는 핵심 제어 수단이다. 잘못된 플래그 조작은 결제/계정 같은 직접 경로는 아니나 테넌트 격리와 릴리스 제어 신뢰성에 타격을 준다."
+          },
+          {
+            "name": "분석 신뢰도 (evidence_confidence)",
+            "score": 40,
+            "rationale": "제공된 근거는 README.md 3, 16, 18, 19행의 파일 설명뿐이고 authorization.py의 실제 구현 본문이 없어 결함 조건식(OR 결합 여부 등)을 확정하지 못한다. 가설 신뢰도도 0.4 수준이라 권한 상승이라는 결론은 유지되나 세부 원인 확정은 유보적이다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "admin 역할이 owner 전용 플래그 관리 권한을 획득하는 접근 제어 결함으로, 권한 상승(role escalation) 성격의 보안 이슈다. 재현 절차가 단순하고 결과가 결정적이며(admin에게 true 반환), admin 역할 전원이 대상이라 영향 범위가 넓다. 데이터 손실이나 전체 서비스 중단은 아니고 코드 수정 외 우회책이 없어, 밴딩상 'P1 높음 (70-84): 핵심 기능 차단·우회 불가·다수 사용자 영향'에 해당한다. 근거가 README.md 19행의 authorization.py 위치 설명에 국한되어 실제 조건식은 미확인(신뢰도 0.4)이므로 P0(85-100)까지 올리지 않고 78로 산정한다. 우선 조치로 src/feature_flags/authorization.py의 owner 판정 로직과 admin 역할 조건 결합 여부를 확인해야 한다.",
+        "risk_score": 78
+      },
+      "workflow_run_id": 7
+    }
+  },
+  "workflow": {
+    "id": 7,
+    "project_id": 7,
+    "request_id": "process-bug-7",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "프로젝트는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리이다 (README.md:3).",
+            "verified": true
+          },
+          {
+            "fact": "저장소 구조상 `src/feature_flags/repository.py`는 테넌트별 플래그 저장소, `src/feature_flags/service.py`는 플래그 조회 서비스를 담당한다 (README.md:16, README.md:18).",
+            "verified": true
+          },
+          {
+            "fact": "`src/feature_flags/authorization.py`가 관리자 권한과 프로젝트 범위 검사를 담당하는 모듈로 문서화되어 있다 (README.md:19). 즉 신고된 결함의 권한 판정 위치는 이 모듈로 한정된다.",
+            "verified": false
+          },
+          {
+            "fact": "신고된 증상은 admin 역할로 owner 전용 플래그 관리 권한을 확인했을 때 false가 아니라 true가 반환되는 것이다 (bug_context 재현 절차 및 message).",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거에는 authorization.py의 실제 구현 본문이 포함되어 있지 않아, 권한 검사가 어떤 조건식/연산자로 owner 여부를 판정하는지는 확인되지 않았다.",
+            "verified": false
+          },
+          {
+            "fact": "러닝 중 발생한 오류가 아니므로 stack_trace는 비어 있고 error_type는 ReportedBehaviorMismatch이다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "code-7-README.md-3",
+            "observation": "프로젝트 성격(테넌트별 기능 플래그 조회 라이브러리)을 확인했다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "7",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "code-7-README.md-16",
+            "observation": "플래그 저장 계층의 위치를 확인했다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "7",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "code-7-README.md-18",
+            "observation": "플래그 조회 서비스 계층의 위치를 확인했다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "7",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+            "end_line": 19,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 19,
+            "evidence_id": "code-7-README.md-19",
+            "observation": "권한 검사가 authorization.py에 위치함을 확인했으나 구현 본문은 증거에 없어 결함 조건식은 미확인이다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "7",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.4,
+        "evidence_counts": {
+          "code": 8,
+          "history": 0,
+          "document": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:19 - `src/feature_flags/authorization.py`: 관리자 권한과 프로젝트 범위 검사",
+              "제공된 코드 증거는 README.md 3, 16, 18, 19행의 파일 설명만 포함하며 authorization.py 내부 구현은 포함되지 않음"
+            ],
+            "confidence": 0.4,
+            "hypothesis": "src/feature_flags/authorization.py의 권한 검사 로직에서 owner 전용 플래그 관리 조건과 admin 역할 조건을 함께 평가(OR 결합 또는 role 목록에 admin 포함)하여, admin 역할에도 owner 전용 플래그 관리 권한이 true로 반환된다."
+          },
+          {
+            "evidence": [
+              "README.md:3 - 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리",
+              "README.md:19 - 관리자 권한과 프로젝트 범위 검사"
+            ],
+            "confidence": 0.25,
+            "hypothesis": "authorization.py의 검사 함수가 순수한 역할 비교 대신 권한/기능 플래그 조회 결과를 반환값으로 사용해, admin 역할에 대해서도 true가 산출된다."
+          },
+          {
+            "evidence": [
+              "README.md:19 - 관리자 권한과 프로젝트 범위 검사"
+            ],
+            "confidence": 0.2,
+            "hypothesis": "owner 판정이 프로젝트 소유권(예: owner_id) 비교가 아니라 관리자 권한 여부로 대체 구현되어 있어, admin이 owner 전용 검사를 통과한다."
+          }
+        ]
+      },
+      "issue_id": "7",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "코드 증거에 authorization.py 구현 본문이 없어(사실: 구현 본문 미포함, verified=false) 실제 결함 조건식이 가설과 다를 수 있다.",
+            "mitigation": "1단계에서 실제 소스를 먼저 확보한 뒤 수정 범위를 확정하고, 세 가설을 모두 검증한 후에만 코드를 변경한다."
+          },
+          {
+            "risk": "역할 검사와 owner 소유권 검사를 분리하는 과정에서 admin의 정당한 관리 권한까지 차단될 수 있다.",
+            "mitigation": "admin 역할의 별도 권한 경로를 명시적으로 유지하고, admin 전용 경로에 대한 테스트를 함께 작성한다."
+          },
+          {
+            "risk": "권한 검사 로직 변경이 src/feature_flags/service.py 및 repository.py의 호출부에 회귀를 유발할 수 있다.",
+            "mitigation": "5단계에서 전체 테스트 스위트를 실행하고 인접 계층의 호출 경로를 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 src/feature_flags/authorization.py의 권한 검사 구현 본문을 확보한다.",
+            "details": "증거(evidence_id: code-7-README.md-19)에는 파일 설명만 존재하고 구현 본문이 없으므로, owner 전용 플래그 관리 권한 판정 함수와 admin 역할 판정 함수의 실제 조건식을 먼저 읽어 결함 위치를 특정한다."
+          },
+          {
+            "id": 2,
+            "action": "admin 역할에 대해 owner 전용 플래그 관리 권한이 true로 반환되는 재현 테스트를 작성한다.",
+            "details": "bug_context 재현 절차 및 message에 대응하는 회귀 테스트를 추가한다. admin 역할 입력 시 owner 전용 관리 권한 검사가 true가 되는지, 그리고 project owner_id 기반 소유권 비교가 올바르게 false를 반환하는지를 각각 단정한다."
+          },
+          {
+            "id": 3,
+            "action": "owner 판정 로직과 admin 역할 조건의 결합(OR 결합 또는 role 목록에 admin 포함) 여부를 확인하고 분리한다.",
+            "details": "root_cause_hypotheses 1(신뢰도 0.4)과 3(신뢰도 0.2)을 검증한다. owner 전용 검사는 project 소유권 비교(예: owner_id)만으로 판정하고, admin 역할은 별도 권한 경로로 분리하여 owner 전용 검사가 admin에게 true를 반환하지 않도록 수정한다."
+          },
+          {
+            "id": 4,
+            "action": "검사 함수 반환값이 역할 비교가 아닌 권한/기능 플래그 조회 결과로 산출되는지 점검하고 정정한다.",
+            "details": "root_cause_hypotheses 2(신뢰도 0.25)를 검증한다. role 비교 대신 플래그 조회 결과를 그대로 반환하는 경로가 있으면, admin 역할에 대해 owner 전용 권한이 true로 새지 않도록 역할 게이팅을 명시적으로 적용한다."
+          },
+          {
+            "id": 5,
+            "action": "수정 후 1단계에서 추가한 회귀 테스트와 기존 테스트 스위트를 실행하여 회귀 여부를 확인한다.",
+            "details": "src/feature_flags/repository.py(저장소), src/feature_flags/service.py(조회 서비스) 등 인접 계층에 영향이 없는지 함께 확인한다."
+          },
+          {
+            "id": 6,
+            "action": "재현 절차를 수정된 코드 기준으로 재실행하여 admin 역할에서 owner 전용 플래그 관리 권한이 false로 반환됨을 확인하고 결과를 기록한다.",
+            "details": "error_type: ReportedBehaviorMismatch 결함이 해소되었음을 확인하고, 동일 결함의 재발 방지를 위해 테스트를 영구 보존한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "7",
+        "acceptance_criteria": [
+          "admin 역할로 owner 전용 플래그 관리 권한을 확인했을 때 true가 아닌 false가 반환된다(신고된 증상의 역전 확인).",
+          "project 소유권(예: owner_id)이 일치하는 owner 역할에 대해서는 owner 전용 플래그 관리 권한이 true로 반환된다.",
+          "admin 역할은 owner 전용 검사와 분리된 권한 경로로 평가되며, owner 판정 조건식에 OR 결합이나 role 목록 내 admin 포함이 존재하지 않는다.",
+          "추가한 회귀 테스트와 기존 테스트 스위트가 모두 통과한다.",
+          "수정된 커밋 기준으로 재현 절차를 재실행했을 때 ReportedBehaviorMismatch가 더 이상 발생하지 않는다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:41:30.969694Z",
+    "completed_at": "2026-09-28T07:41:54.812031Z",
+    "created_at": "2026-09-28T07:41:30.952586Z",
+    "updated_at": "2026-09-28T07:41:54.813369Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.466
+  }
+}

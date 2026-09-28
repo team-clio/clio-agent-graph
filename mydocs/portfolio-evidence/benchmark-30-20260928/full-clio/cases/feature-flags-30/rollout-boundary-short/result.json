@@ -1,0 +1,512 @@
+{
+  "input": {
+    "id": "rollout-boundary-short",
+    "report": {
+      "title": "percentage rollout 경계값 오류",
+      "description": "설정 비율과 같은 bucket이 잘못 포함됩니다.",
+      "steps_to_reproduce": [
+        "10% 설정에서 bucket 10을 평가합니다."
+      ],
+      "expected_behavior": "제외되어야 합니다.",
+      "actual_behavior": "포함됩니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_percentage_boundary_excludes_bucket_equal_to_percentage"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 14,
+    "name": "benchmark-20260928T065850Z-59223a30-rollout-boundary-short",
+    "description": "Clio Benchmark feature-flags-30: rollout-boundary-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:13:40.018258Z",
+    "updatedAt": "2026-09-28T07:13:40.018258Z"
+  },
+  "clio_repository": {
+    "id": 14,
+    "projectId": 14,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:14:07.216356Z",
+    "createdAt": "2026-09-28T07:13:40.033721Z",
+    "updatedAt": "2026-09-28T07:14:07.216681Z"
+  },
+  "bug": {
+    "id": 14,
+    "project_id": 14,
+    "issue_id": 14,
+    "title": "percentage rollout 경계값 오류",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:14:08.314703Z",
+    "created_at": "2026-09-28T07:14:08.342620Z"
+  },
+  "analysis": {
+    "analysisResultId": 14,
+    "workflowRunId": 14,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": "src/feature_flags/rollout.py:1-9",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "14",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "percentage rollout 계산 규칙 문서: `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`일 때 True를 반환한다고 서술하며, 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 구현과 기대가 상충한다고 명시한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_7a393834b0a15587a70aa293f9ed9bdc",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": null,
+          "location": "pyproject.toml:1-31, README.md:1-22",
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "14",
+          "start_line": null,
+          "evidence_id": null,
+          "observation": "프로젝트 모듈 구조 문서: `src/feature_flags/rollout.py`가 percentage rollout 계산을 담당한다고 명시한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_fcef84e8598e526eaf42f6f4d7a77dbe",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 9,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": null,
+          "start_line": 1,
+          "evidence_id": "kn_7a393834b0a15587a70aa293f9ed9bdc:src/feature_flags/rollout.py",
+          "observation": "rollout 모듈이 percentage rollout 경계값 계산(`is_in_rollout`, `rollout_bucket`)을 담당하는 대상 파일임을 확인한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "14",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 20,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 20,
+          "evidence_id": "14:README.md:20",
+          "observation": "README.md 20행: `- \\`src/feature_flags/rollout.py\\`: percentage rollout 계산` — 모듈 책임 위치를 문서로 확인한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "14",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 1,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": null,
+          "start_line": 1,
+          "evidence_id": "14:src/feature_flags/rollout.py:1",
+          "observation": "src/feature_flags/rollout.py 1행: `\"\"\"Percentage rollout helpers.\"\"\"` — 제출된 코드 근거는 모듈 docstring까지만 포함하며 함수 본문 라인은 제공되지 않았다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "14",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "버그 리포트(#14, percentage rollout 경계값 오류)의 재현 절차는 10% 설정에서 bucket 10을 평가했을 때 제외되어야 하는데 실제로는 포함된다고 기술한다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 도메인 규칙(kn_7a393834b0a15587a70aa293f9ed9bdc, revision 1)에 따르면 `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`일 때 True를 반환하도록 구현되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "PCM 도메인 규칙(kn_7a393834b0a15587a70aa293f9ed9bdc, revision 1)에 따르면 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 현재 구현과 기대가 상충한다.",
+          "verified": true
+        },
+        {
+          "fact": "제출된 코드 근거에는 `src/feature_flags/rollout.py`의 docstring(`\"\"\"Percentage rollout helpers.\"\"\"`)과 `README.md`의 모듈 설명만 포함되어 있고, `is_in_rollout` 본문 소스 라인은 직접 인용되어 있지 않다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 14,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.82,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_7a393834b0a15587a70aa293f9ed9bdc (knowledge_revision 1): `is_in_rollout(bucket, percentage)`: `bucket <= percentage`일 때 True를 반환한다고 명시",
+            "kn_7a393834b0a15587a70aa293f9ed9bdc: 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 현재 구현과 기대가 상충",
+            "버그 리포트 재현 절차: 10% 설정에서 bucket 10이 포함됨",
+            "src/feature_flags/rollout.py (src/feature_flags/rollout.py, line 1): \"\"\"Percentage rollout helpers.\"\"\"\""
+          ],
+          "confidence": 0.9,
+          "hypothesis": "`src/feature_flags/rollout.py`의 `is_in_rollout(bucket, percentage)`가 `bucket <= percentage`로 구현되어, 경계값(bucket=10, percentage=10)이 제외되어야 한다는 기대와 달리 True(포함)를 반환한다."
+        }
+      ],
+      "project_id": 14,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`is_in_rollout` 함수 본문 소스가 제출된 코드 근거에 직접 인용되지 않아, 실제 구현이 가설(`<=`)과 다를 수 있다.",
+            "mitigation": "1단계에서 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 실제 소스를 확인한 뒤에만 수정하고, 가정이 틀리면 수정 범위를 재산정한다."
+          },
+          {
+            "risk": "경계 정의를 뒤집으면 기존에 10% 롤아웃 대상이었던 사용자 집합이 1버킷만큼 축소되어 점진적 배포 대상이 변동된다.",
+            "mitigation": "변경을 릴리스 노트에 명시하고, 배포 영향도를 1퍼센트 포인트 이내로 평가한 뒤 롤아웃 재개 여부를 결정한다."
+          },
+          {
+            "risk": "`rollout_bucket` 등 모듈 내 다른 함수가 `<=` 규칙에 맞춰 작성되어 있어 한쪽만 수정하면 경계 처리가 서로 어긋난다.",
+            "mitigation": "2단계에서 모듈 전체의 경계 처리를 검토하고, 경계 정의를 단일 상수/헬퍼로 모아 일관성을 보장한다."
+          },
+          {
+            "risk": "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)가 `<=`를 명시하고 있어 코드만 바꾸면 문서와 구현이 상충한다.",
+            "mitigation": "동일 변경에서 지식 항목 서술을 갱신하고, 갱신 전까지는 코드-문서 불일치를 명시적으로 표시한다."
+          },
+          {
+            "risk": "percentage=0 및 percentage=100 같은 상한/하한 케이스에서 기대값이 문서화되어 있지 않아 경계 변경 후 해석이 갈릴 수 있다.",
+            "mitigation": "5단계에서 상한·하한 케이스를 테스트로 고정하고 README에 기대 동작을 명시한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 `is_in_rollout(bucket, percentage)` 본문 소스를 직접 확인한다.",
+            "details": "제출된 코드 근거에는 모듈 docstring(`\"\"\"Percentage rollout helpers.\"\"\"`)만 포함되어 있고 함수 본문 라인은 인용되지 않았으므로, 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 실제 비교 연산자(`<=` 여부)를 먼저 확정한다. 추측만으로 수정하지 않는다."
+          },
+          {
+            "id": 2,
+            "action": "`rollout_bucket`을 포함한 모듈 내 관련 함수들의 경계 처리도 함께 검토한다.",
+            "details": "경계 정의가 `is_in_rollout`과 `rollout_bucket` 사이에서 일관되게 유지되는지 확인한다. 한쪽만 수정하면 10% 설정에서 재현 절차가 다시 어긋날 수 있다."
+          },
+          {
+            "id": 3,
+            "action": "경계값 정의를 확정한다: bucket=10, percentage=10은 제외(False), 즉 유효 범위는 `bucket < percentage`로 한다.",
+            "details": "`test_percentage_boundary_excludes_bucket_equal_to_percentage` 테스트의 기대(제외)와 버그 리포트의 재현 절차(10% 설정에서 bucket 10은 제외되어야 함)를 단일 기준으로 삼는다."
+          },
+          {
+            "id": 4,
+            "action": "`src/feature_flags/rollout.py`의 비교 연산자를 `bucket <= percentage`에서 `bucket < percentage`로 수정한다.",
+            "details": "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)가 현재 `<=`로 서술하고 있으므로, 코드 수정과 동시에 해당 규칙 서술도 새 경계 정의로 갱신 대상임을 표시한다."
+          },
+          {
+            "id": 5,
+            "action": "경계값 회귀 테스트를 추가·보강한다.",
+            "details": "bucket == percentage(제외), bucket == percentage - 1(포함), percentage=0(전부 제외), percentage=100(경계 상한 포함 여부) 케이스를 명시적으로 커버한다."
+          },
+          {
+            "id": 6,
+            "action": "`README.md` 및 모듈 docstring의 percentage rollout 설명을 새 경계 정의와 일치하도록 갱신한다.",
+            "details": "README.md 20행의 모듈 책임 설명과 kn_fcef84e8598e526eaf42f6f4d7a77dbe 모듈 구조 문서가 구현과 상충하지 않도록 유지한다."
+          },
+          {
+            "id": 7,
+            "action": "버그 리포트의 재현 절차(10% 설정, bucket=10)를 그대로 실행해 False가 반환됨을 검증한다.",
+            "details": "수정 전에는 True(포함)로 재현되었으므로, 수정 후 동일 절차로 결과가 뒤집히는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "acceptance_criteria": [
+          "`is_in_rollout(10, 10)` 호출 시 False를 반환한다(경계값 제외).",
+          "`is_in_rollout(9, 10)` 호출 시 True를 반환한다(경계값 미만 포함).",
+          "테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`가 통과한다.",
+          "버그 리포트 #14의 재현 절차(10% 설정에서 bucket 10 평가)를 그대로 수행했을 때 제외(False)로 결과가 재현된다.",
+          "percentage=0일 때 모든 bucket이 False, percentage=100일 때 문서화된 상한 규칙과 일관된 결과가 나온다.",
+          "`rollout_bucket`과 `is_in_rollout`의 경계 정의가 동일한 규칙(`bucket < percentage`)을 따른다.",
+          "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)의 서술이 수정된 구현과 일치하도록 갱신되었거나, 불일치가 남아 있지 않다.",
+          "`README.md` 20행 및 모듈 docstring의 퍼센티지 롤아웃 설명이 새 경계 정의를 반영한다.",
+          "기존 롤아웃 관련 테스트 스위트 전체가 회귀 없이 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 55,
+            "rationale": "`src/feature_flags/rollout.py`의 percentage rollout 계산은 모든 feature flag 평가 경로에서 공용으로 쓰이므로, 경계 bucket(=percentage)에 배정된 사용자 집단 전체에 영향이 파급된다. 다만 특정 비율 설정의 단일 경계값에만 해당하여 전체 사용자 모집단이 아닌 경계 bucket 사용자로 한정된다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 45,
+            "rationale": "crash, 데이터 손실, 보안 노출, 데이터 손상은 없고, 기대와 다른 boolean 반환(제외되어야 할 대상이 포함됨)에 불과하다. 기능적으로 잘못된 롤아웃 노출이 발생하지만 상태를 파괴하지는 않는다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 80,
+            "rationale": "10% 설정에서 bucket 10을 평가하는 조건에서 100% 결정적으로 재현되며, `bucket <= percentage` 구현상 모든 percentage 값에서 경계 bucket이 항상 포함되므로 오프바이원이 구조적으로 상시 발생한다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 55,
+            "rationale": "설정 비율을 1% 낮춰(예: 9%) 사용하거나 조건 비교를 직접 수정하는 우회가 가능하지만, 코드 수정 없이 사용자가 회피하기는 어렵고 우회 시 실제 롤아웃 비율이 의도와 달라진다. 별도 플래그나 설정으로 즉시 회피할 수단은 확인되지 않는다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 55,
+            "rationale": "결제, 계정 등 핵심 경로 자체가 아니라 feature flag 롤아웃 제어 경로의 문제이다. 그러나 rollout 비율이 정확히 지켜지지 않으면 점진적 배포/카나리 통제가 무력화되어 신규 기능 노출 범위가 의도보다 넓어질 수 있다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "`src/feature_flags/rollout.py`의 `is_in_rollout(bucket, percentage)`가 `bucket <= percentage`로 구현되어 10% 설정에서 bucket 10이 포함되는 오프바이원 경계값 오류이다(근거: kn_7a393834b0a15587a70aa293f9ed9bdc revision 1, 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`, 버그 리포트 #14). 결정적·상시 재현되고 공용 rollout 헬퍼라 영향 사용자군이 넓지만, 증상은 잘못된 boolean 판정이며 crash/데이터 손실/보안 노출이 없고 `bucket < percentage` 수정이라는 단순 변경으로 해결되며 사용자 우회(비율 하향 설정)도 가능하다. 따라서 전체 서비스 중단이나 데이터 손실 수준(P0)도, 단순 미미 수준(P4)도 아닌 '일부 기능 오작동, 우회 존재' 구간으로 판단해 P2(50-69) 중 상단인 58점으로 산정한다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 14
+    }
+  },
+  "workflow": {
+    "id": 14,
+    "project_id": 14,
+    "request_id": "process-bug-14",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "버그 리포트(#14, percentage rollout 경계값 오류)의 재현 절차는 10% 설정에서 bucket 10을 평가했을 때 제외되어야 하는데 실제로는 포함된다고 기술한다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 도메인 규칙(kn_7a393834b0a15587a70aa293f9ed9bdc, revision 1)에 따르면 `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`일 때 True를 반환하도록 구현되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "PCM 도메인 규칙(kn_7a393834b0a15587a70aa293f9ed9bdc, revision 1)에 따르면 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 현재 구현과 기대가 상충한다.",
+            "verified": true
+          },
+          {
+            "fact": "제출된 코드 근거에는 `src/feature_flags/rollout.py`의 docstring(`\"\"\"Percentage rollout helpers.\"\"\"`)과 `README.md`의 모듈 설명만 포함되어 있고, `is_in_rollout` 본문 소스 라인은 직접 인용되어 있지 않다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": "src/feature_flags/rollout.py:1-9",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "14",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "percentage rollout 계산 규칙 문서: `is_in_rollout(bucket, percentage)`는 `bucket <= percentage`일 때 True를 반환한다고 서술하며, 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 구현과 기대가 상충한다고 명시한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_7a393834b0a15587a70aa293f9ed9bdc",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": null,
+            "location": "pyproject.toml:1-31, README.md:1-22",
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "14",
+            "start_line": null,
+            "evidence_id": null,
+            "observation": "프로젝트 모듈 구조 문서: `src/feature_flags/rollout.py`가 percentage rollout 계산을 담당한다고 명시한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_fcef84e8598e526eaf42f6f4d7a77dbe",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 9,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": null,
+            "start_line": 1,
+            "evidence_id": "kn_7a393834b0a15587a70aa293f9ed9bdc:src/feature_flags/rollout.py",
+            "observation": "rollout 모듈이 percentage rollout 경계값 계산(`is_in_rollout`, `rollout_bucket`)을 담당하는 대상 파일임을 확인한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "14",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 20,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 20,
+            "evidence_id": "14:README.md:20",
+            "observation": "README.md 20행: `- \\`src/feature_flags/rollout.py\\`: percentage rollout 계산` — 모듈 책임 위치를 문서로 확인한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "14",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 1,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": null,
+            "start_line": 1,
+            "evidence_id": "14:src/feature_flags/rollout.py:1",
+            "observation": "src/feature_flags/rollout.py 1행: `\"\"\"Percentage rollout helpers.\"\"\"` — 제출된 코드 근거는 모듈 docstring까지만 포함하며 함수 본문 라인은 제공되지 않았다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "14",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.82,
+        "evidence_counts": {
+          "code": 2,
+          "history": 0,
+          "knowledge": 9
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_7a393834b0a15587a70aa293f9ed9bdc (knowledge_revision 1): `is_in_rollout(bucket, percentage)`: `bucket <= percentage`일 때 True를 반환한다고 명시",
+              "kn_7a393834b0a15587a70aa293f9ed9bdc: 테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`는 경계값(bucket=10, percentage=10)이 제외(False)되기를 기대하므로 현재 구현과 기대가 상충",
+              "버그 리포트 재현 절차: 10% 설정에서 bucket 10이 포함됨",
+              "src/feature_flags/rollout.py (src/feature_flags/rollout.py, line 1): \"\"\"Percentage rollout helpers.\"\"\"\""
+            ],
+            "confidence": 0.9,
+            "hypothesis": "`src/feature_flags/rollout.py`의 `is_in_rollout(bucket, percentage)`가 `bucket <= percentage`로 구현되어, 경계값(bucket=10, percentage=10)이 제외되어야 한다는 기대와 달리 True(포함)를 반환한다."
+          }
+        ]
+      },
+      "issue_id": "14",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`is_in_rollout` 함수 본문 소스가 제출된 코드 근거에 직접 인용되지 않아, 실제 구현이 가설(`<=`)과 다를 수 있다.",
+            "mitigation": "1단계에서 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 실제 소스를 확인한 뒤에만 수정하고, 가정이 틀리면 수정 범위를 재산정한다."
+          },
+          {
+            "risk": "경계 정의를 뒤집으면 기존에 10% 롤아웃 대상이었던 사용자 집합이 1버킷만큼 축소되어 점진적 배포 대상이 변동된다.",
+            "mitigation": "변경을 릴리스 노트에 명시하고, 배포 영향도를 1퍼센트 포인트 이내로 평가한 뒤 롤아웃 재개 여부를 결정한다."
+          },
+          {
+            "risk": "`rollout_bucket` 등 모듈 내 다른 함수가 `<=` 규칙에 맞춰 작성되어 있어 한쪽만 수정하면 경계 처리가 서로 어긋난다.",
+            "mitigation": "2단계에서 모듈 전체의 경계 처리를 검토하고, 경계 정의를 단일 상수/헬퍼로 모아 일관성을 보장한다."
+          },
+          {
+            "risk": "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)가 `<=`를 명시하고 있어 코드만 바꾸면 문서와 구현이 상충한다.",
+            "mitigation": "동일 변경에서 지식 항목 서술을 갱신하고, 갱신 전까지는 코드-문서 불일치를 명시적으로 표시한다."
+          },
+          {
+            "risk": "percentage=0 및 percentage=100 같은 상한/하한 케이스에서 기대값이 문서화되어 있지 않아 경계 변경 후 해석이 갈릴 수 있다.",
+            "mitigation": "5단계에서 상한·하한 케이스를 테스트로 고정하고 README에 기대 동작을 명시한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "`src/feature_flags/rollout.py`의 `is_in_rollout(bucket, percentage)` 본문 소스를 직접 확인한다.",
+            "details": "제출된 코드 근거에는 모듈 docstring(`\"\"\"Percentage rollout helpers.\"\"\"`)만 포함되어 있고 함수 본문 라인은 인용되지 않았으므로, 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 실제 비교 연산자(`<=` 여부)를 먼저 확정한다. 추측만으로 수정하지 않는다."
+          },
+          {
+            "id": 2,
+            "action": "`rollout_bucket`을 포함한 모듈 내 관련 함수들의 경계 처리도 함께 검토한다.",
+            "details": "경계 정의가 `is_in_rollout`과 `rollout_bucket` 사이에서 일관되게 유지되는지 확인한다. 한쪽만 수정하면 10% 설정에서 재현 절차가 다시 어긋날 수 있다."
+          },
+          {
+            "id": 3,
+            "action": "경계값 정의를 확정한다: bucket=10, percentage=10은 제외(False), 즉 유효 범위는 `bucket < percentage`로 한다.",
+            "details": "`test_percentage_boundary_excludes_bucket_equal_to_percentage` 테스트의 기대(제외)와 버그 리포트의 재현 절차(10% 설정에서 bucket 10은 제외되어야 함)를 단일 기준으로 삼는다."
+          },
+          {
+            "id": 4,
+            "action": "`src/feature_flags/rollout.py`의 비교 연산자를 `bucket <= percentage`에서 `bucket < percentage`로 수정한다.",
+            "details": "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)가 현재 `<=`로 서술하고 있으므로, 코드 수정과 동시에 해당 규칙 서술도 새 경계 정의로 갱신 대상임을 표시한다."
+          },
+          {
+            "id": 5,
+            "action": "경계값 회귀 테스트를 추가·보강한다.",
+            "details": "bucket == percentage(제외), bucket == percentage - 1(포함), percentage=0(전부 제외), percentage=100(경계 상한 포함 여부) 케이스를 명시적으로 커버한다."
+          },
+          {
+            "id": 6,
+            "action": "`README.md` 및 모듈 docstring의 percentage rollout 설명을 새 경계 정의와 일치하도록 갱신한다.",
+            "details": "README.md 20행의 모듈 책임 설명과 kn_fcef84e8598e526eaf42f6f4d7a77dbe 모듈 구조 문서가 구현과 상충하지 않도록 유지한다."
+          },
+          {
+            "id": 7,
+            "action": "버그 리포트의 재현 절차(10% 설정, bucket=10)를 그대로 실행해 False가 반환됨을 검증한다.",
+            "details": "수정 전에는 True(포함)로 재현되었으므로, 수정 후 동일 절차로 결과가 뒤집히는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "14",
+        "acceptance_criteria": [
+          "`is_in_rollout(10, 10)` 호출 시 False를 반환한다(경계값 제외).",
+          "`is_in_rollout(9, 10)` 호출 시 True를 반환한다(경계값 미만 포함).",
+          "테스트 `test_percentage_boundary_excludes_bucket_equal_to_percentage`가 통과한다.",
+          "버그 리포트 #14의 재현 절차(10% 설정에서 bucket 10 평가)를 그대로 수행했을 때 제외(False)로 결과가 재현된다.",
+          "percentage=0일 때 모든 bucket이 False, percentage=100일 때 문서화된 상한 규칙과 일관된 결과가 나온다.",
+          "`rollout_bucket`과 `is_in_rollout`의 경계 정의가 동일한 규칙(`bucket < percentage`)을 따른다.",
+          "PCM 도메인 규칙 kn_7a393834b0a15587a70aa293f9ed9bdc (revision 1)의 서술이 수정된 구현과 일치하도록 갱신되었거나, 불일치가 남아 있지 않다.",
+          "`README.md` 20행 및 모듈 docstring의 퍼센티지 롤아웃 설명이 새 경계 정의를 반영한다.",
+          "기존 롤아웃 관련 테스트 스위트 전체가 회귀 없이 통과한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:14:09.279240Z",
+    "completed_at": "2026-09-28T07:14:33.923394Z",
+    "created_at": "2026-09-28T07:14:09.263974Z",
+    "updated_at": "2026-09-28T07:14:33.924438Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.365
+  }
+}

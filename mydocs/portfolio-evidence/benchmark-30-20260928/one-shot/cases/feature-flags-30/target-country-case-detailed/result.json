@@ -1,0 +1,403 @@
+{
+  "input": {
+    "id": "target-country-case-detailed",
+    "report": {
+      "title": "국가 코드 대소문자에 따라 타기팅 실패",
+      "description": "동일한 ISO 국가 코드인데 대소문자가 다르면 규칙이 일치하지 않습니다.",
+      "steps_to_reproduce": [
+        "규칙 국가를 KR로 설정합니다.",
+        "요청 국가 kr을 평가합니다."
+      ],
+      "expected_behavior": "같은 국가로 인식해 true여야 합니다.",
+      "actual_behavior": "false가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_country_matching_is_case_insensitive"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 19,
+    "name": "benchmark-20260928T073431Z-64ae54ac-target-country-case-detailed",
+    "description": "Clio Benchmark feature-flags-30: target-country-case-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:53:33.218226Z",
+    "updatedAt": "2026-09-28T07:53:33.218226Z"
+  },
+  "clio_repository": {
+    "id": 19,
+    "projectId": 19,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:54:04.940705Z",
+    "createdAt": "2026-09-28T07:53:33.226612Z",
+    "updatedAt": "2026-09-28T07:54:04.940805Z"
+  },
+  "bug": {
+    "id": 19,
+    "project_id": 19,
+    "issue_id": 19,
+    "title": "국가 코드 대소문자에 따라 타기팅 실패",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:54:05.460797Z",
+    "created_at": "2026-09-28T07:54:05.463582Z"
+  },
+  "analysis": {
+    "analysisResultId": 19,
+    "workflowRunId": 19,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+          "end_line": 21,
+          "location": "README.md:21",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-1",
+          "observation": "README.md 21행은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 구현하는 위치임을 명시한다. 이 경로가 국가 코드 비교 로직의 소재를 가리키는 유일한 코드 근거다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "19",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+          "end_line": 21,
+          "location": "README.md:21",
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-2",
+          "observation": "동일 스냅샷의 중복 제공된 README 근거로, 국가 타기팅 구현 파일이 `src/feature_flags/targeting.py`임을 재확인한다. 해당 파일 본문은 제공되지 않아 비교 연산의 대소문자 처리 여부는 입증되지 않는다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "19",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 19의 증상은 동일한 ISO 국가 코드인데 대소문자가 다르면 규칙이 일치하지 않는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "재현 절차는 규칙 국가를 KR로 설정하고 요청 국가 kr을 평가하는 것이며, 기대 동작은 true, 실제 동작은 false이다.",
+          "verified": true
+        },
+        {
+          "fact": "오류 유형은 ReportedBehaviorMismatch이고 메시지는 'false가 반환됩니다.'이며 stack_trace는 비어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md 21행은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 기술한다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 근거에는 국가 코드 비교를 수행하는 실제 소스 코드가 포함되어 있지 않아 대소문자 정규화 여부를 코드로 확인할 수 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 19,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.35,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md:21 이 국가·사용자 타기팅이 `src/feature_flags/targeting.py`에 구현되어 있음을 확인할 수 있으나, 해당 파일의 실제 비교 코드는 제공되지 않았다.",
+            "제공된 근거에는 대소문자 정규화(예: upper()/lower()) 또는 locale 기반 비교 여부를 판단할 수 있는 코드가 포함되어 있지 않다."
+          ],
+          "confidence": 0.55,
+          "hypothesis": "국가 타기팅 판정 로직이 요청 국가와 규칙 국가를 비교할 때 대소문자를 정규화하지 않아, 동일한 ISO 국가 코드라도 'KR'과 'kr'이 다른 문자열로 취급되어 매칭에 실패하고 false가 반환된다."
+        },
+        {
+          "evidence": [
+            "재현 절차상 규칙 국가는 `KR`, 요청 국가는 `kr`로 대소문자가 반대이며 실제 동작은 false이다.",
+            "비교 구현을 확인할 수 있는 코드 근거가 제공되지 않아 검증되지 않았다."
+          ],
+          "confidence": 0.3,
+          "hypothesis": "국가 코드 비교가 대소문자 구분(case-sensitive) 컬렉션/딕셔너리 키 조회나 정확 일치 연산으로 수행되어, 규칙 정의 시 사용된 표기와 요청 시 표기가 다르면 조회 결과가 누락된다."
+        }
+      ],
+      "project_id": 19,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에 `src/feature_flags/targeting.py` 본문이 없어, 실제 비교 구현(대소문자 정규화 여부, 비교 지점 위치)이 확인되지 않은 상태로 수정이 진행될 수 있다.",
+            "mitigation": "1단계에서 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 파일 본문을 확보하고, 확인 전에는 코드 변경을 시작하지 않는다. 확인 결과 가설이 틀리면(정규화가 이미 존재) 원인 분석을 재수행한다."
+          },
+          {
+            "risk": "대소문자 정규화 적용 범위가 넓어 사용자 타기팅 등 무관한 비교 로직까지 영향을 받을 수 있다.",
+            "mitigation": "국가 코드 비교 경로로만 변경을 한정하고, 4단계에서 사용자 타기팅 회귀 테스트를 함께 실행하여 부작용을 검출한다."
+          },
+          {
+            "risk": "locale 기반 정규화(예: 터키어 I/ı 문제) 도입 시 특정 로케일에서 잘못된 매칭이 발생할 수 있다.",
+            "mitigation": "locale 비의존 ASCII 기반 `upper()`/`lower()` 정규화를 사용하고, 로케일 의존 변환은 적용하지 않는다."
+          },
+          {
+            "risk": "정규화로 인해 형식이 다른 코드가 동일시되어 오탐 매칭이 발생할 수 있다.",
+            "mitigation": "형식 검증(alpha-2 등)을 유지하고, 4단계의 서로 다른 국가 코드 케이스 테스트로 오탐 여부를 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "국가 코드 비교 로직의 실제 구현 위치와 현재 동작을 확정한다.",
+            "details": "README.md:21 근거에 따라 `src/feature_flags/targeting.py`를 열어 국가 타기팅 비교 연산(사전 키 조회, 정확 일치 비교, `==` 연산 등)을 확인한다. 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 파일 본문을 확보하여 대소문자 정규화(`upper()`/`lower()`) 또는 locale 기반 비교 존재 여부를 판정한다. 현재 근거에는 비교 소스 코드가 포함되어 있지 않으므로 이 단계에서 미검증 상태를 해소한다."
+          },
+          {
+            "id": 2,
+            "action": "재현 테스트를 먼저 작성하여 버그를 고정한다.",
+            "details": "규칙 국가 `KR`, 요청 국가 `kr`을 입력으로 하는 국가 타기팅 평가 테스트를 추가하고 기대 동작을 true로 명시한다. 대소문자 변형 조합(`KR`/`kr`, `kr`/`KR`, 혼합 케이스, 3자리 코드 등)도 함께 파라미터화하여 현재 실패(false 반환)를 확인한다. 오류 유형 ReportedBehaviorMismatch, 메시지 'false가 반환됩니다.'를 재현 조건으로 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "국가 코드 비교에 대소문자 정규화를 적용한다.",
+            "details": "`src/feature_flags/targeting.py`의 국가 코드 비교 지점에서 요청 국가와 규칙 국가를 동일한 정규화 규칙(예: ISO 3166-1 alpha-2 기준 `upper()`)으로 변환한 뒤 비교한다. 사전/딕셔너리 키 조회, 정확 일치 연산, 집합 포함 검사 등 모든 비교 경로에 동일 정규화를 적용하고, 사용자 타기팅 비교에는 영향을 주지 않도록 범위를 국가 코드로 한정한다."
+          },
+          {
+            "id": 4,
+            "action": "회귀 테스트를 실행하고 기존 동작을 보존한다.",
+            "details": "국가 타기팅 전체 테스트 스위트와 기존 규칙 국가/요청 국가 케이스를 실행하여 정규화 도입으로 인한 오탐(서로 다른 국가 코드가 동일시되는 경우)이 없는지 확인한다. null/빈 문자열/미지원 코드 입력에 대한 기존 예외 동작이 유지되는지도 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "19",
+        "acceptance_criteria": [
+          "규칙 국가 `KR`, 요청 국가 `kr` 평가 시 true가 반환되고, 이슈 19의 재현 절차에서 ReportedBehaviorMismatch 오류가 더 이상 발생하지 않는다.",
+          "대소문자만 다른 동일 ISO 국가 코드(`KR`/`kr`, `kr`/`KR`, `Kr`/`kR` 등)의 모든 조합이 일관되게 true로 매칭된다.",
+          "서로 다른 ISO 국가 코드(예: `KR` vs `US`)는 대소문자와 무관하게 여전히 false로 판정되어 오탐이 발생하지 않는다.",
+          "`src/feature_flags/targeting.py`에 대소문자 정규화가 적용된 국가 코드 비교가 존재하며, 요청/규칙 양측에 동일 규칙이 적용된다.",
+          "추가된 재현 테스트와 기존 국가·사용자 타기팅 회귀 테스트가 모두 통과한다.",
+          "null, 빈 문자열, 3자리 등 비정상 국가 코드 입력에 대한 기존 예외/거부 동작이 변경 없이 유지된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 55,
+            "rationale": "국가·사용자 타기팅은 `src/feature_flags/targeting.py`가 담당하는 기능 플래그 평가의 핵심 축이다. 국가 코드 표기가 소문자/대문자로 혼용되는 모든 요청이 영향을 받을 수 있어, 특정 국가나 특정 클라이언트 표기 습관에 따라 타기팅 결과가 뒤집힌다. 다만 이슈 재현 절차는 특정 규칙-요청 조합 1건에 국한되며, 전체 사용자 집합 중 대소문자 불일치가 발생하는 비율은 근거 자료로 확인할 수 없어 중간 수준으로 산정한다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 40,
+            "rationale": "오류 유형은 ReportedBehaviorMismatch로 서버 크래시, 데이터 손실, 보안 노출, 데이터 손상은 관찰되지 않았다. 반환값이 잘못될 뿐 예외나 stack_trace는 비어 있다(occurred_at=2026-09-28T07:54:05.460797Z, raw_payload.benchmark_case_id=\"target-country-case-detailed\"). 다만 잘못된 타기팅 결과가 잘못된 기능 노출/차단으로 이어질 수 있어 무해한 표시 오류보다는 높게 본다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 65,
+            "rationale": "재현 절차가 명확하다: 규칙 국가를 KR로 설정하고 요청 국가 kr을 평가하면 기대 true, 실제 false가 반환되어 결정적(deterministic)으로 재현된다. 대소문자가 다른 입력이 들어오는 한 100% 재현되며, 국가 코드 대소문자 표기는 클라이언트 구현마다 달라 흔히 발생할 수 있는 조건이다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 45,
+            "rationale": "운영 측면에서 규칙 국가를 'KR'과 'kr' 두 건으로 중복 등록하거나 요청 국가를 정규화해 전달하는 우회가 가능하다. 그러나 이는 설정 중복 관리 부담과 누락 위험을 동반하고, 클라이언트가 임의로 표기를 바꿀 수 없는 경우에는 우회가 불가능하다. 코드 수정(대소문자 정규화) 없이는 근본 해결이 어려워 중간 점수로 산정한다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 60,
+            "rationale": "기능 플래그 타기팅은 결제·계정 경로와 직결될 수 있는 코어 경로다. 국가 단위 타기팅이 실패하면 특정 국가 사용자에게 기능이 잘못 노출되거나 반대로 차단되어, 국가별 규제 대응·가격 정책·롤아웃 통제가 오작동할 수 있다. 결제/계정 자체가 직접 손상된 증거는 없으나 국가별 기능 통제 실패는 비즈니스 영향이 크다."
+          },
+          {
+            "name": "근거 신뢰도 (evidence_confidence)",
+            "score": 35,
+            "rationale": "evidence_counts는 documents 0, code 2, history 0, knowledge 0이며, 두 코드 근거(code-1, code-2)는 모두 README.md:21의 \"`src/feature_flags/targeting.py`: 국가·사용자 타기팅\" 한 줄의 중복이다. 비교 구현의 대소문자 정규화 여부를 확인할 실제 소스가 제공되지 않았고(root_cause_hypotheses confidence 각 0.55/0.3, 전체 confidence 0.35), stack_trace도 비어 있어 근거 기반 확신이 낮다. 다만 재현 절차와 실제/기대 동작은 명확히 검증된 사실이다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "재현성이 확실하고(규칙 국가 KR vs 요청 국가 kr → 기대 true, 실제 false, 결정적 재현) 기능 플래그 국가 타기팅이라는 코어 경로에 위치하므로 무시할 수 있는 결함은 아니다. 그러나 관찰된 증상은 크래시·데이터 손실·보안 노출이 아닌 boolean 반환값 불일치(ReportedBehaviorMismatch, 메시지 \\\"false가 반환됩니다.\\\", stack_trace 없음)이며, 중복 규칙 등록이나 요청 국가 정규화로 우회가 가능해 P1(70-84) 수준의 '핵심 기능 완전 차단, 우회 불가'에는 이르지 않는다. 근거 자료도 README.md:21 한 줄이 중복 제공된 수준으로 코드 확인이 불가능해(confidence 0.35) 실제 영향 범위가 과소평가될 위험이 있다. 종합적으로 '일부 기능이 오작동하나 우회가 존재'하는 P2 보통 구간(50-69)의 중간값으로, risk_score를 54로 산정한다. 권고: `src/feature_flags/targeting.py`의 국가 코드 비교부에서 ISO 3166-1 alpha-2 코드에 대해 upper()/lower() 정규화(또는 case-insensitive 비교)를 적용하고, 대소문자 혼용 케이스에 대한 회귀 테스트를 추가할 것.",
+        "risk_score": 54
+      },
+      "workflow_run_id": 19
+    }
+  },
+  "workflow": {
+    "id": 19,
+    "project_id": 19,
+    "request_id": "process-bug-19",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 19의 증상은 동일한 ISO 국가 코드인데 대소문자가 다르면 규칙이 일치하지 않는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "재현 절차는 규칙 국가를 KR로 설정하고 요청 국가 kr을 평가하는 것이며, 기대 동작은 true, 실제 동작은 false이다.",
+            "verified": true
+          },
+          {
+            "fact": "오류 유형은 ReportedBehaviorMismatch이고 메시지는 'false가 반환됩니다.'이며 stack_trace는 비어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md 21행은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 기술한다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 근거에는 국가 코드 비교를 수행하는 실제 소스 코드가 포함되어 있지 않아 대소문자 정규화 여부를 코드로 확인할 수 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "19",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "end_line": 21,
+            "location": "README.md:21",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-1",
+            "observation": "README.md 21행은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 구현하는 위치임을 명시한다. 이 경로가 국가 코드 비교 로직의 소재를 가리키는 유일한 코드 근거다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "19",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "end_line": 21,
+            "location": "README.md:21",
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-2",
+            "observation": "동일 스냅샷의 중복 제공된 README 근거로, 국가 타기팅 구현 파일이 `src/feature_flags/targeting.py`임을 재확인한다. 해당 파일 본문은 제공되지 않아 비교 연산의 대소문자 처리 여부는 입증되지 않는다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "19",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.35,
+        "evidence_counts": {
+          "code": 2,
+          "history": 0,
+          "documents": 0,
+          "knowledge": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md:21 이 국가·사용자 타기팅이 `src/feature_flags/targeting.py`에 구현되어 있음을 확인할 수 있으나, 해당 파일의 실제 비교 코드는 제공되지 않았다.",
+              "제공된 근거에는 대소문자 정규화(예: upper()/lower()) 또는 locale 기반 비교 여부를 판단할 수 있는 코드가 포함되어 있지 않다."
+            ],
+            "confidence": 0.55,
+            "hypothesis": "국가 타기팅 판정 로직이 요청 국가와 규칙 국가를 비교할 때 대소문자를 정규화하지 않아, 동일한 ISO 국가 코드라도 'KR'과 'kr'이 다른 문자열로 취급되어 매칭에 실패하고 false가 반환된다."
+          },
+          {
+            "evidence": [
+              "재현 절차상 규칙 국가는 `KR`, 요청 국가는 `kr`로 대소문자가 반대이며 실제 동작은 false이다.",
+              "비교 구현을 확인할 수 있는 코드 근거가 제공되지 않아 검증되지 않았다."
+            ],
+            "confidence": 0.3,
+            "hypothesis": "국가 코드 비교가 대소문자 구분(case-sensitive) 컬렉션/딕셔너리 키 조회나 정확 일치 연산으로 수행되어, 규칙 정의 시 사용된 표기와 요청 시 표기가 다르면 조회 결과가 누락된다."
+          }
+        ]
+      },
+      "issue_id": "19",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 근거에 `src/feature_flags/targeting.py` 본문이 없어, 실제 비교 구현(대소문자 정규화 여부, 비교 지점 위치)이 확인되지 않은 상태로 수정이 진행될 수 있다.",
+            "mitigation": "1단계에서 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 파일 본문을 확보하고, 확인 전에는 코드 변경을 시작하지 않는다. 확인 결과 가설이 틀리면(정규화가 이미 존재) 원인 분석을 재수행한다."
+          },
+          {
+            "risk": "대소문자 정규화 적용 범위가 넓어 사용자 타기팅 등 무관한 비교 로직까지 영향을 받을 수 있다.",
+            "mitigation": "국가 코드 비교 경로로만 변경을 한정하고, 4단계에서 사용자 타기팅 회귀 테스트를 함께 실행하여 부작용을 검출한다."
+          },
+          {
+            "risk": "locale 기반 정규화(예: 터키어 I/ı 문제) 도입 시 특정 로케일에서 잘못된 매칭이 발생할 수 있다.",
+            "mitigation": "locale 비의존 ASCII 기반 `upper()`/`lower()` 정규화를 사용하고, 로케일 의존 변환은 적용하지 않는다."
+          },
+          {
+            "risk": "정규화로 인해 형식이 다른 코드가 동일시되어 오탐 매칭이 발생할 수 있다.",
+            "mitigation": "형식 검증(alpha-2 등)을 유지하고, 4단계의 서로 다른 국가 코드 케이스 테스트로 오탐 여부를 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "국가 코드 비교 로직의 실제 구현 위치와 현재 동작을 확정한다.",
+            "details": "README.md:21 근거에 따라 `src/feature_flags/targeting.py`를 열어 국가 타기팅 비교 연산(사전 키 조회, 정확 일치 비교, `==` 연산 등)을 확인한다. 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 파일 본문을 확보하여 대소문자 정규화(`upper()`/`lower()`) 또는 locale 기반 비교 존재 여부를 판정한다. 현재 근거에는 비교 소스 코드가 포함되어 있지 않으므로 이 단계에서 미검증 상태를 해소한다."
+          },
+          {
+            "id": 2,
+            "action": "재현 테스트를 먼저 작성하여 버그를 고정한다.",
+            "details": "규칙 국가 `KR`, 요청 국가 `kr`을 입력으로 하는 국가 타기팅 평가 테스트를 추가하고 기대 동작을 true로 명시한다. 대소문자 변형 조합(`KR`/`kr`, `kr`/`KR`, 혼합 케이스, 3자리 코드 등)도 함께 파라미터화하여 현재 실패(false 반환)를 확인한다. 오류 유형 ReportedBehaviorMismatch, 메시지 'false가 반환됩니다.'를 재현 조건으로 기록한다."
+          },
+          {
+            "id": 3,
+            "action": "국가 코드 비교에 대소문자 정규화를 적용한다.",
+            "details": "`src/feature_flags/targeting.py`의 국가 코드 비교 지점에서 요청 국가와 규칙 국가를 동일한 정규화 규칙(예: ISO 3166-1 alpha-2 기준 `upper()`)으로 변환한 뒤 비교한다. 사전/딕셔너리 키 조회, 정확 일치 연산, 집합 포함 검사 등 모든 비교 경로에 동일 정규화를 적용하고, 사용자 타기팅 비교에는 영향을 주지 않도록 범위를 국가 코드로 한정한다."
+          },
+          {
+            "id": 4,
+            "action": "회귀 테스트를 실행하고 기존 동작을 보존한다.",
+            "details": "국가 타기팅 전체 테스트 스위트와 기존 규칙 국가/요청 국가 케이스를 실행하여 정규화 도입으로 인한 오탐(서로 다른 국가 코드가 동일시되는 경우)이 없는지 확인한다. null/빈 문자열/미지원 코드 입력에 대한 기존 예외 동작이 유지되는지도 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "19",
+        "acceptance_criteria": [
+          "규칙 국가 `KR`, 요청 국가 `kr` 평가 시 true가 반환되고, 이슈 19의 재현 절차에서 ReportedBehaviorMismatch 오류가 더 이상 발생하지 않는다.",
+          "대소문자만 다른 동일 ISO 국가 코드(`KR`/`kr`, `kr`/`KR`, `Kr`/`kR` 등)의 모든 조합이 일관되게 true로 매칭된다.",
+          "서로 다른 ISO 국가 코드(예: `KR` vs `US`)는 대소문자와 무관하게 여전히 false로 판정되어 오탐이 발생하지 않는다.",
+          "`src/feature_flags/targeting.py`에 대소문자 정규화가 적용된 국가 코드 비교가 존재하며, 요청/규칙 양측에 동일 규칙이 적용된다.",
+          "추가된 재현 테스트와 기존 국가·사용자 타기팅 회귀 테스트가 모두 통과한다.",
+          "null, 빈 문자열, 3자리 등 비정상 국가 코드 입력에 대한 기존 예외/거부 동작이 변경 없이 유지된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:54:06.483335Z",
+    "completed_at": "2026-09-28T07:54:32.332897Z",
+    "created_at": "2026-09-28T07:54:06.472287Z",
+    "updated_at": "2026-09-28T07:54:32.333836Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 28.343
+  }
+}

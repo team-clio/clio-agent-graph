@@ -1,0 +1,505 @@
+{
+  "input": {
+    "id": "target-empty-allowlist-symptom",
+    "report": {
+      "title": "allowlist를 비우자 기능이 전체 비활성화됨",
+      "description": "제한 해제를 위해 목록을 비웠지만 기능 노출이 전부 사라졌습니다.",
+      "steps_to_reproduce": [
+        "기존 allowlist 항목을 모두 제거합니다.",
+        "임의 사용자의 타기팅 결과를 확인합니다."
+      ],
+      "expected_behavior": "목록 제한이 없어져 사용자가 포함되어야 합니다.",
+      "actual_behavior": "사용자가 계속 제외됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_empty_allowlist_means_unrestricted"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 24,
+    "name": "benchmark-20260928T065850Z-59223a30-target-empty-allowlist-symptom",
+    "description": "Clio Benchmark feature-flags-30: target-empty-allowlist-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:25:08.247891Z",
+    "updatedAt": "2026-09-28T07:25:08.247891Z"
+  },
+  "clio_repository": {
+    "id": 24,
+    "projectId": 24,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:25:43.661741Z",
+    "createdAt": "2026-09-28T07:25:08.259125Z",
+    "updatedAt": "2026-09-28T07:25:43.662552Z"
+  },
+  "bug": {
+    "id": 24,
+    "project_id": 24,
+    "issue_id": 24,
+    "title": "allowlist를 비우자 기능이 전체 비활성화됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:25:44.827243Z",
+    "created_at": "2026-09-28T07:25:44.836181Z"
+  },
+  "analysis": {
+    "analysisResultId": 24,
+    "workflowRunId": 24,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": "`matches_allowlist(user_id, allowed_user_ids)`가 사용자 포함 여부를 판정한다.",
+          "end_line": 9,
+          "location": "src/feature_flags/targeting.py:1-9",
+          "file_path": "src/feature_flags/targeting.py",
+          "source_id": "24",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "국가·allowlist 타기팅 규칙 지식. 빈 allowlist는 제한 없음(`matches_allowlist(\"user-42\", []) is True`)이어야 하며 현재 구현은 `False`를 반환해 명세를 위반한다고 기술한다. 테스트 출처는 tests/test_targeting.py:1-9.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_03118d89d67955999838542bad7cdd8e",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+          "end_line": 21,
+          "location": "README.md:21",
+          "file_path": "README.md",
+          "source_id": "24",
+          "start_line": 21,
+          "evidence_id": "evidence.code.README.md.21",
+          "observation": "README가 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 모듈로 명시하여, 이슈의 allowlist 타기팅 로직이 해당 모듈에 있음을 뒷받침한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "24",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": "24",
+          "start_line": 3,
+          "evidence_id": "evidence.code.README.md.3",
+          "observation": "feature-flags-service가 테넌트별 기능 플래그 조회 라이브러리임을 확인하는 저장소 개요 문장.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "24",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": null,
+          "snippet": "`targeting`(국가·사용자 타기팅)",
+          "end_line": 7,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "24",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "모듈 구성에 `targeting`이 국가·사용자 타기팅 담당으로 기재되어 있어 이슈 대상 모듈 경계를 확인한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_441cf3653f015b5aa712f8af4354f9f8",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": "테스트 스위트: `test_feature_flags`, `test_authorization`, `test_rollout`, `test_targeting`",
+          "end_line": 9,
+          "location": "tests/test_targeting.py:1-9",
+          "file_path": "tests/test_targeting.py",
+          "source_id": "24",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "테스트 실행 방법(`uv sync --extra dev`, `uv run pytest`)과 `test_targeting` 스위트 존재를 확인하는 운영 지식.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5c80bd89e3e45928a2c3f354e0f44ee0",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "`targeting` 모듈은 `matches_country(rule_country, request_country)`가 두 값의 동등 비교로 국가 일치를 판정하고, `matches_allowlist(user_id, allowed_user_ids)`가 사용자 포함 여부를 판정한다.",
+          "verified": true
+        },
+        {
+          "fact": "도메인 규칙 kn_03118d89d67955999838542bad7cdd8e에 따르면 빈 allowlist는 제한 없음을 의미해야 하며 `matches_allowlist(\"user-42\", []) is True`가 명세다.",
+          "verified": true
+        },
+        {
+          "fact": "동일 지식에 따르면 현재 구현은 빈 allowlist에 대해 `False`를 반환하여 명세를 위반한다.",
+          "verified": false
+        },
+        {
+          "fact": "동일 지식에 따르면 현재 구현은 국가 매칭에서 대소문자 무시를 하지 않아 `matches_country(\"KR\", \"kr\") is True` 명세를 위반한다.",
+          "verified": false
+        },
+        {
+          "fact": "README는 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 설명하며, `targeting`은 아키텍처 문서상 국가·사용자 타기팅 담당 모듈로 기재되어 있다.",
+          "verified": true
+        },
+        {
+          "fact": "이슈 재현 절차는 기존 allowlist 항목을 모두 제거한 뒤 임의 사용자의 타기팅 결과를 확인하는 것이며, 기대 동작은 사용자가 포함되는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거에는 allowlist 판정 구현이나 타기팅 테스트 본문이 포함되어 있지 않아 반환값 분기 코드는 직접 인용할 수 없다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 24,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.75,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_03118d89d67955999838542bad7cdd8e: \"빈 allowlist는 제한 없음을 의미해야 한다(matches_allowlist(\"user-42\", []) is True)\"는 명세와 \"현재 구현은 빈 allowlist는 False를 반환하여 두 명세를 위반한다\"는 기술"
+          ],
+          "confidence": 0.9,
+          "hypothesis": "targeting 모듈의 matches_allowlist(user_id, allowed_user_ids)가 빈 목록을 제한 없음으로 해석하지 않고 False를 반환한다. 빈 allowlist는 아무 사용자와도 일치하지 않으므로 임의 사용자 타기팅 결과가 계속 제외된다."
+        },
+        {
+          "evidence": [
+            "kn_03118d89d67955999838542bad7cdd8e: 대소문자 무시 요구가 matches_country(\"KR\", \"kr\") 명세로 언급되고, 구현이 이를 지키지 않는다고 기술됨"
+          ],
+          "confidence": 0.3,
+          "hypothesis": "targeting 모듈이 allowlist 항목 비교 시 사용자 ID 정규화(대소문자 무시 등)를 하지 않아 제거 후 남은 항목 비교에도 불일치가 발생할 수 있다. 다만 이슈 재현 절차는 목록을 전부 비운 상태이므로 주 원인은 빈 목록 처리 분기 누락이다."
+        }
+      ],
+      "project_id": 24,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "빈 allowlist를 '제한 없음'(True)으로 변경하면 allowlist 미설정 규칙이 모든 사용자에게 적용되어 의도치 않은 기능 노출이 발생할 수 있다.",
+            "mitigation": "규칙별 allowlist 미설정 상태가 실제로 '제한 없음' 의도인지 지식 근거(kn_03118d89d67955999838542bad7cdd8e)로 재확인하고, 회귀 테스트에서 비어 있지 않은 목록의 제외 동작이 유지됨을 함께 검증한다."
+          },
+          {
+            "risk": "제공된 코드 증거에 allowlist 판정 구현과 테스트 본문이 없어(fact: 코드 증거에 구현/테스트 본문 미포함) 실제 분기 코드를 직접 인용할 수 없고 수정 위치를 잘못 특정할 수 있다.",
+            "mitigation": "수정 전 src/feature_flags/targeting.py에서 matches_allowlist 정의를 직접 열람해 분기 구조를 확인하고, 재현 스크립트로 실패를 먼저 확정한 뒤 변경한다."
+          },
+          {
+            "risk": "국가 매칭 대소문자 무시 요구(matches_country(\"KR\", \"kr\") is True)의 검증 상태가 불확실(verified=false)하여 잘못된 범위 확장으로 회귀가 생길 수 있다.",
+            "mitigation": "해당 항목을 별도 분기로 분리하고 영향 범위를 명시한 뒤, 포함 여부를 확정하고 각각 독립 테스트로 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/targeting.py에서 matches_allowlist 함수의 현재 구현을 확인하고 빈 allowlist 분기 누락 여부를 재현한다",
+            "details": "근거: kn_03118d89d67955999838542bad7cdd8e(src/feature_flags/targeting.py:1-9), tests/test_targeting.py:1-9. 현재 구현이 matches_allowlist(\"user-42\", [])에 대해 False를 반환하는지 최소 재현 스크립트로 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "matches_allowlist에 '빈 목록은 제한 없음' 규칙을 구현한다",
+            "details": "allowed_user_ids가 비어 있으면 True를 반환하고, 그렇지 않으면 기존 포함 판정을 유지한다. 요구 명세: matches_allowlist(\"user-42\", []) is True (kn_03118d89d67955999838542bad7cdd8e)."
+          },
+          {
+            "id": 3,
+            "action": "국가 매칭 대소문자 무시 요구에 대한 처리 방침을 확정한다",
+            "details": "현재 근거로는 matches_country가 동등 비교를 사용하며 matches_country(\"KR\", \"kr\") is True 명세 위반 여부는 verified=false이다(fact: 동일 지식, 검증 안 됨). 주 원인(빈 목록 처리 누락)과 분리하여 이번 수정 범위에 포함할지 결정하고, 포함 시 casefold 기반 비교로 정규화한다. 미포함 시 후속 이슈로 분리 기록한다."
+          },
+          {
+            "id": 4,
+            "action": "tests/test_targeting.py에 빈 allowlist 회귀 테스트를 추가한다",
+            "details": "matches_allowlist(\"user-42\", []) is True를 검증하는 테스트를 추가하고 기존 test_targeting 스위트에 편입한다. 테스트 실행: uv sync --extra dev 후 uv run pytest (tests/test_targeting.py:1-9)."
+          },
+          {
+            "id": 5,
+            "action": "README.md:21 및 src/feature_flags/__init__.py:1-7의 모듈 설명과 구현 일치 여부를 확인하고 문서를 갱신한다",
+            "details": "README.md는 targeting을 '국가·사용자 타기팅'으로 명시(kn_441cf3653f015b5aa712f8af4354f9f8, evidence.code.README.md.21)하므로, 빈 allowlist가 제한 없음을 의미한다는 규칙을 문서에 명시한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "acceptance_criteria": [
+          "matches_allowlist(\"user-42\", []) 호출이 True를 반환한다 (kn_03118d89d67955999838542bad7cdd8e 명세 준수).",
+          "비어 있지 않은 allowlist에 대해 포함된 사용자는 True, 미포함 사용자는 False를 반환하는 기존 동작이 유지된다.",
+          "tests/test_targeting.py에 빈 allowlist 케이스 회귀 테스트가 존재하고, uv sync --extra dev 후 uv run pytest 실행 시 test_targeting 스위트 전체가 통과한다.",
+          "국가 매칭 대소문자 무시 항목을 범위에 포함하는 경우 matches_country(\"KR\", \"kr\")이 True를 반환하고 해당 테스트가 추가된다(미포함 시 명시적으로 후속 이슈로 분리 기록됨).",
+          "README.md:21 및 src/feature_flags/__init__.py:1-7의 targeting 설명이 수정된 동작과 모순되지 않는다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 72,
+            "rationale": "allowlist를 비우면 `targeting` 모듈의 사용자 타기팅 경로 전체가 비활성화되어, 해당 플래그를 사용하는 모든 사용자·기능 노출 흐름이 영향을 받는다. 단일 테넌트/플래그 범위로 한정될 수 있으나 목록을 비운 대상 플래그 전부에 영향."
+          },
+          {
+            "name": "심각도",
+            "score": 60,
+            "rationale": "크래시, 데이터 손실, 보안 노출, 데이터 손상은 없고 기능 노출이 전부 사라지는 행동 불일치(ReportedBehaviorMismatch)다. 다만 제한 해제라는 운영 의도와 정반대로 동작해 기능 롤아웃 제어가 무력화된다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 80,
+            "rationale": "재현 절차가 '기존 allowlist 항목을 모두 제거 → 임의 사용자 결과 확인'으로 100% 결정론적으로 재현된다(`matches_allowlist(user_id, [])`가 항상 `False`). 목록이 빈 상태인 한 지속적으로 발생."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 75,
+            "rationale": "빈 목록을 '제한 없음'으로 표현할 방법이 없어, 사용자는 임의의 더미 항목을 넣거나 전체 사용자 ID를 나열하는 등 비정상 워크어라운드에 의존해야 한다. 관리 UI/설정 차원의 정상 우회 경로가 없음."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 70,
+            "rationale": "feature flag 조회 라이브러리(`README.md:3`)의 타기팅 판정 핵심 경로로, 결제·계정 직접 영향은 확인되지 않지만 기능 게이팅 자체가 핵심 경로다. allowlist 해제 실패는 릴리스/롤아웃 통제 실패로 이어진다."
+          },
+          {
+            "name": "원인 확정도·근거 신뢰성",
+            "score": 45,
+            "rationale": "근본 원인 가설(matches_allowlist 빈 목록 분기 누락) 신뢰도 0.9로 높으나, 코드 증거에 구현 본문이 없어 반환값 분기를 직접 인용할 수 없다(fact: verified true). 도메인 규칙 kn_03118d89d67955999838542bad7cdd8e 기반 추정."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "빈 allowlist를 '제한 없음'으로 해석해야 한다는 도메인 규칙(`matches_allowlist(\\\"user-42\\\", []) is True`)을 현재 구현이 위반하여 `False`를 반환하고, 그 결과 목록을 비운 뒤에도 사용자가 계속 제외된다. 재현이 결정적이고 우회 경로가 없어 사용자 타기팅 경로가 사실상 전면 차단되지만, 크래시·데이터 손실·보안 사고는 아니고 영향 범위가 해당 플래그/테넌트 범위로 한정된다. 밴딩 기준상 P1(70-84, core feature blocked, no workaround)에 해당하여 risk_score 74로 산정한다.",
+        "risk_score": 74
+      },
+      "workflow_run_id": 24
+    }
+  },
+  "workflow": {
+    "id": 24,
+    "project_id": 24,
+    "request_id": "process-bug-24",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "`targeting` 모듈은 `matches_country(rule_country, request_country)`가 두 값의 동등 비교로 국가 일치를 판정하고, `matches_allowlist(user_id, allowed_user_ids)`가 사용자 포함 여부를 판정한다.",
+            "verified": true
+          },
+          {
+            "fact": "도메인 규칙 kn_03118d89d67955999838542bad7cdd8e에 따르면 빈 allowlist는 제한 없음을 의미해야 하며 `matches_allowlist(\"user-42\", []) is True`가 명세다.",
+            "verified": true
+          },
+          {
+            "fact": "동일 지식에 따르면 현재 구현은 빈 allowlist에 대해 `False`를 반환하여 명세를 위반한다.",
+            "verified": false
+          },
+          {
+            "fact": "동일 지식에 따르면 현재 구현은 국가 매칭에서 대소문자 무시를 하지 않아 `matches_country(\"KR\", \"kr\") is True` 명세를 위반한다.",
+            "verified": false
+          },
+          {
+            "fact": "README는 `src/feature_flags/targeting.py`를 '국가·사용자 타기팅' 모듈로 설명하며, `targeting`은 아키텍처 문서상 국가·사용자 타기팅 담당 모듈로 기재되어 있다.",
+            "verified": true
+          },
+          {
+            "fact": "이슈 재현 절차는 기존 allowlist 항목을 모두 제거한 뒤 임의 사용자의 타기팅 결과를 확인하는 것이며, 기대 동작은 사용자가 포함되는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거에는 allowlist 판정 구현이나 타기팅 테스트 본문이 포함되어 있지 않아 반환값 분기 코드는 직접 인용할 수 없다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": "`matches_allowlist(user_id, allowed_user_ids)`가 사용자 포함 여부를 판정한다.",
+            "end_line": 9,
+            "location": "src/feature_flags/targeting.py:1-9",
+            "file_path": "src/feature_flags/targeting.py",
+            "source_id": "24",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "국가·allowlist 타기팅 규칙 지식. 빈 allowlist는 제한 없음(`matches_allowlist(\"user-42\", []) is True`)이어야 하며 현재 구현은 `False`를 반환해 명세를 위반한다고 기술한다. 테스트 출처는 tests/test_targeting.py:1-9.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_03118d89d67955999838542bad7cdd8e",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "end_line": 21,
+            "location": "README.md:21",
+            "file_path": "README.md",
+            "source_id": "24",
+            "start_line": 21,
+            "evidence_id": "evidence.code.README.md.21",
+            "observation": "README가 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 모듈로 명시하여, 이슈의 allowlist 타기팅 로직이 해당 모듈에 있음을 뒷받침한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "24",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": "24",
+            "start_line": 3,
+            "evidence_id": "evidence.code.README.md.3",
+            "observation": "feature-flags-service가 테넌트별 기능 플래그 조회 라이브러리임을 확인하는 저장소 개요 문장.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "24",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": null,
+            "snippet": "`targeting`(국가·사용자 타기팅)",
+            "end_line": 7,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "24",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "모듈 구성에 `targeting`이 국가·사용자 타기팅 담당으로 기재되어 있어 이슈 대상 모듈 경계를 확인한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_441cf3653f015b5aa712f8af4354f9f8",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": "테스트 스위트: `test_feature_flags`, `test_authorization`, `test_rollout`, `test_targeting`",
+            "end_line": 9,
+            "location": "tests/test_targeting.py:1-9",
+            "file_path": "tests/test_targeting.py",
+            "source_id": "24",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "테스트 실행 방법(`uv sync --extra dev`, `uv run pytest`)과 `test_targeting` 스위트 존재를 확인하는 운영 지식.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5c80bd89e3e45928a2c3f354e0f44ee0",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.75,
+        "evidence_counts": {
+          "code": 2,
+          "knowledge": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_03118d89d67955999838542bad7cdd8e: \"빈 allowlist는 제한 없음을 의미해야 한다(matches_allowlist(\"user-42\", []) is True)\"는 명세와 \"현재 구현은 빈 allowlist는 False를 반환하여 두 명세를 위반한다\"는 기술"
+            ],
+            "confidence": 0.9,
+            "hypothesis": "targeting 모듈의 matches_allowlist(user_id, allowed_user_ids)가 빈 목록을 제한 없음으로 해석하지 않고 False를 반환한다. 빈 allowlist는 아무 사용자와도 일치하지 않으므로 임의 사용자 타기팅 결과가 계속 제외된다."
+          },
+          {
+            "evidence": [
+              "kn_03118d89d67955999838542bad7cdd8e: 대소문자 무시 요구가 matches_country(\"KR\", \"kr\") 명세로 언급되고, 구현이 이를 지키지 않는다고 기술됨"
+            ],
+            "confidence": 0.3,
+            "hypothesis": "targeting 모듈이 allowlist 항목 비교 시 사용자 ID 정규화(대소문자 무시 등)를 하지 않아 제거 후 남은 항목 비교에도 불일치가 발생할 수 있다. 다만 이슈 재현 절차는 목록을 전부 비운 상태이므로 주 원인은 빈 목록 처리 분기 누락이다."
+          }
+        ]
+      },
+      "issue_id": "24",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "빈 allowlist를 '제한 없음'(True)으로 변경하면 allowlist 미설정 규칙이 모든 사용자에게 적용되어 의도치 않은 기능 노출이 발생할 수 있다.",
+            "mitigation": "규칙별 allowlist 미설정 상태가 실제로 '제한 없음' 의도인지 지식 근거(kn_03118d89d67955999838542bad7cdd8e)로 재확인하고, 회귀 테스트에서 비어 있지 않은 목록의 제외 동작이 유지됨을 함께 검증한다."
+          },
+          {
+            "risk": "제공된 코드 증거에 allowlist 판정 구현과 테스트 본문이 없어(fact: 코드 증거에 구현/테스트 본문 미포함) 실제 분기 코드를 직접 인용할 수 없고 수정 위치를 잘못 특정할 수 있다.",
+            "mitigation": "수정 전 src/feature_flags/targeting.py에서 matches_allowlist 정의를 직접 열람해 분기 구조를 확인하고, 재현 스크립트로 실패를 먼저 확정한 뒤 변경한다."
+          },
+          {
+            "risk": "국가 매칭 대소문자 무시 요구(matches_country(\"KR\", \"kr\") is True)의 검증 상태가 불확실(verified=false)하여 잘못된 범위 확장으로 회귀가 생길 수 있다.",
+            "mitigation": "해당 항목을 별도 분기로 분리하고 영향 범위를 명시한 뒤, 포함 여부를 확정하고 각각 독립 테스트로 검증한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "src/feature_flags/targeting.py에서 matches_allowlist 함수의 현재 구현을 확인하고 빈 allowlist 분기 누락 여부를 재현한다",
+            "details": "근거: kn_03118d89d67955999838542bad7cdd8e(src/feature_flags/targeting.py:1-9), tests/test_targeting.py:1-9. 현재 구현이 matches_allowlist(\"user-42\", [])에 대해 False를 반환하는지 최소 재현 스크립트로 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "matches_allowlist에 '빈 목록은 제한 없음' 규칙을 구현한다",
+            "details": "allowed_user_ids가 비어 있으면 True를 반환하고, 그렇지 않으면 기존 포함 판정을 유지한다. 요구 명세: matches_allowlist(\"user-42\", []) is True (kn_03118d89d67955999838542bad7cdd8e)."
+          },
+          {
+            "id": 3,
+            "action": "국가 매칭 대소문자 무시 요구에 대한 처리 방침을 확정한다",
+            "details": "현재 근거로는 matches_country가 동등 비교를 사용하며 matches_country(\"KR\", \"kr\") is True 명세 위반 여부는 verified=false이다(fact: 동일 지식, 검증 안 됨). 주 원인(빈 목록 처리 누락)과 분리하여 이번 수정 범위에 포함할지 결정하고, 포함 시 casefold 기반 비교로 정규화한다. 미포함 시 후속 이슈로 분리 기록한다."
+          },
+          {
+            "id": 4,
+            "action": "tests/test_targeting.py에 빈 allowlist 회귀 테스트를 추가한다",
+            "details": "matches_allowlist(\"user-42\", []) is True를 검증하는 테스트를 추가하고 기존 test_targeting 스위트에 편입한다. 테스트 실행: uv sync --extra dev 후 uv run pytest (tests/test_targeting.py:1-9)."
+          },
+          {
+            "id": 5,
+            "action": "README.md:21 및 src/feature_flags/__init__.py:1-7의 모듈 설명과 구현 일치 여부를 확인하고 문서를 갱신한다",
+            "details": "README.md는 targeting을 '국가·사용자 타기팅'으로 명시(kn_441cf3653f015b5aa712f8af4354f9f8, evidence.code.README.md.21)하므로, 빈 allowlist가 제한 없음을 의미한다는 규칙을 문서에 명시한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "24",
+        "acceptance_criteria": [
+          "matches_allowlist(\"user-42\", []) 호출이 True를 반환한다 (kn_03118d89d67955999838542bad7cdd8e 명세 준수).",
+          "비어 있지 않은 allowlist에 대해 포함된 사용자는 True, 미포함 사용자는 False를 반환하는 기존 동작이 유지된다.",
+          "tests/test_targeting.py에 빈 allowlist 케이스 회귀 테스트가 존재하고, uv sync --extra dev 후 uv run pytest 실행 시 test_targeting 스위트 전체가 통과한다.",
+          "국가 매칭 대소문자 무시 항목을 범위에 포함하는 경우 matches_country(\"KR\", \"kr\")이 True를 반환하고 해당 테스트가 추가된다(미포함 시 명시적으로 후속 이슈로 분리 기록됨).",
+          "README.md:21 및 src/feature_flags/__init__.py:1-7의 targeting 설명이 수정된 동작과 모순되지 않는다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:25:45.716378Z",
+    "completed_at": "2026-09-28T07:26:10.889281Z",
+    "created_at": "2026-09-28T07:25:45.707125Z",
+    "updated_at": "2026-09-28T07:26:10.891078Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.388
+  }
+}

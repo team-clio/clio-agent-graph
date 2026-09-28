@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<rect x="0.0" y="0.0" width="1200.0" height="760.0" rx="0" fill="#F8FAFC"/>
+<rect x="48.0" y="42.0" width="6.0" height="84.0" rx="3" fill="#007F77"/>
+<text x="75" y="74" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="29" font-weight="700" fill="#132238">CLIO · 동일 30건 비교 실험</text>
+<text x="75" y="108" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="400" fill="#5C697A">10개 결함 × 보고 문구 3종 · 동일 fixture / oracle / 제한시간</text>
+<rect x="48.0" y="149.0" width="1104.0" height="111.0" rx="16" fill="#EAF5F3"/>
+<text x="74" y="182" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="15" font-weight="600" fill="#5C697A">평균 품질 점수</text>
+<text x="74" y="229" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="43" font-weight="700" fill="#007F77">92.7</text>
+<text x="202" y="229" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="22" font-weight="400" fill="#5C697A">vs</text>
+<text x="243" y="229" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="43" font-weight="700" fill="#132238">80.6</text>
+<text x="425" y="215" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="28" font-weight="700" fill="#007F77">+12.1점</text>
+<text x="425" y="240" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">full-clio 우세</text>
+<text x="725" y="192" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="15" font-weight="400" fill="#5C697A">70점 이상</text>
+<text x="725" y="232" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="31" font-weight="700" fill="#007F77">28/30</text>
+<text x="855" y="232" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="18" font-weight="400" fill="#5C697A">vs</text>
+<text x="898" y="232" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="31" font-weight="700" fill="#132238">24/30</text>
+<text x="75" y="308" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="22" font-weight="700" fill="#132238">평가 항목별 평균</text>
+<rect x="830.0" y="291.0" width="16.0" height="16.0" rx="3" fill="#007F77"/>
+<text x="854" y="305" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="15" font-weight="400" fill="#5C697A">full-clio</text>
+<rect x="975.0" y="291.0" width="16.0" height="16.0" rx="3" fill="#AAB5C3"/>
+<text x="999" y="305" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="15" font-weight="400" fill="#5C697A">one-shot</text>
+<text x="75" y="362" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">판정</text>
+<rect x="280.0" y="337.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="337.0" width="674.0" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="360.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="360.0" width="674.0" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="353" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">100.0%</text>
+<text x="972" y="373" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">100.0%</text>
+<text x="75" y="420" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">원인 분석</text>
+<rect x="280.0" y="395.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="395.0" width="640.3" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="418.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="418.0" width="623.5" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="411" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">95.0%</text>
+<text x="972" y="431" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">92.5%</text>
+<text x="75" y="478" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">코드 위치</text>
+<rect x="280.0" y="453.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="453.0" width="617.8" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="476.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="476.0" width="337.0" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="469" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">91.7%</text>
+<text x="972" y="489" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">50.0%</text>
+<text x="75" y="536" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">근거 품질</text>
+<rect x="280.0" y="511.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="511.0" width="662.0" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="534.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="534.0" width="565.1" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="527" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">98.2%</text>
+<text x="972" y="547" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">83.8%</text>
+<text x="75" y="594" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">재현 계획</text>
+<rect x="280.0" y="569.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="569.0" width="479.3" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="592.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="592.0" width="367.0" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="585" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">71.1%</text>
+<text x="972" y="605" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">54.4%</text>
+<text x="75" y="652" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="17" font-weight="600" fill="#132238">불확실성 표현</text>
+<rect x="280.0" y="627.0" width="674.0" height="17.0" rx="8" fill="#E8EDF2"/>
+<rect x="280.0" y="627.0" width="516.7" height="17.0" rx="8" fill="#007F77"/>
+<rect x="280.0" y="650.0" width="674.0" height="12.0" rx="6" fill="#E8EDF2"/>
+<rect x="280.0" y="650.0" width="359.5" height="12.0" rx="6" fill="#AAB5C3"/>
+<text x="972" y="643" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="16" font-weight="700" fill="#007F77">76.7%</text>
+<text x="972" y="663" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">53.3%</text>
+<rect x="48.0" y="704.0" width="1104.0" height="1.0" rx="0" fill="#D8E0E8"/>
+<text x="58" y="729" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">독립 결함 10개 · 단일 실행 · 자동 채점 / 사람 리뷰 필요</text>
+<text x="823" y="729" font-family="Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif" font-size="14" font-weight="400" fill="#5C697A">분석 평균 소요 +5.3초</text>
+</svg>

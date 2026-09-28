@@ -1,0 +1,588 @@
+{
+  "input": {
+    "id": "cache-false-miss-symptom",
+    "report": {
+      "title": "비활성 플래그가 갑자기 활성화됨",
+      "description": "캐시 TTL이 남아 있는데도 false 플래그가 저장소 수정 직후 true로 보입니다.",
+      "steps_to_reproduce": [
+        "비활성 값을 조회합니다.",
+        "DB 값을 활성으로 수정합니다.",
+        "즉시 재조회합니다."
+      ],
+      "expected_behavior": "캐시 만료 전에는 비활성 상태여야 합니다.",
+      "actual_behavior": "즉시 활성 상태가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_cached_false_value_is_not_treated_as_a_miss"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 6,
+    "name": "benchmark-20260928T065850Z-59223a30-cache-false-miss-symptom",
+    "description": "Clio Benchmark feature-flags-30: cache-false-miss-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:05:01.757173Z",
+    "updatedAt": "2026-09-28T07:05:01.757173Z"
+  },
+  "clio_repository": {
+    "id": 6,
+    "projectId": 6,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:05:34.470545Z",
+    "createdAt": "2026-09-28T07:05:01.772154Z",
+    "updatedAt": "2026-09-28T07:05:34.470799Z"
+  },
+  "bug": {
+    "id": 6,
+    "project_id": 6,
+    "issue_id": 6,
+    "title": "비활성 플래그가 갑자기 활성화됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:05:36.133902Z",
+    "created_at": "2026-09-28T07:05:36.146917Z"
+  },
+  "analysis": {
+    "analysisResultId": 6,
+    "workflowRunId": 6,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 40,
+          "location": "src/feature_flags/service.py:1-40",
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "6",
+          "start_line": 1,
+          "evidence_id": "kn_5a0391bee1575b4da2d0865626505d16",
+          "observation": "`FeatureFlagService.is_enabled`는 `cache.get` 결과가 `None`이 아닐 때만 반환해 캐시된 False를 hit로 취급하는 반면, `LegacyFeatureFlagService`는 `if cached:`(truthiness)로 캐시를 확인해 캐시된 False를 miss로 오인하는 결함을 가진다고 설명한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_5a0391bee1575b4da2d0865626505d16",
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "6",
+          "start_line": 1,
+          "evidence_id": "kn_83b409bb1e4d50c98f40c8610b4c2680",
+          "observation": "`FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시이고 `get`은 miss 시 None을 반환하며, `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환해 `tenant_id`가 캐시 키에 포함되지 않는 설계 결함이 있다고 설명한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_83b409bb1e4d50c98f40c8610b4c2680",
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 27,
+          "location": "src/feature_flags/repository.py:1-27",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "6",
+          "start_line": 1,
+          "evidence_id": "kn_c792dc8299e056deba7ffd4f69f0def6",
+          "observation": "`FeatureFlagRepository`는 `(tenant_id, flag_name.casefold())` 키로 save/get하지만 `delete`는 casefold 정규화 없이 pop하고 `list_for_tenant`는 테넌트 필터링을 하지 않아 저장소 갱신 경로의 정규화 불일치가 존재한다고 설명한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_c792dc8299e056deba7ffd4f69f0def6",
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": "README.md:3",
+          "file_path": "README.md",
+          "source_id": "6",
+          "start_line": 3,
+          "evidence_id": "README.md:3",
+          "observation": "저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 17,
+          "location": "README.md:17",
+          "file_path": "README.md",
+          "source_id": "6",
+          "start_line": 17,
+          "evidence_id": "README.md:17",
+          "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시 역할을 담당한다고 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": "README.md:18",
+          "file_path": "README.md",
+          "source_id": "6",
+          "start_line": 18,
+          "evidence_id": "README.md:18",
+          "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스를 담당한다고 명시한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "6",
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이 저장소는 tenant별 feature flag 조회를 제공하는 Python 라이브러리로 문서화되어 있으며, `src/feature_flags/cache.py`는 조회 결과 캐시, `src/feature_flags/service.py`는 플래그 조회 서비스를 담당한다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시이며 `get`은 miss 시 `None`, hit 시 저장된 값을 반환하고 `set`은 값을 저장한다. `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환한다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagService.is_enabled`는 `cache.get` 결과가 `None`이 아닐 때만 반환하므로 캐시된 False를 hit로 취급한다. 반면 `LegacyFeatureFlagService`는 `if cached:`(truthiness)로 캐시를 확인해 캐시된 False를 miss로 오인하는 결함을 가진다.",
+          "verified": true
+        },
+        {
+          "fact": "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`가 '캐시된 False를 miss로 취급하지 않아야 한다'는 기대를 검증한다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagRepository`는 내부적으로 `dict[tuple[str, str], FeatureFlag]`를 사용하고 `save`/`get`은 `(tenant_id, flag_name.casefold())` 키를 사용한다. 다만 `delete`는 casefold 정규화 없이 pop하고, `list_for_tenant`는 테넌트로 필터링하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "제보된 재현 절차는 (1) 비활성 값 조회 → (2) 저장소 값을 활성으로 수정 → (3) 즉시 재조회 시 즉시 활성 상태가 반환된다는 것이며, 기대 동작은 캐시 만료 전까지 비활성 상태가 유지되는 것이다.",
+          "verified": true
+        },
+        {
+          "fact": "제보는 `raw_payload.benchmark_case_id`가 `cache-false-miss-symptom`인 벤치마크 케이스이며, 오류 유형은 `ReportedBehaviorMismatch`로 런타임 스택 트레이스는 제공되지 않았다.",
+          "verified": true
+        },
+        {
+          "fact": "활성 수정 시 캐시 항목 무효화(TTL 초기화/삭제)가 실제로 수행되는지 여부와, 캐시에 TTL 구현이 존재하는지에 대한 코드 근거는 현재 증거에 없다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 6,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.62,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_5a0391bee1575b4da2d0865626505d16: `LegacyFeatureFlagService`는 캐시 확인을 `if cached:`(truthiness)로 수행해 캐시된 False를 miss로 오인하는 결함을 가진다.",
+            "Bug report: 저장소 수정 직후 비활성(false) 플래그가 즉시 true로 반환되는 증상과 일치한다."
+          ],
+          "confidence": 0.82,
+          "hypothesis": "`src/feature_flags/service.py`의 `LegacyFeatureFlagService`가 캐시 확인을 `if cached:`(truthiness)로 수행해, 캐시에 저장된 False 값을 miss로 오인합니다. 그 결과 캐시 TTL이 남아 있음에도 `repository.get`을 다시 호출해 갱신된 활성 값으로 덮어쓰고 True를 반환합니다."
+        },
+        {
+          "evidence": [
+            "kn_83b409bb1e4d50c98f40c8610b4c2680: `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환하며 `tenant_id`가 캐시 키에 포함되지 않는다(설계상 결함)."
+          ],
+          "confidence": 0.45,
+          "hypothesis": "`FeatureFlagCache._key`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 포함하지 않아, 캐시 항목이 플래그 이름만으로 키가 잡히고 테넌트별 격리가 깨집니다. 이로 인해 한 테넌트의 갱신이 다른 테넌트 조회에 전파되어 '즉시 활성화'로 보일 수 있습니다."
+        },
+        {
+          "evidence": [
+            "kn_83b409bb1e4d50c98f40c8610b4c2680: `FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시로 설명되며 TTL 관련 동작이 명시되어 있지 않다."
+          ],
+          "confidence": 0.3,
+          "hypothesis": "캐시에 TTL/무효화 개념이 존재하지 않거나 수정 경로에서 무효화가 수행되지 않아, 'TTL 내 비활성 유지' 기대가 성립하지 않습니다."
+        }
+      ],
+      "project_id": 6,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`FeatureFlagCache._key`에 `tenant_id`를 추가하면 기존 캐시 키 기반 동작이나 외부 호출부가 깨질 수 있다.",
+            "mitigation": "`_key`는 내부 전용이므로 호출부를 먼저 전수 조사하고, 테넌트 격리 테스트를 함께 추가한 뒤 변경한다."
+          },
+          {
+            "risk": "캐시 무효화를 새로 추가하면 TTL 내 비활성 유지 기대와 상충되어 다른 테스트가 깨질 수 있다.",
+            "mitigation": "TTL/무효화 정책을 먼저 명확히 정의하고, 변경 전후 동작을 검증하는 테스트를 추가한다."
+          },
+          {
+            "risk": "저장소 `delete`/`list_for_tenant` 정규화 변경이 기존 저장·조회 키 형식과 어긋나 데이터 조회 실패를 유발할 수 있다.",
+            "mitigation": "`save`/`get`과 동일한 `(tenant_id, flag_name.casefold())` 규약을 단일 헬퍼로 통일해 사용하고, 정규화 일관성 테스트를 추가한다."
+          },
+          {
+            "risk": "캐시 TTL 구현 존재 여부에 대한 코드 근거가 현재 증거에 없어(검증되지 않은 사실) 수정 범위 산정이 부정확할 수 있다.",
+            "mitigation": "`src/feature_flags/cache.py`와 `src/feature_flags/service.py`를 직접 확인해 TTL/무효화 실태를 먼저 확정한 뒤 범위를 결정한다."
+          },
+          {
+            "risk": "테넌트 격리 결함(신뢰도 0.45)이 실제로는 이번 증상의 원인이 아닐 수 있어 불필요한 변경이 발생할 수 있다.",
+            "mitigation": "1차 원인(캐시된 False miss 오인, 신뢰도 0.82)을 먼저 수정·검증하고, 테넌트 격리는 별도 검증 후 필요 시에만 반영한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트를 먼저 고정한다",
+            "details": "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`를 현재 코드 기준으로 실행해 실패를 확인하고, 재현 절차(비활성 값 조회 → 저장소 값 수정 → 즉시 재조회 시 즉시 활성 반환)를 그대로 재현하는 회귀 테스트로 고정한다. 회귀 테스트는 `FeatureFlagService.is_enabled` 경로에서 캐시된 False가 hit로 취급되어 `repository.get`이 호출되지 않음을 검증해야 한다."
+          },
+          {
+            "id": 2,
+            "action": "`LegacyFeatureFlagService`의 캐시 판정 결함을 수정한다",
+            "details": "`src/feature_flags/service.py:1-40`의 `LegacyFeatureFlagService`에서 `if cached:`(truthiness) 검사를 제거하고, `FeatureFlagService.is_enabled`와 동일하게 `cache.get` 결과가 `None`이 아닐 때만 반환하도록 통일한다. 캐시된 False는 miss가 아니라 정상 hit이며 TTL 만료 전까지 저장소를 재조회하지 않아야 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키 정규화 결함을 검증하고 정리한다",
+            "details": "`src/feature_flags/cache.py:1-16`의 `_key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환해 `tenant_id`가 키에 포함되지 않는 문제(근거 kn_83b409bb1e4d50c98f40c8610b4c2680, 신뢰도 0.45)를 확인한다. 테넌트 격리 필요 여부를 확인한 뒤, 필요 시 키를 `(tenant_id, flag_name.casefold())` 형태로 정규화하고 테넌트별 교차 오염을 검증하는 테스트를 추가한다."
+          },
+          {
+            "id": 4,
+            "action": "저장소 정규화 불일치를 정리한다",
+            "details": "`src/feature_flags/repository.py:1-27`의 `FeatureFlagRepository`에서 `delete`가 casefold 정규화 없이 pop하고 `list_for_tenant`가 테넌트 필터링을 하지 않는 결함을 수정한다. `save`/`get`과 동일하게 `(tenant_id, flag_name.casefold())` 키를 사용하도록 `delete`를 정규화하고, `list_for_tenant`가 해당 테넌트 항목만 반환하도록 고친다."
+          },
+          {
+            "id": 5,
+            "action": "수정 경로의 캐시 무효화 여부를 검증한다",
+            "details": "활성 수정 시 캐시 항목 무효화(TTL 초기화/삭제)가 실제 수행되는지, 캐시에 TTL 구현이 존재하는지에 대한 코드 근거가 현재 증거에 없으므로(검증되지 않은 사실) `cache.py`와 `service.py`를 직접 확인한다. 무효화가 없으면 수정 경로에서 해당 키를 삭제하는 무효화를 추가하거나, TTL 내 비활성 유지 기대가 성립하도록 동작을 명시하고 문서화한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하고 회귀를 확인한다",
+            "details": "`tests/test_feature_flags.py` 전체를 실행해 캐시된 False가 miss로 처리되지 않는지, 테넌트 격리 및 저장소 정규화가 올바른지, 기존 활성 값 조회 동작이 유지되는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "acceptance_criteria": [
+          "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`가 통과한다.",
+          "`LegacyFeatureFlagService`와 `FeatureFlagService` 모두 캐시된 False를 hit로 취급하며, TTL 만료 전에는 `repository.get`을 재호출하지 않는다.",
+          "재현 절차(비활성 값 조회 → 저장소 값 수정 → 즉시 재조회)에서 TTL 만료 전까지 비활성(false) 상태가 유지된다.",
+          "`FeatureFlagCache._key`가 테넌트 격리를 보장하도록 정규화되고, 서로 다른 테넌트 간 캐시 값이 전파되지 않음을 검증하는 테스트가 통과한다.",
+          "`FeatureFlagRepository.delete`가 `(tenant_id, flag_name.casefold())` 키로 정규화되어 동작하고, `list_for_tenant`가 해당 테넌트 항목만 반환한다.",
+          "활성 수정 경로의 캐시 무효화 또는 TTL 동작이 코드 근거와 함께 명시되고, 관련 검증 테스트가 통과한다.",
+          "기존 테스트 스위트 전체가 회귀 없이 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 55,
+            "rationale": "영향은 `src/feature_flags/service.py`의 `LegacyFeatureFlagService.is_enabled` 경로를 사용하는 모든 테넌트/플래그 조회에 걸린다. 다만 별도의 `FeatureFlagService`는 `cache.get` 결과가 `None`이 아닐 때만 반환하도록 올바르게 구현되어 있어, 결함 서비스로 한정된다. 저장소 전체 기능(테넌트별 플래그 조회)에서 캐시 히트 경로 전반에 파급되지만 전면 장애 수준은 아니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 50,
+            "rationale": "크래시·데이터 손실·보안 노출은 없고 `ReportedBehaviorMismatch` 유형의 동작 불일치다. 캐시된 False를 miss로 오인해 `repository.get`을 재호출하고 True를 반환하는 논리 결함으로, 잘못된 플래그 값이 노출될 수 있으나 데이터 무결성 훼손은 확인되지 않는다. 다만 플래그가 기능 게이팅(권한/기능 노출)에 쓰이면 보안적으로 확대 해석될 여지가 있다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 70,
+            "rationale": "재현 절차가 (1) 비활성 값 조회 → (2) DB 값 활성 수정 → (3) 즉시 재조회로 명확하고 결정적이다. 캐시에 False가 저장되어 있고 소스 값이 True인 조건에서 `if cached:` truthiness 판정 때문에 항상 재현되며, TTL이 남아 있어도 마찬가지다. 벤치마크 케이스 `cache-false-miss-symptom`으로 재현성이 검증되어 있다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 65,
+            "rationale": "TTL을 짧게 두거나 캐시를 우회해 `repository.get`을 직접 호출하는 방식은 근본 해결이 아니며, 결함이 있는 `LegacyFeatureFlagService`를 `FeatureFlagService`로 교체해야만 정상 동작한다. 사용자/호출자가 코드 수준 수정 없이 우회하기 어려워 회피 난이도가 높은 편이다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 50,
+            "rationale": "feature flag는 결제·계정 같은 핵심 트랜잭션 경로 자체는 아니지만, 기능 게이팅과 롤아웃 제어의 신뢰성에 직결된다. 플래그가 실제 기능 노출/차단을 제어한다면 잘못된 true 반환은 의도치 않은 기능 활성화를 유발할 수 있다. 다만 저장소가 소규모 Python 라이브러리임을 감안해 임계성은 중간 수준이다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "`LegacyFeatureFlagService`가 캐시 확인을 `if cached:`(truthiness)로 수행해 캐시에 저장된 False를 miss로 오인하고, TTL이 남아 있음에도 `repository.get`을 재호출해 갱신된 True를 반환하는 결정적 동작 불일치다. `feature_flags` 라이브러리의 플래그 조회 정확성을 훼손하지만 크래시·데이터 손실·보안 침해는 없고, 올바른 구현인 `FeatureFlagService`가 공존해 전체 서비스 중단은 아니다. `tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`로 기대 동작이 명시되어 있어 수정 범위는 명확하다. 추가로 `FeatureFlagCache._key`가 `tenant_id`를 키에 포함하지 않아 테넌트 격리 결함(신뢰도 0.45)이 의심되나, 본 증상의 주 원인은 truthiness 판정이며 TTL 구현/무효화 여부는 미검증이다. 종합적으로 '부분 기능 손상, 우회 어려움, 재현성 높음'에 해당하여 P2 보통(50-69) 대역인 55점으로 산정한다.",
+        "risk_score": 55
+      },
+      "workflow_run_id": 6
+    }
+  },
+  "workflow": {
+    "id": 6,
+    "project_id": 6,
+    "request_id": "process-bug-6",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이 저장소는 tenant별 feature flag 조회를 제공하는 Python 라이브러리로 문서화되어 있으며, `src/feature_flags/cache.py`는 조회 결과 캐시, `src/feature_flags/service.py`는 플래그 조회 서비스를 담당한다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시이며 `get`은 miss 시 `None`, hit 시 저장된 값을 반환하고 `set`은 값을 저장한다. `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환한다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagService.is_enabled`는 `cache.get` 결과가 `None`이 아닐 때만 반환하므로 캐시된 False를 hit로 취급한다. 반면 `LegacyFeatureFlagService`는 `if cached:`(truthiness)로 캐시를 확인해 캐시된 False를 miss로 오인하는 결함을 가진다.",
+            "verified": true
+          },
+          {
+            "fact": "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`가 '캐시된 False를 miss로 취급하지 않아야 한다'는 기대를 검증한다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagRepository`는 내부적으로 `dict[tuple[str, str], FeatureFlag]`를 사용하고 `save`/`get`은 `(tenant_id, flag_name.casefold())` 키를 사용한다. 다만 `delete`는 casefold 정규화 없이 pop하고, `list_for_tenant`는 테넌트로 필터링하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "제보된 재현 절차는 (1) 비활성 값 조회 → (2) 저장소 값을 활성으로 수정 → (3) 즉시 재조회 시 즉시 활성 상태가 반환된다는 것이며, 기대 동작은 캐시 만료 전까지 비활성 상태가 유지되는 것이다.",
+            "verified": true
+          },
+          {
+            "fact": "제보는 `raw_payload.benchmark_case_id`가 `cache-false-miss-symptom`인 벤치마크 케이스이며, 오류 유형은 `ReportedBehaviorMismatch`로 런타임 스택 트레이스는 제공되지 않았다.",
+            "verified": true
+          },
+          {
+            "fact": "활성 수정 시 캐시 항목 무효화(TTL 초기화/삭제)가 실제로 수행되는지 여부와, 캐시에 TTL 구현이 존재하는지에 대한 코드 근거는 현재 증거에 없다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 40,
+            "location": "src/feature_flags/service.py:1-40",
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "6",
+            "start_line": 1,
+            "evidence_id": "kn_5a0391bee1575b4da2d0865626505d16",
+            "observation": "`FeatureFlagService.is_enabled`는 `cache.get` 결과가 `None`이 아닐 때만 반환해 캐시된 False를 hit로 취급하는 반면, `LegacyFeatureFlagService`는 `if cached:`(truthiness)로 캐시를 확인해 캐시된 False를 miss로 오인하는 결함을 가진다고 설명한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_5a0391bee1575b4da2d0865626505d16",
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": "src/feature_flags/cache.py:1-16",
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "6",
+            "start_line": 1,
+            "evidence_id": "kn_83b409bb1e4d50c98f40c8610b4c2680",
+            "observation": "`FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시이고 `get`은 miss 시 None을 반환하며, `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환해 `tenant_id`가 캐시 키에 포함되지 않는 설계 결함이 있다고 설명한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_83b409bb1e4d50c98f40c8610b4c2680",
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 27,
+            "location": "src/feature_flags/repository.py:1-27",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "6",
+            "start_line": 1,
+            "evidence_id": "kn_c792dc8299e056deba7ffd4f69f0def6",
+            "observation": "`FeatureFlagRepository`는 `(tenant_id, flag_name.casefold())` 키로 save/get하지만 `delete`는 casefold 정규화 없이 pop하고 `list_for_tenant`는 테넌트 필터링을 하지 않아 저장소 갱신 경로의 정규화 불일치가 존재한다고 설명한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_c792dc8299e056deba7ffd4f69f0def6",
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": "README.md:3",
+            "file_path": "README.md",
+            "source_id": "6",
+            "start_line": 3,
+            "evidence_id": "README.md:3",
+            "observation": "저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 17,
+            "location": "README.md:17",
+            "file_path": "README.md",
+            "source_id": "6",
+            "start_line": 17,
+            "evidence_id": "README.md:17",
+            "observation": "`src/feature_flags/cache.py`가 조회 결과 캐시 역할을 담당한다고 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": "README.md:18",
+            "file_path": "README.md",
+            "source_id": "6",
+            "start_line": 18,
+            "evidence_id": "README.md:18",
+            "observation": "`src/feature_flags/service.py`가 플래그 조회 서비스를 담당한다고 명시한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "6",
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.62,
+        "evidence_counts": {
+          "code": 4,
+          "history": 0,
+          "knowledge": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_5a0391bee1575b4da2d0865626505d16: `LegacyFeatureFlagService`는 캐시 확인을 `if cached:`(truthiness)로 수행해 캐시된 False를 miss로 오인하는 결함을 가진다.",
+              "Bug report: 저장소 수정 직후 비활성(false) 플래그가 즉시 true로 반환되는 증상과 일치한다."
+            ],
+            "confidence": 0.82,
+            "hypothesis": "`src/feature_flags/service.py`의 `LegacyFeatureFlagService`가 캐시 확인을 `if cached:`(truthiness)로 수행해, 캐시에 저장된 False 값을 miss로 오인합니다. 그 결과 캐시 TTL이 남아 있음에도 `repository.get`을 다시 호출해 갱신된 활성 값으로 덮어쓰고 True를 반환합니다."
+          },
+          {
+            "evidence": [
+              "kn_83b409bb1e4d50c98f40c8610b4c2680: `_key(tenant_id, flag_name)`는 `flag_name.casefold()`만 반환하며 `tenant_id`가 캐시 키에 포함되지 않는다(설계상 결함)."
+            ],
+            "confidence": 0.45,
+            "hypothesis": "`FeatureFlagCache._key`가 `flag_name.casefold()`만 반환하고 `tenant_id`를 포함하지 않아, 캐시 항목이 플래그 이름만으로 키가 잡히고 테넌트별 격리가 깨집니다. 이로 인해 한 테넌트의 갱신이 다른 테넌트 조회에 전파되어 '즉시 활성화'로 보일 수 있습니다."
+          },
+          {
+            "evidence": [
+              "kn_83b409bb1e4d50c98f40c8610b4c2680: `FeatureFlagCache`는 `dict[str, bool]` 기반 인메모리 캐시로 설명되며 TTL 관련 동작이 명시되어 있지 않다."
+            ],
+            "confidence": 0.3,
+            "hypothesis": "캐시에 TTL/무효화 개념이 존재하지 않거나 수정 경로에서 무효화가 수행되지 않아, 'TTL 내 비활성 유지' 기대가 성립하지 않습니다."
+          }
+        ]
+      },
+      "issue_id": "6",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`FeatureFlagCache._key`에 `tenant_id`를 추가하면 기존 캐시 키 기반 동작이나 외부 호출부가 깨질 수 있다.",
+            "mitigation": "`_key`는 내부 전용이므로 호출부를 먼저 전수 조사하고, 테넌트 격리 테스트를 함께 추가한 뒤 변경한다."
+          },
+          {
+            "risk": "캐시 무효화를 새로 추가하면 TTL 내 비활성 유지 기대와 상충되어 다른 테스트가 깨질 수 있다.",
+            "mitigation": "TTL/무효화 정책을 먼저 명확히 정의하고, 변경 전후 동작을 검증하는 테스트를 추가한다."
+          },
+          {
+            "risk": "저장소 `delete`/`list_for_tenant` 정규화 변경이 기존 저장·조회 키 형식과 어긋나 데이터 조회 실패를 유발할 수 있다.",
+            "mitigation": "`save`/`get`과 동일한 `(tenant_id, flag_name.casefold())` 규약을 단일 헬퍼로 통일해 사용하고, 정규화 일관성 테스트를 추가한다."
+          },
+          {
+            "risk": "캐시 TTL 구현 존재 여부에 대한 코드 근거가 현재 증거에 없어(검증되지 않은 사실) 수정 범위 산정이 부정확할 수 있다.",
+            "mitigation": "`src/feature_flags/cache.py`와 `src/feature_flags/service.py`를 직접 확인해 TTL/무효화 실태를 먼저 확정한 뒤 범위를 결정한다."
+          },
+          {
+            "risk": "테넌트 격리 결함(신뢰도 0.45)이 실제로는 이번 증상의 원인이 아닐 수 있어 불필요한 변경이 발생할 수 있다.",
+            "mitigation": "1차 원인(캐시된 False miss 오인, 신뢰도 0.82)을 먼저 수정·검증하고, 테넌트 격리는 별도 검증 후 필요 시에만 반영한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트를 먼저 고정한다",
+            "details": "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`를 현재 코드 기준으로 실행해 실패를 확인하고, 재현 절차(비활성 값 조회 → 저장소 값 수정 → 즉시 재조회 시 즉시 활성 반환)를 그대로 재현하는 회귀 테스트로 고정한다. 회귀 테스트는 `FeatureFlagService.is_enabled` 경로에서 캐시된 False가 hit로 취급되어 `repository.get`이 호출되지 않음을 검증해야 한다."
+          },
+          {
+            "id": 2,
+            "action": "`LegacyFeatureFlagService`의 캐시 판정 결함을 수정한다",
+            "details": "`src/feature_flags/service.py:1-40`의 `LegacyFeatureFlagService`에서 `if cached:`(truthiness) 검사를 제거하고, `FeatureFlagService.is_enabled`와 동일하게 `cache.get` 결과가 `None`이 아닐 때만 반환하도록 통일한다. 캐시된 False는 miss가 아니라 정상 hit이며 TTL 만료 전까지 저장소를 재조회하지 않아야 한다."
+          },
+          {
+            "id": 3,
+            "action": "캐시 키 정규화 결함을 검증하고 정리한다",
+            "details": "`src/feature_flags/cache.py:1-16`의 `_key(tenant_id, flag_name)`가 `flag_name.casefold()`만 반환해 `tenant_id`가 키에 포함되지 않는 문제(근거 kn_83b409bb1e4d50c98f40c8610b4c2680, 신뢰도 0.45)를 확인한다. 테넌트 격리 필요 여부를 확인한 뒤, 필요 시 키를 `(tenant_id, flag_name.casefold())` 형태로 정규화하고 테넌트별 교차 오염을 검증하는 테스트를 추가한다."
+          },
+          {
+            "id": 4,
+            "action": "저장소 정규화 불일치를 정리한다",
+            "details": "`src/feature_flags/repository.py:1-27`의 `FeatureFlagRepository`에서 `delete`가 casefold 정규화 없이 pop하고 `list_for_tenant`가 테넌트 필터링을 하지 않는 결함을 수정한다. `save`/`get`과 동일하게 `(tenant_id, flag_name.casefold())` 키를 사용하도록 `delete`를 정규화하고, `list_for_tenant`가 해당 테넌트 항목만 반환하도록 고친다."
+          },
+          {
+            "id": 5,
+            "action": "수정 경로의 캐시 무효화 여부를 검증한다",
+            "details": "활성 수정 시 캐시 항목 무효화(TTL 초기화/삭제)가 실제 수행되는지, 캐시에 TTL 구현이 존재하는지에 대한 코드 근거가 현재 증거에 없으므로(검증되지 않은 사실) `cache.py`와 `service.py`를 직접 확인한다. 무효화가 없으면 수정 경로에서 해당 키를 삭제하는 무효화를 추가하거나, TTL 내 비활성 유지 기대가 성립하도록 동작을 명시하고 문서화한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하고 회귀를 확인한다",
+            "details": "`tests/test_feature_flags.py` 전체를 실행해 캐시된 False가 miss로 처리되지 않는지, 테넌트 격리 및 저장소 정규화가 올바른지, 기존 활성 값 조회 동작이 유지되는지 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "6",
+        "acceptance_criteria": [
+          "`tests/test_feature_flags.py`의 `test_cached_false_value_is_not_treated_as_a_miss`가 통과한다.",
+          "`LegacyFeatureFlagService`와 `FeatureFlagService` 모두 캐시된 False를 hit로 취급하며, TTL 만료 전에는 `repository.get`을 재호출하지 않는다.",
+          "재현 절차(비활성 값 조회 → 저장소 값 수정 → 즉시 재조회)에서 TTL 만료 전까지 비활성(false) 상태가 유지된다.",
+          "`FeatureFlagCache._key`가 테넌트 격리를 보장하도록 정규화되고, 서로 다른 테넌트 간 캐시 값이 전파되지 않음을 검증하는 테스트가 통과한다.",
+          "`FeatureFlagRepository.delete`가 `(tenant_id, flag_name.casefold())` 키로 정규화되어 동작하고, `list_for_tenant`가 해당 테넌트 항목만 반환한다.",
+          "활성 수정 경로의 캐시 무효화 또는 TTL 동작이 코드 근거와 함께 명시되고, 관련 검증 테스트가 통과한다.",
+          "기존 테스트 스위트 전체가 회귀 없이 통과한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:05:37.030850Z",
+    "completed_at": "2026-09-28T07:06:07.518713Z",
+    "created_at": "2026-09-28T07:05:37.016703Z",
+    "updated_at": "2026-09-28T07:06:07.520189Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 32.448
+  }
+}

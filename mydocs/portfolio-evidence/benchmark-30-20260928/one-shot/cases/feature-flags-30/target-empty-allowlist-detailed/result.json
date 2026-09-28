@@ -1,0 +1,418 @@
+{
+  "input": {
+    "id": "target-empty-allowlist-detailed",
+    "report": {
+      "title": "빈 allowlist가 전체 차단으로 동작",
+      "description": "사용자 제한을 설정하지 않은 빈 목록은 unrestricted 의미지만 모든 사용자를 제외합니다.",
+      "steps_to_reproduce": [
+        "allowed_user_ids를 빈 목록으로 설정합니다.",
+        "user-42의 일치 여부를 확인합니다."
+      ],
+      "expected_behavior": "제한이 없으므로 true여야 합니다.",
+      "actual_behavior": "false가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_targeting.py::test_empty_allowlist_means_unrestricted"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 22,
+    "name": "benchmark-20260928T073431Z-64ae54ac-target-empty-allowlist-detailed",
+    "description": "Clio Benchmark feature-flags-30: target-empty-allowlist-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:56:47.499096Z",
+    "updatedAt": "2026-09-28T07:56:47.499096Z"
+  },
+  "clio_repository": {
+    "id": 22,
+    "projectId": 22,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:57:21.789895Z",
+    "createdAt": "2026-09-28T07:56:47.511411Z",
+    "updatedAt": "2026-09-28T07:57:21.790553Z"
+  },
+  "bug": {
+    "id": 22,
+    "project_id": 22,
+    "issue_id": 22,
+    "title": "빈 allowlist가 전체 차단으로 동작",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:57:21.815004Z",
+    "created_at": "2026-09-28T07:57:21.835870Z"
+  },
+  "analysis": {
+    "analysisResultId": 22,
+    "workflowRunId": 22,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 5,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 5,
+          "evidence_id": "code-22-readme-5",
+          "observation": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시되어 있습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "22",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 21,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 21,
+          "evidence_id": "code-22-readme-21",
+          "observation": "`src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 안내하나, 해당 모듈의 실제 구현 코드는 증거로 제공되지 않았습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "22",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "제공된 코드 증거는 README.md 3개 라인뿐이며, 해당 저장소는 Clio Benchmark 분석용 테스트 fixture이고 프로덕션 용도가 아니라고 명시되어 있습니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md 21행은 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 모듈로 안내하지만, 해당 파일의 소스 코드 자체는 증거로 제공되지 않았습니다.",
+          "verified": true
+        },
+        {
+          "fact": "버그 보고서(raw_payload.benchmark_case_id: target-empty-allowlist-detailed)에 따르면 allowed_user_ids를 빈 목록으로 설정했을 때 user-42 일치 여부가 true여야 하지만 false가 반환됩니다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 22,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.4,
+      "hypotheses": [
+        {
+          "evidence": [
+            "README.md 21행: `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+            "버그 재현 절차: allowed_user_ids를 빈 목록으로 설정 후 user-42 일치 여부 확인 → 기대 true, 실제 false"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "allowed_user_ids에 대한 멤버십 판정이 `if not allowed_user_ids: return True` 형태의 빈 목록(unrestricted) 특례 없이 `user_id in allowed_user_ids`로만 구현되어, 빈 목록이 '전체 제한 없음'이 아니라 '모두 불일치'로 해석됩니다."
+        },
+        {
+          "evidence": [
+            "README.md 21행이 `src/feature_flags/targeting.py`를 사용자 타기팅 모듈로 지시하나 해당 소스는 증거로 제공되지 않음"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "타기팅 판정 코드가 빈 시퀀스를 순회/집계(예: any/all 조건) 방식으로 처리하면서, 빈 컬렉션에 대해 restricted 기본값(false)으로 단락(short-circuit)되어 무제한 설정이 차단으로 뒤집힙니다."
+        },
+        {
+          "evidence": [
+            "evidence.code 3건 모두 README.md 라인이며 targeting.py 소스 미제공"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "targeting.py의 실제 구현을 확인하지 못했으므로, 위 가설들은 제공된 README 안내와 버그 재현 절차에 근거한 추정이며 소스 수준 확정은 불가능합니다."
+        }
+      ],
+      "project_id": 22,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`src/feature_flags/targeting.py` 소스가 저장소에 존재하지 않거나 제공된 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520에서 내용이 다를 수 있다(evidence.code 3건이 모두 README.md 라인이며 소스 미제공).",
+            "mitigation": "2단계에서 파일 존재 여부와 커밋 해시를 먼저 검증하고, 파일이 없으면 이후 단계를 중단한 뒤 '증거 부족으로 확정 불가'를 결과로 보고한다. README.md 외 다른 증거(테스트 파일, 벤치마크 정의)를 추가로 탐색한다."
+          },
+          {
+            "risk": "빈 목록을 무조건 '제한 없음'으로 처리하면, 호출부에서 allowed_user_ids를 실수로 비워 전달한 경우 사용자 제한이 조용히 해제되어 보안상 과다 허용이 발생할 수 있다.",
+            "mitigation": "빈 목록과 None/키 누락을 구분하여 처리하고, 5단계 테스트에 None/키 누락 케이스를 포함한다. 무제한 동작이 의도된 호출 경로인지 판정 함수 독스트링/주석에 명시한다."
+          },
+          {
+            "risk": "두 개의 상충하는 근본 원인 가설(가설 1: in 연산, 가설 2: any/all 단락) 중 하나만 반영하여 수정하면 실제 원인이 남아 동일 증상이 재발할 수 있다.",
+            "mitigation": "3단계에서 소스 수준으로 실제 원인을 단일 확정한 뒤에만 수정하고, 확정 불가 시 추정 수정을 적용하지 않는다. 6단계 회귀 테스트로 재현 케이스 통과를 검증한다."
+          },
+          {
+            "risk": "분석 대상이 프로덕션 코드가 아닌 Clio Benchmark 테스트 fixture이므로, 실사용 환경의 동일 증상을 해결한다고 오인될 수 있다.",
+            "mitigation": "결과 보고 시 fixture 한정 수정임을 명시하고, 프로덕션 코드베이스에 동일 패턴이 있는지는 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소의 분석 대상 성격을 확인하고, 수정 범위를 테스트 fixture로 한정한다",
+            "details": "README.md 5행(code-22-readme-5, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)은 이 저장소가 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시합니다. 따라서 본 이슈는 프로덕션 결함이 아니라 벤치마크 재현 케이스(raw_payload.benchmark_case_id: target-empty-allowlist-detailed)로 취급하고, 실제 코드 변경 전에 이 전제를 이슈에 기록한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/targeting.py` 소스 원문을 확보한다",
+            "details": "README.md 21행(code-22-readme-21)은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 안내하지만 해당 파일의 소스 코드 자체는 증거로 제공되지 않았습니다(evidence.code 3건 모두 README.md 라인). 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 파일 전체를 읽어 실제 구현을 확인한다. 이 단계 없이는 이후 단계의 가설 검증이 불가능하다."
+          },
+          {
+            "id": 3,
+            "action": "allowed_user_ids 빈 목록 처리 로직을 코드 수준에서 판정한다",
+            "details": "가설 1(confidence 0.45)은 `user_id in allowed_user_ids`만 구현되어 빈 목록이 '전체 제한 없음'이 아니라 '모두 불일치'로 해석된다고 봅니다. 가설 2(confidence 0.2)는 빈 시퀀스가 any/all 조건에서 restricted 기본값(false)으로 단락된다고 봅니다. 소스에서 허용 목록 판정 함수와 빈 컬렉션 분기(early return, any/all, all()/len() 검사 여부)를 확인하여 두 가설 중 어느 쪽이 실제인지, 또는 제3의 구현인지 확정한다."
+          },
+          {
+            "id": 4,
+            "action": "빈 목록을 '제한 없음(unrestricted)'으로 해석하도록 판정 로직을 수정한다",
+            "details": "3단계 결과가 가설 1 또는 2와 일치하면, 빈 allowed_user_ids에 대해 True를 반환하는 명시적 분기를 추가한다(예: `if not allowed_user_ids: return True`). 반환값은 기존 시그니처와 타입을 유지하고, 기존 타기팅 호출부(국가·사용자 타기팅)에서의 동작이 변하지 않도록 최소 변경으로 적용한다. 3단계 결과가 두 가설과 다르면 실제 원인에 맞춰 동일 목표(빈 목록 = 전체 허용)를 달성하도록 수정한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 케이스 target-empty-allowlist-detailed에 대한 회귀 테스트를 추가한다",
+            "details": "allowed_user_ids를 빈 목록으로 설정하고 user-42에 대한 판정이 True를 반환하는지 검증하는 테스트를 추가합니다. 함께 다음 경계 케이스를 포함한다: (a) allowed_user_ids에 user-42가 포함된 경우 True, (b) user-42가 포함되지 않은 비어 있지 않은 목록의 경우 False, (c) allowed_user_ids가 None이거나 키가 누락된 경우의 처리. 이로써 빈 목록 특례가 다른 제한 로직을 무력화하지 않음을 함께 고정한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하고 가설 신뢰도를 재산정한다",
+            "details": "수정 후 저장소의 벤치마크/테스트 스위트를 실행하여 회귀가 없음을 확인합니다. 2단계에서 확보한 실제 소스와 5단계 테스트 결과를 근거로, 가설 1과 가설 2의 신뢰도 및 가설 3(소스 미확인으로 인한 확정 불가)의 잔존 여부를 갱신하여 이슈에 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "22",
+        "acceptance_criteria": [
+          "`src/feature_flags/targeting.py`의 실제 소스가 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 확인되고, 빈 allowed_user_ids 처리 분기의 현재 동작이 코드 인용과 함께 이슈에 기록되어 있다.",
+          "allowed_user_ids를 빈 목록으로 설정했을 때 `user-42` 판정이 true를 반환한다(raw_payload.benchmark_case_id: target-empty-allowlist-detailed 재현 케이스 통과).",
+          "allowed_user_ids에 user-42가 포함된 경우 true, 포함되지 않은 비어 있지 않은 목록의 경우 false가 반환되어 기존 제한 동작이 유지된다.",
+          "빈 목록 처리를 검증하는 테스트가 저장소에 추가되고, 전체 테스트 스위트 실행 시 실패/에러가 0건이다.",
+          "수정이 테스트 fixture 범위를 벗어나지 않으며, README.md 5행이 명시한 'Clio Benchmark 분석용 fixture, 프로덕션 아님' 전제가 계획 및 이슈 기록에 반영되어 있다.",
+          "가설 1(0.45)/가설 2(0.2)/가설 3(0.15)의 신뢰도가 실제 소스 확인 결과에 따라 재산정되어 문서화되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 45,
+            "rationale": "영향은 `src/feature_flags/targeting.py`의 사용자 타기팅(targeting) 판정 경로에 국한되며, 국가 타기팅이나 다른 플래그 평가 로직 전체로 번지는 정황은 없다. 다만 allowed_user_ids를 빈 목록으로 설정한 모든 플래그/사용자 조합이 영향을 받으므로 단일 함수 범위를 넘어선다."
+          },
+          {
+            "name": "심각도",
+            "score": 35,
+            "rationale": "크래시, 데이터 손실, 보안 취약점 노출, 데이터 손상은 아니고 단순 판정 결과 불일치(ReportedBehaviorMismatch)다. 다만 fail-closed 방향(제한 없음 → 전체 차단)으로 뒤집히는 논리 반전이라 기대 동작과 정반대 결과를 낳는다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 55,
+            "rationale": "재현 절차가 allowed_user_ids를 빈 목록으로 설정 → user-42 일치 확인의 2단계로 매우 단순하고 결정적으로 재현된다. 다만 빈 목록(unrestricted 의도)을 실제로 설정한 경우에만 발현되므로 상시 발생은 아니다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 40,
+            "rationale": "allowed_user_ids에 더미 값이나 와일드카드성 항목을 넣는 식의 우회가 가능할 수 있으나, 빈 목록이 '제한 없음'이라는 시맨틱을 그대로 표현할 대안이 없어 우회 시 설정 의미가 왜곡된다. 대상 사용자 전원을 수동 나열하는 방법은 확장성이 나쁘다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 35,
+            "rationale": "결제·계정 등 직접적 임계 경로는 아니고 피처 플래그 타기팅이 대상이다. 그러나 잘못된 판정은 기능 노출/차단을 뒤집어 릴리스·점진 배포 판단에 영향을 줄 수 있다. 또한 README.md 5행 기준 이 저장소는 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도가 아니므로 실비즈니스 임계성은 제한적이다."
+          },
+          {
+            "name": "증거 확실성",
+            "score": 60,
+            "rationale": "제공된 증거는 README.md 라인뿐이고 `src/feature_flags/targeting.py` 실제 소스가 없어 근본 원인 확정이 불가능하다(최고 신뢰 가설 confidence 0.45). 수정 범위와 회귀 위험을 산정할 수 없어 불확실성이 위험도를 끌어올린다."
+          }
+        ],
+        "priority": "P3",
+        "rationale": "핵심 증상은 `allowed_user_ids`를 빈 목록으로 설정한 뒤 user-42 일치 여부를 확인하면 기대 true 대신 false가 반환되는 판정 역전이다(제한 없음 → 전체 차단). 논리 방향이 fail-closed로 잘못 뒤집히지만 크래시·데이터 손실·보안 노출·데이터 손상은 아니며, 단순 2단계 절차로 결정적으로 재현되는 설정 특이적 결함이다. 영향을 받는 범위는 `src/feature_flags/targeting.py` 사용자 타기팅 판정 경로로 한정되고, README.md 5행에 이 저장소는 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도가 아니라고 명시되어 비즈니스 임계성은 낮다. 다만 증거가 README.md 라인 21, 5 등 문서 수준에 머물고 실제 소스가 제공되지 않아 근본 원인 확정이 불가능(최고 신뢰 가설 confidence 0.45)하여 수정 범위와 파급을 알 수 없다는 불확실성이 존재한다. 종합적으로 부분 기능 오작동 + 우회 난이도 존재 + 낮은 임계성 + 높은 재현성을 감안해 P3 낮음~P2 보통 경계의 42점으로 산정한다.",
+        "risk_score": 42
+      },
+      "workflow_run_id": 22
+    }
+  },
+  "workflow": {
+    "id": 22,
+    "project_id": 22,
+    "request_id": "process-bug-22",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "제공된 코드 증거는 README.md 3개 라인뿐이며, 해당 저장소는 Clio Benchmark 분석용 테스트 fixture이고 프로덕션 용도가 아니라고 명시되어 있습니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md 21행은 `src/feature_flags/targeting.py`를 국가·사용자 타기팅 모듈로 안내하지만, 해당 파일의 소스 코드 자체는 증거로 제공되지 않았습니다.",
+            "verified": true
+          },
+          {
+            "fact": "버그 보고서(raw_payload.benchmark_case_id: target-empty-allowlist-detailed)에 따르면 allowed_user_ids를 빈 목록으로 설정했을 때 user-42 일치 여부가 true여야 하지만 false가 반환됩니다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "22",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 5,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 5,
+            "evidence_id": "code-22-readme-5",
+            "observation": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시되어 있습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "22",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 21,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 21,
+            "evidence_id": "code-22-readme-21",
+            "observation": "`src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 안내하나, 해당 모듈의 실제 구현 코드는 증거로 제공되지 않았습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "22",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.4,
+        "evidence_counts": {
+          "code": 3,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "README.md 21행: `src/feature_flags/targeting.py`: 국가·사용자 타기팅",
+              "버그 재현 절차: allowed_user_ids를 빈 목록으로 설정 후 user-42 일치 여부 확인 → 기대 true, 실제 false"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "allowed_user_ids에 대한 멤버십 판정이 `if not allowed_user_ids: return True` 형태의 빈 목록(unrestricted) 특례 없이 `user_id in allowed_user_ids`로만 구현되어, 빈 목록이 '전체 제한 없음'이 아니라 '모두 불일치'로 해석됩니다."
+          },
+          {
+            "evidence": [
+              "README.md 21행이 `src/feature_flags/targeting.py`를 사용자 타기팅 모듈로 지시하나 해당 소스는 증거로 제공되지 않음"
+            ],
+            "confidence": 0.2,
+            "hypothesis": "타기팅 판정 코드가 빈 시퀀스를 순회/집계(예: any/all 조건) 방식으로 처리하면서, 빈 컬렉션에 대해 restricted 기본값(false)으로 단락(short-circuit)되어 무제한 설정이 차단으로 뒤집힙니다."
+          },
+          {
+            "evidence": [
+              "evidence.code 3건 모두 README.md 라인이며 targeting.py 소스 미제공"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "targeting.py의 실제 구현을 확인하지 못했으므로, 위 가설들은 제공된 README 안내와 버그 재현 절차에 근거한 추정이며 소스 수준 확정은 불가능합니다."
+          }
+        ]
+      },
+      "issue_id": "22",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`src/feature_flags/targeting.py` 소스가 저장소에 존재하지 않거나 제공된 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520에서 내용이 다를 수 있다(evidence.code 3건이 모두 README.md 라인이며 소스 미제공).",
+            "mitigation": "2단계에서 파일 존재 여부와 커밋 해시를 먼저 검증하고, 파일이 없으면 이후 단계를 중단한 뒤 '증거 부족으로 확정 불가'를 결과로 보고한다. README.md 외 다른 증거(테스트 파일, 벤치마크 정의)를 추가로 탐색한다."
+          },
+          {
+            "risk": "빈 목록을 무조건 '제한 없음'으로 처리하면, 호출부에서 allowed_user_ids를 실수로 비워 전달한 경우 사용자 제한이 조용히 해제되어 보안상 과다 허용이 발생할 수 있다.",
+            "mitigation": "빈 목록과 None/키 누락을 구분하여 처리하고, 5단계 테스트에 None/키 누락 케이스를 포함한다. 무제한 동작이 의도된 호출 경로인지 판정 함수 독스트링/주석에 명시한다."
+          },
+          {
+            "risk": "두 개의 상충하는 근본 원인 가설(가설 1: in 연산, 가설 2: any/all 단락) 중 하나만 반영하여 수정하면 실제 원인이 남아 동일 증상이 재발할 수 있다.",
+            "mitigation": "3단계에서 소스 수준으로 실제 원인을 단일 확정한 뒤에만 수정하고, 확정 불가 시 추정 수정을 적용하지 않는다. 6단계 회귀 테스트로 재현 케이스 통과를 검증한다."
+          },
+          {
+            "risk": "분석 대상이 프로덕션 코드가 아닌 Clio Benchmark 테스트 fixture이므로, 실사용 환경의 동일 증상을 해결한다고 오인될 수 있다.",
+            "mitigation": "결과 보고 시 fixture 한정 수정임을 명시하고, 프로덕션 코드베이스에 동일 패턴이 있는지는 별도 이슈로 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소의 분석 대상 성격을 확인하고, 수정 범위를 테스트 fixture로 한정한다",
+            "details": "README.md 5행(code-22-readme-5, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520)은 이 저장소가 Clio Benchmark 분석용 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시합니다. 따라서 본 이슈는 프로덕션 결함이 아니라 벤치마크 재현 케이스(raw_payload.benchmark_case_id: target-empty-allowlist-detailed)로 취급하고, 실제 코드 변경 전에 이 전제를 이슈에 기록한다."
+          },
+          {
+            "id": 2,
+            "action": "`src/feature_flags/targeting.py` 소스 원문을 확보한다",
+            "details": "README.md 21행(code-22-readme-21)은 `src/feature_flags/targeting.py`가 국가·사용자 타기팅을 담당한다고 안내하지만 해당 파일의 소스 코드 자체는 증거로 제공되지 않았습니다(evidence.code 3건 모두 README.md 라인). 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 파일 전체를 읽어 실제 구현을 확인한다. 이 단계 없이는 이후 단계의 가설 검증이 불가능하다."
+          },
+          {
+            "id": 3,
+            "action": "allowed_user_ids 빈 목록 처리 로직을 코드 수준에서 판정한다",
+            "details": "가설 1(confidence 0.45)은 `user_id in allowed_user_ids`만 구현되어 빈 목록이 '전체 제한 없음'이 아니라 '모두 불일치'로 해석된다고 봅니다. 가설 2(confidence 0.2)는 빈 시퀀스가 any/all 조건에서 restricted 기본값(false)으로 단락된다고 봅니다. 소스에서 허용 목록 판정 함수와 빈 컬렉션 분기(early return, any/all, all()/len() 검사 여부)를 확인하여 두 가설 중 어느 쪽이 실제인지, 또는 제3의 구현인지 확정한다."
+          },
+          {
+            "id": 4,
+            "action": "빈 목록을 '제한 없음(unrestricted)'으로 해석하도록 판정 로직을 수정한다",
+            "details": "3단계 결과가 가설 1 또는 2와 일치하면, 빈 allowed_user_ids에 대해 True를 반환하는 명시적 분기를 추가한다(예: `if not allowed_user_ids: return True`). 반환값은 기존 시그니처와 타입을 유지하고, 기존 타기팅 호출부(국가·사용자 타기팅)에서의 동작이 변하지 않도록 최소 변경으로 적용한다. 3단계 결과가 두 가설과 다르면 실제 원인에 맞춰 동일 목표(빈 목록 = 전체 허용)를 달성하도록 수정한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 케이스 target-empty-allowlist-detailed에 대한 회귀 테스트를 추가한다",
+            "details": "allowed_user_ids를 빈 목록으로 설정하고 user-42에 대한 판정이 True를 반환하는지 검증하는 테스트를 추가합니다. 함께 다음 경계 케이스를 포함한다: (a) allowed_user_ids에 user-42가 포함된 경우 True, (b) user-42가 포함되지 않은 비어 있지 않은 목록의 경우 False, (c) allowed_user_ids가 None이거나 키가 누락된 경우의 처리. 이로써 빈 목록 특례가 다른 제한 로직을 무력화하지 않음을 함께 고정한다."
+          },
+          {
+            "id": 6,
+            "action": "전체 테스트 스위트를 실행하고 가설 신뢰도를 재산정한다",
+            "details": "수정 후 저장소의 벤치마크/테스트 스위트를 실행하여 회귀가 없음을 확인합니다. 2단계에서 확보한 실제 소스와 5단계 테스트 결과를 근거로, 가설 1과 가설 2의 신뢰도 및 가설 3(소스 미확인으로 인한 확정 불가)의 잔존 여부를 갱신하여 이슈에 기록한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "22",
+        "acceptance_criteria": [
+          "`src/feature_flags/targeting.py`의 실제 소스가 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 확인되고, 빈 allowed_user_ids 처리 분기의 현재 동작이 코드 인용과 함께 이슈에 기록되어 있다.",
+          "allowed_user_ids를 빈 목록으로 설정했을 때 `user-42` 판정이 true를 반환한다(raw_payload.benchmark_case_id: target-empty-allowlist-detailed 재현 케이스 통과).",
+          "allowed_user_ids에 user-42가 포함된 경우 true, 포함되지 않은 비어 있지 않은 목록의 경우 false가 반환되어 기존 제한 동작이 유지된다.",
+          "빈 목록 처리를 검증하는 테스트가 저장소에 추가되고, 전체 테스트 스위트 실행 시 실패/에러가 0건이다.",
+          "수정이 테스트 fixture 범위를 벗어나지 않으며, README.md 5행이 명시한 'Clio Benchmark 분석용 fixture, 프로덕션 아님' 전제가 계획 및 이슈 기록에 반영되어 있다.",
+          "가설 1(0.45)/가설 2(0.2)/가설 3(0.15)의 신뢰도가 실제 소스 확인 결과에 따라 재산정되어 문서화되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:57:22.845404Z",
+    "completed_at": "2026-09-28T07:57:50.229728Z",
+    "created_at": "2026-09-28T07:57:22.831576Z",
+    "updated_at": "2026-09-28T07:57:50.231013Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 28.433
+  }
+}

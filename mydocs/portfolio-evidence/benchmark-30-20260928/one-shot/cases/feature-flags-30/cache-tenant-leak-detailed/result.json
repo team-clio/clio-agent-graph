@@ -1,0 +1,525 @@
+{
+  "input": {
+    "id": "cache-tenant-leak-detailed",
+    "report": {
+      "title": "다른 테넌트 조회 후 플래그 값이 바뀜",
+      "description": "같은 이름의 기능 플래그를 사용하는 두 테넌트의 값이 서로 오염됩니다.",
+      "steps_to_reproduce": [
+        "tenant-alpha의 new-checkout을 true로 저장합니다.",
+        "tenant-beta의 new-checkout을 false로 저장합니다.",
+        "alpha를 조회한 뒤 beta를 조회합니다."
+      ],
+      "expected_behavior": "beta에는 false가 반환되어야 합니다.",
+      "actual_behavior": "alpha의 true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_returns_requested_tenant_value_after_prior_lookup"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 1,
+    "name": "benchmark-20260928T073431Z-64ae54ac-cache-tenant-leak-detailed",
+    "description": "Clio Benchmark feature-flags-30: cache-tenant-leak-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:34:33.424482Z",
+    "updatedAt": "2026-09-28T07:34:33.424482Z"
+  },
+  "clio_repository": {
+    "id": 1,
+    "projectId": 1,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:35:12.249708Z",
+    "createdAt": "2026-09-28T07:34:33.478498Z",
+    "updatedAt": "2026-09-28T07:35:12.251261Z"
+  },
+  "bug": {
+    "id": 1,
+    "project_id": 1,
+    "issue_id": 1,
+    "title": "다른 테넌트 조회 후 플래그 값이 바뀜",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:35:14.127574Z",
+    "created_at": "2026-09-28T07:35:14.194256Z"
+  },
+  "analysis": {
+    "analysisResultId": 1,
+    "workflowRunId": 1,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": "code-1",
+          "observation": "저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.",
+          "end_line": 5,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 5,
+          "evidence_id": "code-2",
+          "observation": "저장소가 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아님을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": "code-3",
+          "observation": "src/feature_flags/repository.py가 테넌트별 플래그 저장소로 설명되어 있음을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": "code-4",
+          "observation": "src/feature_flags/service.py가 플래그 조회 서비스로 설명되어 있음을 확인했습니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "1",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "보고된 증상은 tenant-alpha의 new-checkout을 true로 저장하고 tenant-beta의 new-checkout을 false로 저장한 뒤 alpha를 조회한 다음 beta를 조회하면, beta에 대해 false가 아닌 alpha의 true가 반환된다는 것입니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거는 총 7건이며 모두 repository_id 1, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 라인 3, 5, 16, 18 내용으로만 구성되어 있습니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 증거에는 src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현 코드가 포함되어 있지 않아 테넌트 구분 키 처리 로직을 직접 확인할 수 없습니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md 라인 16과 18에 따르면 각각 src/feature_flags/repository.py는 테넌트별 플래그 저장소이고 src/feature_flags/service.py는 플래그 조회 서비스입니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md 라인 5는 이 저장소가 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시합니다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context.raw_payload.benchmark_case_id는 cache-tenant-leak-detailed이고 error_type은 ReportedBehaviorMismatch이며 stack_trace는 비어 있습니다.",
+          "verified": true
+        },
+        {
+          "fact": "다른 테넌트 조회 후 값이 바뀌는 현상이 캐시 키에 테넌트 식별자가 포함되지 않은 코드에서 비롯된다는 점은 실제 구현 코드 확인 없이는 검증되지 않았습니다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 1,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.38,
+      "hypotheses": [
+        {
+          "evidence": [
+            "증거 코드 항목이 모두 README.md 라인 3~18의 서비스 설명 텍스트로만 구성되어 있고, src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현은 제공되지 않았습니다.",
+            "증거가 근거로 제시한 저장소는 'src/feature_flags/repository.py': 테넌트별 플래그 저장소와 'src/feature_flags/service.py': 플래그 조회 서비스 구조를 갖습니다.",
+            "재현 절차가 동일 플래그 이름 new-checkout을 테넌트만 바꿔 조회하는 형태여서 테넌트 구분 키 누락 시 값 오염이 발생하는 전형적 패턴과 일치합니다."
+          ],
+          "confidence": 0.4,
+          "hypothesis": "제공된 코드 증거에는 버그가 발생하는 실제 코드 본문 없이 README.md 스니펫만 포함되어 있어, 테넌트별 플래그 조회가 테넌트 컨텍스트를 캐시 키에 반영하지 않아 alpha 조회 결과가 beta 조회에 재사용되는 캐시 키 구성 결함이 원인일 가능성이 있습니다."
+        },
+        {
+          "evidence": [
+            "README.md 라인 5: '이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.'",
+            "bug_context.raw_payload.benchmark_case_id 값이 'cache-tenant-leak-detailed'로 벤치마크 케이스임을 나타냅니다."
+          ],
+          "confidence": 0.25,
+          "hypothesis": "README.md 라인 5에 명시된 대로 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아니므로, 관찰된 alpha true 반환은 실제 프로덕션 결함이 아니라 fixture 기반 재현 절차의 한계일 가능성이 있습니다."
+        }
+      ],
+      "project_id": 1,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거가 README.md 라인 3, 5, 16, 18뿐이어서 src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현을 확인할 수 없다. 이 상태에서는 '캐시 키에 테넌트 식별자 누락' 가설(confidence 0.4, 사실 검증 여부 false)이 미검증으로 남는다.",
+            "mitigation": "1~3단계에서 실제 구현 본문 확보를 선행 조건으로 두고, 코드 확보 전에는 수정 단계(5단계)를 착수하지 않는다."
+          },
+          {
+            "risk": "이 저장소가 Clio Benchmark 분석 대상 테스트 fixture이고 프로덕션 용도가 아니라고 README.md 라인 5에 명시되어 있어, 수정이 실제 프로덕션 결함 해결로 이어지지 않을 수 있다.",
+            "mitigation": "7단계에서 fixture/프로덕션 판단을 분리 기록하고 프로덕션 영향은 별도 이슈로 이관한다."
+          },
+          {
+            "risk": "캐시 키에 테넌트 식별자를 추가하면 테넌트 수 × 플래그 수만큼 캐시 항목이 증가해 메모리 사용량과 캐시 적중률이 변동될 수 있다.",
+            "mitigation": "6단계에서 동일 테넌트 재조회 캐시 동작을 확인하고, 필요 시 캐시 항목 수 상한 또는 만료 정책을 함께 검토한다."
+          },
+          {
+            "risk": "캐시 키 생성이 여러 위치에 중복 구현되어 있으면 일부 경로에서만 수정이 적용되어 결함이 부분적으로 잔존할 수 있다.",
+            "mitigation": "5단계에서 키 생성을 단일 헬퍼로 통합하고, 키 규약 일치 여부를 확인하는 테스트를 추가한다."
+          },
+          {
+            "risk": "stack_trace가 비어 있어 실행 경로가 예외로 특정되지 않으므로, 잘못된 코드 경로를 수정해도 증상이 재현될 수 있다.",
+            "mitigation": "4단계에서 반환값 기반 회귀 테스트를 먼저 실패시키는 방식으로 실제 실행 경로를 확정한 뒤 수정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 1의 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520에서 README.md 라인 3~18만 제공된 증거(code-1~code-4)의 한계를 명시하고, 추가 증거 수집 범위를 확정한다.",
+            "details": "현재 증거는 README.md 라인 3, 5, 16, 18(evidence_id code-1, code-2, code-3, code-4)뿐이며 src/feature_flags/repository.py와 src/feature_flags/service.py의 실제 구현 코드는 포함되지 않았다. 수집 대상: (a) repository.py 및 service.py 전체 본문, (b) 플래그 캐시 키를 생성하는 함수, (c) 테넌트 식별자(tenant_id 등)가 캐시 키에 포함되는지 여부를 보여주는 테스트 코드."
+          },
+          {
+            "id": 2,
+            "action": "src/feature_flags/service.py의 플래그 조회 경로에서 캐시 키 구성 로직을 추출해 테넌트 컨텍스트 포함 여부를 정적으로 검사한다.",
+            "details": "README.md 라인 18에 따르면 service.py는 '플래그 조회 서비스'다. 캐시 키가 플래그 이름만으로 구성되고 테넌트 식별자가 누락되었는지 확인한다. 후보 가설: '테넌트별 플래그 조회가 테넌트 컨텍스트를 캐시 키에 반영하지 않아 alpha 조회 결과가 beta 조회에 재사용되는 캐시 키 구성 결함'(confidence 0.4). 이 단계의 산출물은 캐시 키 문자열 형식과 테넌트 식별자 포함 여부에 대한 근거 인용이다."
+          },
+          {
+            "id": 3,
+            "action": "src/feature_flags/repository.py의 테넌트별 플래그 저장소 동작을 확인해 저장 시점에는 테넌트가 구분되는지 검증한다.",
+            "details": "README.md 라인 16에 따르면 repository.py는 '테넌트별 플래그 저장소'다. tenant-alpha의 new-checkout=true, tenant-beta의 new-checkout=false가 저장 단계에서 실제로 분리 저장되는지, 아니면 조회 단계 캐시에서만 뒤섞이는지 구분한다. 이는 결함 위치를 repository와 service 중 어디로 귀속할지 결정하는 근거가 된다."
+          },
+          {
+            "id": 4,
+            "action": "버그 컨텍스트의 benchmark_case_id=cache-tenant-leak-detailed가 지시하는 재현 절차를 그대로 자동화한 회귀 테스트를 작성한다.",
+            "details": "절차: tenant-alpha의 new-checkout을 true로 저장, tenant-beta의 new-checkout을 false로 저장, alpha 조회, 이어서 beta 조회. 기대값은 beta 조회 시 false 반환. error_type은 ReportedBehaviorMismatch이고 stack_trace는 비어 있으므로 예외 기반이 아닌 반환값 기반 단언(assert)으로 검증한다. 테스트 실패 시 현재 재현되는 잘못된 값(alpha의 true)이 반환되어야 한다."
+          },
+          {
+            "id": 5,
+            "action": "캐시 키에 테넌트 식별자를 포함하도록 캐시 키 생성 로직을 수정하고, 저장소·서비스 간 키 규약이 일치하는지 정렬한다.",
+            "details": "동일 플래그 이름 new-checkout에 대해 테넌트가 다르면 서로 다른 캐시 항목을 사용하도록 키를 (tenant 식별자, 플래그 이름) 조합으로 구성한다. 키 생성이 여러 위치에 중복되어 있으면 단일 헬퍼로 통합해 누락 재발을 방지한다. 수정 범위는 2~3단계에서 결함 위치로 확정된 파일에 한정한다."
+          },
+          {
+            "id": 6,
+            "action": "4단계 회귀 테스트와 기존 테스트 스위트를 실행해 수정 전 실패·수정 후 통과를 확인한다.",
+            "details": "수정 전 상태에서 테스트가 실패(베타 조회에 true 반환)하고, 수정 후 통과(베타 조회에 false 반환)하는 것을 순서대로 기록한다. 추가로 동일 테넌트 재조회 시 캐시가 정상 동작(불필요한 재계산 없음)하는지도 확인해 캐시 무력화로 인한 성능 퇴행이 없는지 점검한다."
+          },
+          {
+            "id": 7,
+            "action": "README.md 라인 5의 '테스트 fixture이며 프로덕션 용도로 사용하지 않습니다' 진술을 검증하고, 프로덕션 결함 여부 판단을 별도로 기록한다.",
+            "details": "현재 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture로 명시되어 있다(confidence 0.25 가설). 따라서 본 수정은 프로덕션 결함 대응이 아니라 벤치마크 fixture의 결함 재현·수정으로 규정하고, 프로덕션 영향 판단은 실제 구현 저장소 확인 후 별도 이슈로 분리한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "1",
+        "acceptance_criteria": [
+          "tenant-alpha의 new-checkout=true, tenant-beta의 new-checkout=false 저장 후 alpha→beta 순서로 조회하면 beta 조회 결과가 false이며, alpha의 true가 반환되지 않는다.",
+          "저장 순서를 beta→alpha로 뒤집어도 각 테넌트는 자신이 저장한 값(true/false)을 조회한다.",
+          "동일 테넌트를 연속 두 번 조회하면 두 번째 조회도 첫 번째와 동일한 값을 반환한다(테넌트 간 오염 없음).",
+          "캐시 키 생성 로직에 테넌트 식별자가 포함되어 있고, 이를 검증하는 단위 테스트가 저장소에 존재한다.",
+          "수정 전 상태에서 회귀 테스트가 실패하고 수정 후 통과한다는 실행 기록(명령과 출력)이 남아 있다.",
+          "src/feature_flags/repository.py와 src/feature_flags/service.py의 실제 구현 본문이 증거로 확보되어, 캐시 키 결함 위치가 코드 라인 인용으로 특정된다.",
+          "README.md 라인 5에 근거한 fixture/프로덕션 용도 구분이 계획 산출물에 명시되어 있다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 72,
+            "rationale": "테넌트 격리가 깨지는 결함으로, 동일 플래그 이름을 사용하는 모든 테넌트가 상호 오염될 수 있습니다. 단일 기능이 아니라 테넌트별 플래그 조회 전반(모든 플래그, 모든 테넌트)에 영향을 줄 수 있어 범위가 넓습니다. 다만 src/feature_flags/service.py, src/feature_flags/repository.py 구현이 증거에 없어 실제 영향 범위는 확정되지 않았습니다."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 68,
+            "rationale": "크래시나 데이터 손상은 아니지만 테넌트 간 데이터 격리 위반으로, 다른 고객의 설정값이 노출·적용되는 정보 누출 성격의 결함입니다. 플래그 오염이 잘못된 릴리스 게이팅으로 이어질 수 있어 단순 표시 오류보다 심각합니다."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 85,
+            "rationale": "재현 절차가 항상 동일 결과를 내는 결정적(deterministic) 시나리오(alpha 조회 후 beta 조회)이며, 플래그를 저장/조회하는 정상 흐름에서 상시 발생합니다. 캐시 키에 테넌트 식별자가 누락된 경우 100% 재현됩니다."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 75,
+            "rationale": "조회 순서에 따라 값이 달라지므로 애플리케이션 레벨에서 사용자가 우회하기 어렵습니다. 코드 수정(캐시 키에 테넌트 식별자 포함) 없이는 신뢰할 수 있는 회피책이 사실상 없습니다."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 62,
+            "rationale": "기능 플래그는 결제·신규 체크아웃(new-checkout) 등 핵심 경로의 릴리즈 제어에 사용되는 구성 요소라 잘못된 플래그 값은 비즈니스 기능 오작동으로 직결될 수 있습니다. 다만 README.md 라인 5에 이 저장소가 Clio Benchmark용 테스트 fixture이며 프로덕션 용도가 아니라고 명시되어 있어 실제 프로덕션 영향은 제한적입니다."
+          },
+          {
+            "name": "증거 신뢰도",
+            "score": 78,
+            "rationale": "코드 증거 7건이 모두 README.md 라인 3, 5, 16, 18 텍스트에 불과하고 src/feature_flags/repository.py, src/feature_flags/service.py의 실제 구현이 제공되지 않아 근본 원인(캐시 키 테넌트 누락)이 미검증입니다(analysis.confidence 0.38). 진단 불확실성이 위험도를 상향시킵니다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "테넌트 간 기능 플래그 값 오염은 결정적으로 재현되며(alpha 조회 후 beta 조회 시 beta에 alpha의 true 반환), 테넌트 격리 위반이자 정보 누출 성격의 결함으로 사용자 측 우회가 불가능하고 수정 전까지 정상 조회 흐름 전반을 신뢰할 수 없습니다. 기능 플래그가 결제·체크아웃 등 핵심 경로 제어에 쓰인다는 점에서 비즈니스 임계성도 낮지 않습니다. 따라서 P1 높음(70-84) 구간으로 평가합니다. 다만 README.md 라인 5에 '이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.'라고 명시되어 있고, 제공된 코드 증거가 README.md 라인 3·5·16·18뿐이라 src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현과 캐시 키 구성 결함이 검증되지 않았으므로(analysis.confidence 0.38), 프로덕션 인시던트 기준의 P0(85-100)까지는 올리지 않았습니다. 실제 구현에서 테넌트 컨텍스트가 캐시 키에 포함되지 않는 것이 확인되면 P0 상향이 타당합니다.",
+        "risk_score": 71
+      },
+      "workflow_run_id": 1
+    }
+  },
+  "workflow": {
+    "id": 1,
+    "project_id": 1,
+    "request_id": "process-bug-1",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "보고된 증상은 tenant-alpha의 new-checkout을 true로 저장하고 tenant-beta의 new-checkout을 false로 저장한 뒤 alpha를 조회한 다음 beta를 조회하면, beta에 대해 false가 아닌 alpha의 true가 반환된다는 것입니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거는 총 7건이며 모두 repository_id 1, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520의 README.md 라인 3, 5, 16, 18 내용으로만 구성되어 있습니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 증거에는 src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현 코드가 포함되어 있지 않아 테넌트 구분 키 처리 로직을 직접 확인할 수 없습니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md 라인 16과 18에 따르면 각각 src/feature_flags/repository.py는 테넌트별 플래그 저장소이고 src/feature_flags/service.py는 플래그 조회 서비스입니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md 라인 5는 이 저장소가 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture이며 프로덕션 용도로 사용하지 않는다고 명시합니다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context.raw_payload.benchmark_case_id는 cache-tenant-leak-detailed이고 error_type은 ReportedBehaviorMismatch이며 stack_trace는 비어 있습니다.",
+            "verified": true
+          },
+          {
+            "fact": "다른 테넌트 조회 후 값이 바뀌는 현상이 캐시 키에 테넌트 식별자가 포함되지 않은 코드에서 비롯된다는 점은 실제 구현 코드 확인 없이는 검증되지 않았습니다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "1",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": "code-1",
+            "observation": "저장소가 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리임을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "1",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.",
+            "end_line": 5,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 5,
+            "evidence_id": "code-2",
+            "observation": "저장소가 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아님을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "1",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/repository.py`: 테넌트별 플래그 저장소",
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": "code-3",
+            "observation": "src/feature_flags/repository.py가 테넌트별 플래그 저장소로 설명되어 있음을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "1",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "- `src/feature_flags/service.py`: 플래그 조회 서비스",
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": "code-4",
+            "observation": "src/feature_flags/service.py가 플래그 조회 서비스로 설명되어 있음을 확인했습니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "1",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.38,
+        "evidence_counts": {
+          "code": 7,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "증거 코드 항목이 모두 README.md 라인 3~18의 서비스 설명 텍스트로만 구성되어 있고, src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현은 제공되지 않았습니다.",
+              "증거가 근거로 제시한 저장소는 'src/feature_flags/repository.py': 테넌트별 플래그 저장소와 'src/feature_flags/service.py': 플래그 조회 서비스 구조를 갖습니다.",
+              "재현 절차가 동일 플래그 이름 new-checkout을 테넌트만 바꿔 조회하는 형태여서 테넌트 구분 키 누락 시 값 오염이 발생하는 전형적 패턴과 일치합니다."
+            ],
+            "confidence": 0.4,
+            "hypothesis": "제공된 코드 증거에는 버그가 발생하는 실제 코드 본문 없이 README.md 스니펫만 포함되어 있어, 테넌트별 플래그 조회가 테넌트 컨텍스트를 캐시 키에 반영하지 않아 alpha 조회 결과가 beta 조회에 재사용되는 캐시 키 구성 결함이 원인일 가능성이 있습니다."
+          },
+          {
+            "evidence": [
+              "README.md 라인 5: '이 저장소는 Clio Benchmark에서 분석 대상으로 사용하는 테스트 fixture입니다. 프로덕션 용도로 사용하지 않습니다.'",
+              "bug_context.raw_payload.benchmark_case_id 값이 'cache-tenant-leak-detailed'로 벤치마크 케이스임을 나타냅니다."
+            ],
+            "confidence": 0.25,
+            "hypothesis": "README.md 라인 5에 명시된 대로 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture이며 프로덕션 용도가 아니므로, 관찰된 alpha true 반환은 실제 프로덕션 결함이 아니라 fixture 기반 재현 절차의 한계일 가능성이 있습니다."
+          }
+        ]
+      },
+      "issue_id": "1",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 증거가 README.md 라인 3, 5, 16, 18뿐이어서 src/feature_flags/repository.py 및 src/feature_flags/service.py의 실제 구현을 확인할 수 없다. 이 상태에서는 '캐시 키에 테넌트 식별자 누락' 가설(confidence 0.4, 사실 검증 여부 false)이 미검증으로 남는다.",
+            "mitigation": "1~3단계에서 실제 구현 본문 확보를 선행 조건으로 두고, 코드 확보 전에는 수정 단계(5단계)를 착수하지 않는다."
+          },
+          {
+            "risk": "이 저장소가 Clio Benchmark 분석 대상 테스트 fixture이고 프로덕션 용도가 아니라고 README.md 라인 5에 명시되어 있어, 수정이 실제 프로덕션 결함 해결로 이어지지 않을 수 있다.",
+            "mitigation": "7단계에서 fixture/프로덕션 판단을 분리 기록하고 프로덕션 영향은 별도 이슈로 이관한다."
+          },
+          {
+            "risk": "캐시 키에 테넌트 식별자를 추가하면 테넌트 수 × 플래그 수만큼 캐시 항목이 증가해 메모리 사용량과 캐시 적중률이 변동될 수 있다.",
+            "mitigation": "6단계에서 동일 테넌트 재조회 캐시 동작을 확인하고, 필요 시 캐시 항목 수 상한 또는 만료 정책을 함께 검토한다."
+          },
+          {
+            "risk": "캐시 키 생성이 여러 위치에 중복 구현되어 있으면 일부 경로에서만 수정이 적용되어 결함이 부분적으로 잔존할 수 있다.",
+            "mitigation": "5단계에서 키 생성을 단일 헬퍼로 통합하고, 키 규약 일치 여부를 확인하는 테스트를 추가한다."
+          },
+          {
+            "risk": "stack_trace가 비어 있어 실행 경로가 예외로 특정되지 않으므로, 잘못된 코드 경로를 수정해도 증상이 재현될 수 있다.",
+            "mitigation": "4단계에서 반환값 기반 회귀 테스트를 먼저 실패시키는 방식으로 실제 실행 경로를 확정한 뒤 수정한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "저장소 1의 커밋 b30e31e3c83d0faf4e27a38a29498b859d8f7520에서 README.md 라인 3~18만 제공된 증거(code-1~code-4)의 한계를 명시하고, 추가 증거 수집 범위를 확정한다.",
+            "details": "현재 증거는 README.md 라인 3, 5, 16, 18(evidence_id code-1, code-2, code-3, code-4)뿐이며 src/feature_flags/repository.py와 src/feature_flags/service.py의 실제 구현 코드는 포함되지 않았다. 수집 대상: (a) repository.py 및 service.py 전체 본문, (b) 플래그 캐시 키를 생성하는 함수, (c) 테넌트 식별자(tenant_id 등)가 캐시 키에 포함되는지 여부를 보여주는 테스트 코드."
+          },
+          {
+            "id": 2,
+            "action": "src/feature_flags/service.py의 플래그 조회 경로에서 캐시 키 구성 로직을 추출해 테넌트 컨텍스트 포함 여부를 정적으로 검사한다.",
+            "details": "README.md 라인 18에 따르면 service.py는 '플래그 조회 서비스'다. 캐시 키가 플래그 이름만으로 구성되고 테넌트 식별자가 누락되었는지 확인한다. 후보 가설: '테넌트별 플래그 조회가 테넌트 컨텍스트를 캐시 키에 반영하지 않아 alpha 조회 결과가 beta 조회에 재사용되는 캐시 키 구성 결함'(confidence 0.4). 이 단계의 산출물은 캐시 키 문자열 형식과 테넌트 식별자 포함 여부에 대한 근거 인용이다."
+          },
+          {
+            "id": 3,
+            "action": "src/feature_flags/repository.py의 테넌트별 플래그 저장소 동작을 확인해 저장 시점에는 테넌트가 구분되는지 검증한다.",
+            "details": "README.md 라인 16에 따르면 repository.py는 '테넌트별 플래그 저장소'다. tenant-alpha의 new-checkout=true, tenant-beta의 new-checkout=false가 저장 단계에서 실제로 분리 저장되는지, 아니면 조회 단계 캐시에서만 뒤섞이는지 구분한다. 이는 결함 위치를 repository와 service 중 어디로 귀속할지 결정하는 근거가 된다."
+          },
+          {
+            "id": 4,
+            "action": "버그 컨텍스트의 benchmark_case_id=cache-tenant-leak-detailed가 지시하는 재현 절차를 그대로 자동화한 회귀 테스트를 작성한다.",
+            "details": "절차: tenant-alpha의 new-checkout을 true로 저장, tenant-beta의 new-checkout을 false로 저장, alpha 조회, 이어서 beta 조회. 기대값은 beta 조회 시 false 반환. error_type은 ReportedBehaviorMismatch이고 stack_trace는 비어 있으므로 예외 기반이 아닌 반환값 기반 단언(assert)으로 검증한다. 테스트 실패 시 현재 재현되는 잘못된 값(alpha의 true)이 반환되어야 한다."
+          },
+          {
+            "id": 5,
+            "action": "캐시 키에 테넌트 식별자를 포함하도록 캐시 키 생성 로직을 수정하고, 저장소·서비스 간 키 규약이 일치하는지 정렬한다.",
+            "details": "동일 플래그 이름 new-checkout에 대해 테넌트가 다르면 서로 다른 캐시 항목을 사용하도록 키를 (tenant 식별자, 플래그 이름) 조합으로 구성한다. 키 생성이 여러 위치에 중복되어 있으면 단일 헬퍼로 통합해 누락 재발을 방지한다. 수정 범위는 2~3단계에서 결함 위치로 확정된 파일에 한정한다."
+          },
+          {
+            "id": 6,
+            "action": "4단계 회귀 테스트와 기존 테스트 스위트를 실행해 수정 전 실패·수정 후 통과를 확인한다.",
+            "details": "수정 전 상태에서 테스트가 실패(베타 조회에 true 반환)하고, 수정 후 통과(베타 조회에 false 반환)하는 것을 순서대로 기록한다. 추가로 동일 테넌트 재조회 시 캐시가 정상 동작(불필요한 재계산 없음)하는지도 확인해 캐시 무력화로 인한 성능 퇴행이 없는지 점검한다."
+          },
+          {
+            "id": 7,
+            "action": "README.md 라인 5의 '테스트 fixture이며 프로덕션 용도로 사용하지 않습니다' 진술을 검증하고, 프로덕션 결함 여부 판단을 별도로 기록한다.",
+            "details": "현재 이 저장소는 Clio Benchmark 분석 대상 테스트 fixture로 명시되어 있다(confidence 0.25 가설). 따라서 본 수정은 프로덕션 결함 대응이 아니라 벤치마크 fixture의 결함 재현·수정으로 규정하고, 프로덕션 영향 판단은 실제 구현 저장소 확인 후 별도 이슈로 분리한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "1",
+        "acceptance_criteria": [
+          "tenant-alpha의 new-checkout=true, tenant-beta의 new-checkout=false 저장 후 alpha→beta 순서로 조회하면 beta 조회 결과가 false이며, alpha의 true가 반환되지 않는다.",
+          "저장 순서를 beta→alpha로 뒤집어도 각 테넌트는 자신이 저장한 값(true/false)을 조회한다.",
+          "동일 테넌트를 연속 두 번 조회하면 두 번째 조회도 첫 번째와 동일한 값을 반환한다(테넌트 간 오염 없음).",
+          "캐시 키 생성 로직에 테넌트 식별자가 포함되어 있고, 이를 검증하는 단위 테스트가 저장소에 존재한다.",
+          "수정 전 상태에서 회귀 테스트가 실패하고 수정 후 통과한다는 실행 기록(명령과 출력)이 남아 있다.",
+          "src/feature_flags/repository.py와 src/feature_flags/service.py의 실제 구현 본문이 증거로 확보되어, 캐시 키 결함 위치가 코드 라인 인용으로 특정된다.",
+          "README.md 라인 5에 근거한 fixture/프로덕션 용도 구분이 계획 산출물에 명시되어 있다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:35:14.849631Z",
+    "completed_at": "2026-09-28T07:35:45.710917Z",
+    "created_at": "2026-09-28T07:35:14.824902Z",
+    "updated_at": "2026-09-28T07:35:45.721281Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 32.867
+  }
+}

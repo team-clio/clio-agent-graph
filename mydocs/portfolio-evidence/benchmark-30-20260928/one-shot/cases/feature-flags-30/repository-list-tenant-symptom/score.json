@@ -1,0 +1,52 @@
+{
+  "score": 79.29,
+  "passed": true,
+  "dimensions": [
+    {
+      "dimension": "verdict",
+      "value": 1.0,
+      "method": "deterministic",
+      "rationale": "2/2 checks passed for expected workflow verdicts"
+    },
+    {
+      "dimension": "root_cause",
+      "value": 1.0,
+      "method": "deterministic",
+      "rationale": "4/4 checks passed for required root-cause concepts"
+    },
+    {
+      "dimension": "code_location",
+      "value": 0.5,
+      "method": "deterministic",
+      "rationale": "1/2 checks passed for expected files and symbols"
+    },
+    {
+      "dimension": "evidence_quality",
+      "value": 0.9523809523809523,
+      "method": "deterministic",
+      "rationale": "20/21 checks passed for coverage and citation integrity"
+    },
+    {
+      "dimension": "reproduction",
+      "value": 0.0,
+      "method": "deterministic",
+      "rationale": "0/3 checks passed for reproduction plan evidence"
+    },
+    {
+      "dimension": "uncertainty",
+      "value": 0.5,
+      "method": "deterministic",
+      "rationale": "1/2 checks passed for review state and confidence calibration"
+    }
+  ],
+  "efficiency": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "duration_seconds": 30.83,
+    "model_calls": null,
+    "tool_calls": null
+  },
+  "suite": "feature-flags-30",
+  "case_id": "repository-list-tenant-symptom"
+}

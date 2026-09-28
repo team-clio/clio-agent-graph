@@ -1,0 +1,348 @@
+{
+  "input": {
+    "id": "cache-false-miss-short",
+    "report": {
+      "title": "false 캐시 값에서 불필요한 저장소 재조회",
+      "description": "비활성 상태만 캐시 적중으로 인정되지 않습니다.",
+      "steps_to_reproduce": [
+        "false 값을 한 번 조회해 캐시합니다.",
+        "원본 값을 변경한 뒤 재조회합니다."
+      ],
+      "expected_behavior": "두 번째 결과도 false여야 합니다.",
+      "actual_behavior": "변경된 원본 값이 노출됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_cached_false_value_is_not_treated_as_a_miss"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 5,
+    "name": "benchmark-20260928T073431Z-64ae54ac-cache-false-miss-short",
+    "description": "Clio Benchmark feature-flags-30: cache-false-miss-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:38:45.523796Z",
+    "updatedAt": "2026-09-28T07:38:45.523796Z"
+  },
+  "clio_repository": {
+    "id": 5,
+    "projectId": 5,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:39:20.281907Z",
+    "createdAt": "2026-09-28T07:38:45.541711Z",
+    "updatedAt": "2026-09-28T07:39:20.283119Z"
+  },
+  "bug": {
+    "id": 5,
+    "project_id": 5,
+    "issue_id": 5,
+    "title": "false 캐시 값에서 불필요한 저장소 재조회",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:39:21.966568Z",
+    "created_at": "2026-09-28T07:39:21.981610Z"
+  },
+  "analysis": {
+    "analysisResultId": 5,
+    "workflowRunId": 5,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [],
+      "findings": [
+        {
+          "fact": "이슈 5(project 5)의 버그는 'false 캐시 값에서 불필요한 저장소 재조회'이며, 벤치마크 케이스 식별자는 cache-false-miss-short입니다.",
+          "verified": true
+        },
+        {
+          "fact": "재현 절차는 false 값을 조회해 캐시한 뒤 원본 값을 변경하고 재조회하는 것이며, 기대 동작은 두 번째 결과도 false입니다.",
+          "verified": true
+        },
+        {
+          "fact": "실제 동작은 변경된 원본 값이 노출되는 것이며 심각도는 ReportedBehaviorMismatch로 기록되어 있습니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 문서/코드/이력 evidence가 모두 비어 있어 코드 수준의 근거 인용을 확보하지 못했습니다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 5,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.3,
+      "hypotheses": [
+        {
+          "evidence": [
+            "제공된 evidence(code/documents/history)가 모두 비어 있어 실제 구현을 확인하지 못했습니다.",
+            "버그 리포트의 'false 캐시 값에서 불필요한 저장소 재조회' 및 '비활성 상태만 캐시 적중으로 인정되지 않습니다'라는 서술이 falsy 값 특수 처리를 시사합니다."
+          ],
+          "confidence": 0.4,
+          "hypothesis": "캐시가 저장된 값을 해석할 때 truthy/falsy 판정(예: `if value` 또는 `value or default`)을 사용해, 저장된 `false`가 미스로 오인되거나 `false` 자체가 저장되지 않아 재조회 시 변경된 원본 값이 노출됩니다."
+        },
+        {
+          "evidence": [
+            "버그 제목의 '불필요한 저장소 재조회' 표현과 근거 자료 부재만으로 세운 가설입니다."
+          ],
+          "confidence": 0.25,
+          "hypothesis": "캐시 조회 경로에 저장소 재조회 폴백이 항상 실행되며, 잘못된 키/네임스페이스로 조회해 캐시 히트를 놓치고 원본 저장소 값(변경된 값)을 반환합니다."
+        }
+      ],
+      "project_id": 5,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 evidence(code/documents/history)가 모두 비어 있어 실제 구현 위치와 사용 중인 캐시 라이브러리를 특정하지 못한 상태로 수정을 진행할 수 있다.",
+            "mitigation": "1단계에서 리포지토리 검색으로 캐시 모듈과 심볼을 먼저 확정하고, 확정 전에는 코드 변경을 시작하지 않는다."
+          },
+          {
+            "risk": "falsy 값 전체(0, 빈 문자열, 빈 컬렉션)를 저장하도록 바꾸면서 기존에 값 없음으로 처리되던 케이스의 동작이 달라질 수 있다.",
+            "mitigation": "존재 여부 기반 판정으로 통일하고, 각 falsy 유형별 단위 테스트를 추가해 의도된 동작만 변경되었는지 확인한다."
+          },
+          {
+            "risk": "캐시 키/네임스페이스 정규화가 기존에 저장된 캐시 항목과 충돌하거나 조회 불일치를 유발할 수 있다.",
+            "mitigation": "키 정규화 적용 시 캐시 버전 접두사 또는 무효화 절차를 함께 적용하고, 조회 실패 시 폴백 동작이 안전하게 유지되는지 검증한다."
+          },
+          {
+            "risk": "재조회 폴백 제거로 인해 실제 미스 상황에서 원본 저장소 조회가 누락될 수 있다.",
+            "mitigation": "미스 판정 경로와 폴백 경로를 분리해 히트 시에만 폴백을 생략하고, 미스 시나리오 테스트로 폴백이 여전히 동작함을 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "캐시 구현 코드 위치와 조회/저장 경로를 특정한다.",
+            "details": "벤치마크 케이스 식별자 cache-false-miss-short를 기준으로 캐시 조회 함수와 저장 함수를 찾는다. 제공된 evidence(code/documents/history)가 모두 비어 있으므로 리포지토리 내 캐시 모듈, 캐시 래퍼, 직렬화 계층을 직접 검색해 파일 경로와 심볼을 확정한다."
+          },
+          {
+            "id": 2,
+            "action": "false 값이 저장되지 않는 지점을 확인한다.",
+            "details": "저장 경로에서 `if value`, `value or default`, `!= null`/`is not None` 비교 등 truthy/falsy 판정이 사용되는지 점검한다. 캐시 계층이 false를 미스로 오인하거나 저장 자체를 건너뛰는 조건문을 식별한다."
+          },
+          {
+            "id": 3,
+            "action": "조회 경로에서 저장소 재조회 폴백이 항상 실행되는지 확인한다.",
+            "details": "캐시 조회 후 `value or fallback`, `if not cached` 형태로 원본 저장소를 다시 조회해 변경된 원본 값을 반환하는 분기를 찾는다. 캐시 히트/미스 판정이 키·네임스페이스 불일치로 잘못 이뤄지는지도 함께 확인한다."
+          },
+          {
+            "id": 4,
+            "action": "미스 판정을 존재 여부 기반으로 수정한다.",
+            "details": "저장 시에는 false를 포함한 모든 값을 저장하고, 조회 시에는 값의 진릿값이 아니라 키 존재 여부(sentinel 객체 또는 `key in store`/`get` 반환 플래그)로 히트/미스를 판정하도록 변경한다. 네임스페이스 불일치가 있으면 키 정규화를 적용한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차를 테스트로 고정한다.",
+            "details": "false 값을 캐시한 뒤 원본 값을 변경하고 재조회하는 시나리오를 단위 테스트로 작성한다. 두 번째 결과가 false로 유지되고 원본 저장소가 호출되지 않음을 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 검증과 근거 보강을 수행한다.",
+            "details": "기존 캐시 테스트 전체를 실행해 회귀가 없는지 확인하고, 수정 전후 동작 차이를 증거로 남겨 ReportedBehaviorMismatch 기록을 해소한다. 확보한 코드 인용을 이슈에 첨부한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "5",
+        "acceptance_criteria": [
+          "false를 캐시한 뒤 원본 저장소 값을 변경해도 재조회 결과가 false로 유지된다(기대 동작: 두 번째 결과도 false).",
+          "캐시 히트 시 원본 저장소 재조회가 실행되지 않는다.",
+          "false, 0, 빈 문자열 등 falsy 값이 저장 후 정상적으로 재조회된다.",
+          "캐시 키/네임스페이스가 일관되게 사용되어 잘못된 미스가 발생하지 않는다.",
+          "재현 절차를 고정한 단위 테스트가 추가되어 통과한다.",
+          "기존 캐시 관련 테스트 스위트가 회귀 없이 통과한다.",
+          "수정 전후 동작 차이를 보여주는 코드 수준 근거 인용이 이슈에 첨부된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위 (impact_scope)",
+            "score": 50,
+            "rationale": "캐시 레이어의 falsy 값 처리 로직에 국한된 것으로 보이나, 해당 캐시를 사용하는 모든 조회 경로에 영향 가능. 구체적 피처/플로우 목록은 evidence 부재로 확정 불가."
+          },
+          {
+            "name": "심각도 (severity)",
+            "score": 55,
+            "rationale": "크래시나 데이터 손상은 아니지만, 캐시된 false(비활성 상태)가 무시되고 변경된 원본 값이 노출되는 정합성/상태 오류. 스테일(stale) 또는 잘못된 상태 노출은 비활성화/플래그 기반 동작에서 부정확한 결과를 유발."
+          },
+          {
+            "name": "발생 빈도·재현성 (frequency)",
+            "score": 65,
+            "rationale": "재현 절차가 명확(falsy 값 캐시 → 원본 변경 → 재조회)하며 결정적으로 재현됨. 단, false 계열 값(false, 0, 빈 문자열 등)을 캐시하는 경우에만 발현되어 조건부 빈도."
+          },
+          {
+            "name": "우회 가능성 (workaround)",
+            "score": 55,
+            "rationale": "클라이언트 측에서 캐시를 우회하거나 원본 저장소를 직접 조회하는 회피가 가능할 수 있으나, 캐시 내부 결함이라 사용자가 직접 제어하기 어려움."
+          },
+          {
+            "name": "비즈니스 임계성 (business_criticality)",
+            "score": 55,
+            "rationale": "결제/계정 경로 직접 언급은 없음. 다만 false가 '비활성' 의미를 갖는 플래그라면 기능 활성화 여부가 잘못 노출될 수 있어 잠재적 영향 존재."
+          },
+          {
+            "name": "근거 신뢰도 (evidence_confidence)",
+            "score": 30,
+            "rationale": "code/documents/history evidence가 모두 0건이며 citations 없음. root cause hypothesis 신뢰도 0.4/0.25로 낮아 실제 구현 확인 불가. 벤치마크 식별자 cache-false-miss-short는 테스트 케이스 성격을 시사."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "이슈 5(project 5, cache-false-miss-short)는 false 계열 캐시 값이 캐시 히트로 인정되지 않아 불필요한 저장소 재조회가 발생하고, 그 결과 변경된 원본 값이 노출되는 정합성 결함입니다. 재현성이 높고(결정적 재현) 캐시 전반에 걸친 잘못된 상태 노출 가능성이 있어 단순 미미(P4) 수준은 아니며, 부분 기능 오작동에 우회가 제한적인 P2 보통 구간에 해당합니다. 다만 evidence(code/documents/history)가 전무하고 root cause hypothesis 신뢰도가 0.3~0.4에 그쳐 확정적 영향 범위 산정이 어렵습니다. 결제/계정 등 핵심 경로 직접 영향이나 데이터 손실, 보안 노출, 크래시는 확인되지 않아 P1(70-84)·P0(85-100)로 상향할 근거는 부족합니다. 최종 risk_score 58 → P2 보통으로 판정합니다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 5
+    }
+  },
+  "workflow": {
+    "id": 5,
+    "project_id": 5,
+    "request_id": "process-bug-5",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 5(project 5)의 버그는 'false 캐시 값에서 불필요한 저장소 재조회'이며, 벤치마크 케이스 식별자는 cache-false-miss-short입니다.",
+            "verified": true
+          },
+          {
+            "fact": "재현 절차는 false 값을 조회해 캐시한 뒤 원본 값을 변경하고 재조회하는 것이며, 기대 동작은 두 번째 결과도 false입니다.",
+            "verified": true
+          },
+          {
+            "fact": "실제 동작은 변경된 원본 값이 노출되는 것이며 심각도는 ReportedBehaviorMismatch로 기록되어 있습니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 문서/코드/이력 evidence가 모두 비어 있어 코드 수준의 근거 인용을 확보하지 못했습니다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "5",
+        "citations": [],
+        "confidence": 0.3,
+        "evidence_counts": {
+          "code": 0,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "제공된 evidence(code/documents/history)가 모두 비어 있어 실제 구현을 확인하지 못했습니다.",
+              "버그 리포트의 'false 캐시 값에서 불필요한 저장소 재조회' 및 '비활성 상태만 캐시 적중으로 인정되지 않습니다'라는 서술이 falsy 값 특수 처리를 시사합니다."
+            ],
+            "confidence": 0.4,
+            "hypothesis": "캐시가 저장된 값을 해석할 때 truthy/falsy 판정(예: `if value` 또는 `value or default`)을 사용해, 저장된 `false`가 미스로 오인되거나 `false` 자체가 저장되지 않아 재조회 시 변경된 원본 값이 노출됩니다."
+          },
+          {
+            "evidence": [
+              "버그 제목의 '불필요한 저장소 재조회' 표현과 근거 자료 부재만으로 세운 가설입니다."
+            ],
+            "confidence": 0.25,
+            "hypothesis": "캐시 조회 경로에 저장소 재조회 폴백이 항상 실행되며, 잘못된 키/네임스페이스로 조회해 캐시 히트를 놓치고 원본 저장소 값(변경된 값)을 반환합니다."
+          }
+        ]
+      },
+      "issue_id": "5",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 evidence(code/documents/history)가 모두 비어 있어 실제 구현 위치와 사용 중인 캐시 라이브러리를 특정하지 못한 상태로 수정을 진행할 수 있다.",
+            "mitigation": "1단계에서 리포지토리 검색으로 캐시 모듈과 심볼을 먼저 확정하고, 확정 전에는 코드 변경을 시작하지 않는다."
+          },
+          {
+            "risk": "falsy 값 전체(0, 빈 문자열, 빈 컬렉션)를 저장하도록 바꾸면서 기존에 값 없음으로 처리되던 케이스의 동작이 달라질 수 있다.",
+            "mitigation": "존재 여부 기반 판정으로 통일하고, 각 falsy 유형별 단위 테스트를 추가해 의도된 동작만 변경되었는지 확인한다."
+          },
+          {
+            "risk": "캐시 키/네임스페이스 정규화가 기존에 저장된 캐시 항목과 충돌하거나 조회 불일치를 유발할 수 있다.",
+            "mitigation": "키 정규화 적용 시 캐시 버전 접두사 또는 무효화 절차를 함께 적용하고, 조회 실패 시 폴백 동작이 안전하게 유지되는지 검증한다."
+          },
+          {
+            "risk": "재조회 폴백 제거로 인해 실제 미스 상황에서 원본 저장소 조회가 누락될 수 있다.",
+            "mitigation": "미스 판정 경로와 폴백 경로를 분리해 히트 시에만 폴백을 생략하고, 미스 시나리오 테스트로 폴백이 여전히 동작함을 확인한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "캐시 구현 코드 위치와 조회/저장 경로를 특정한다.",
+            "details": "벤치마크 케이스 식별자 cache-false-miss-short를 기준으로 캐시 조회 함수와 저장 함수를 찾는다. 제공된 evidence(code/documents/history)가 모두 비어 있으므로 리포지토리 내 캐시 모듈, 캐시 래퍼, 직렬화 계층을 직접 검색해 파일 경로와 심볼을 확정한다."
+          },
+          {
+            "id": 2,
+            "action": "false 값이 저장되지 않는 지점을 확인한다.",
+            "details": "저장 경로에서 `if value`, `value or default`, `!= null`/`is not None` 비교 등 truthy/falsy 판정이 사용되는지 점검한다. 캐시 계층이 false를 미스로 오인하거나 저장 자체를 건너뛰는 조건문을 식별한다."
+          },
+          {
+            "id": 3,
+            "action": "조회 경로에서 저장소 재조회 폴백이 항상 실행되는지 확인한다.",
+            "details": "캐시 조회 후 `value or fallback`, `if not cached` 형태로 원본 저장소를 다시 조회해 변경된 원본 값을 반환하는 분기를 찾는다. 캐시 히트/미스 판정이 키·네임스페이스 불일치로 잘못 이뤄지는지도 함께 확인한다."
+          },
+          {
+            "id": 4,
+            "action": "미스 판정을 존재 여부 기반으로 수정한다.",
+            "details": "저장 시에는 false를 포함한 모든 값을 저장하고, 조회 시에는 값의 진릿값이 아니라 키 존재 여부(sentinel 객체 또는 `key in store`/`get` 반환 플래그)로 히트/미스를 판정하도록 변경한다. 네임스페이스 불일치가 있으면 키 정규화를 적용한다."
+          },
+          {
+            "id": 5,
+            "action": "재현 절차를 테스트로 고정한다.",
+            "details": "false 값을 캐시한 뒤 원본 값을 변경하고 재조회하는 시나리오를 단위 테스트로 작성한다. 두 번째 결과가 false로 유지되고 원본 저장소가 호출되지 않음을 검증한다."
+          },
+          {
+            "id": 6,
+            "action": "회귀 검증과 근거 보강을 수행한다.",
+            "details": "기존 캐시 테스트 전체를 실행해 회귀가 없는지 확인하고, 수정 전후 동작 차이를 증거로 남겨 ReportedBehaviorMismatch 기록을 해소한다. 확보한 코드 인용을 이슈에 첨부한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "5",
+        "acceptance_criteria": [
+          "false를 캐시한 뒤 원본 저장소 값을 변경해도 재조회 결과가 false로 유지된다(기대 동작: 두 번째 결과도 false).",
+          "캐시 히트 시 원본 저장소 재조회가 실행되지 않는다.",
+          "false, 0, 빈 문자열 등 falsy 값이 저장 후 정상적으로 재조회된다.",
+          "캐시 키/네임스페이스가 일관되게 사용되어 잘못된 미스가 발생하지 않는다.",
+          "재현 절차를 고정한 단위 테스트가 추가되어 통과한다.",
+          "기존 캐시 관련 테스트 스위트가 회귀 없이 통과한다.",
+          "수정 전후 동작 차이를 보여주는 코드 수준 근거 인용이 이슈에 첨부된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:39:22.871008Z",
+    "completed_at": "2026-09-28T07:39:44.259715Z",
+    "created_at": "2026-09-28T07:39:22.850004Z",
+    "updated_at": "2026-09-28T07:39:44.260991Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 22.527
+  }
+}

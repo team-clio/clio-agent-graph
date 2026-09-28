@@ -1,0 +1,66 @@
+{
+  "input": {
+    "id": "rollout-boundary-detailed",
+    "report": {
+      "title": "10% rollout에 11명이 포함됨",
+      "description": "bucket 값이 percentage와 같은 사용자가 rollout 대상에 포함되어 경계가 한 칸 넓습니다.",
+      "steps_to_reproduce": [
+        "percentage를 10으로 설정합니다.",
+        "bucket 10의 포함 여부를 확인합니다."
+      ],
+      "expected_behavior": "0부터 9까지만 포함되므로 false여야 합니다.",
+      "actual_behavior": "bucket 10도 true입니다.",
+      "reproduction_command": "pytest tests/test_rollout.py::test_percentage_boundary_excludes_bucket_equal_to_percentage"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 13,
+    "name": "benchmark-20260928T063309Z-033dfb2f-rollout-boundary-detailed",
+    "description": "Clio Benchmark feature-flags-30: rollout-boundary-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T06:47:24.082641Z",
+    "updatedAt": "2026-09-28T06:47:24.082641Z"
+  },
+  "clio_repository": {
+    "id": 13,
+    "projectId": 13,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T06:48:03.671482Z",
+    "createdAt": "2026-09-28T06:47:24.098858Z",
+    "updatedAt": "2026-09-28T06:48:03.672074Z"
+  },
+  "bug": {
+    "id": 13,
+    "project_id": 13,
+    "issue_id": 13,
+    "title": "10% rollout에 11명이 포함됨",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T06:48:04.427762Z",
+    "created_at": "2026-09-28T06:48:04.441093Z"
+  },
+  "analysis": null,
+  "workflow": null,
+  "execution_error": {
+    "type": "ClioApiError",
+    "message": "Analysis result timed out for issue: 13"
+  },
+  "efficiency": {
+    "duration_seconds": 96.939
+  }
+}

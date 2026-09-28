@@ -1,0 +1,713 @@
+{
+  "input": {
+    "id": "repository-list-tenant-detailed",
+    "report": {
+      "title": "테넌트 플래그 목록에 다른 테넌트 데이터 포함",
+      "description": "tenant-alpha 목록 조회가 tenant-beta 플래그까지 반환해 데이터 격리가 깨집니다.",
+      "steps_to_reproduce": [
+        "alpha와 beta에 각각 플래그를 저장합니다.",
+        "alpha의 플래그 목록을 조회합니다."
+      ],
+      "expected_behavior": "alpha 플래그만 반환되어야 합니다.",
+      "actual_behavior": "beta 플래그도 함께 반환됩니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_list_for_tenant_does_not_leak_other_tenants"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 28,
+    "name": "benchmark-20260928T065850Z-59223a30-repository-list-tenant-detailed",
+    "description": "Clio Benchmark feature-flags-30: repository-list-tenant-detailed",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:30:05.494575Z",
+    "updatedAt": "2026-09-28T07:30:05.494575Z"
+  },
+  "clio_repository": {
+    "id": 28,
+    "projectId": 28,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:30:42.250744Z",
+    "createdAt": "2026-09-28T07:30:05.507298Z",
+    "updatedAt": "2026-09-28T07:30:42.252003Z"
+  },
+  "bug": {
+    "id": 28,
+    "project_id": 28,
+    "issue_id": 28,
+    "title": "테넌트 플래그 목록에 다른 테넌트 데이터 포함",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:30:43.904686Z",
+    "created_at": "2026-09-28T07:30:43.916019Z"
+  },
+  "analysis": {
+    "analysisResultId": 28,
+    "workflowRunId": 28,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 27,
+          "location": null,
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagRepository` 의 `list_for_tenant` 가 저장된 모든 값을 리스트로 반환하고, get/delete 간 casefold 정규화 불일치가 잠재 버그 지점으로 문서화되어 있다. 이슈 28 의 다른 테넌트 데이터 포함 증상과 직접 일치한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_d0b8ef289dd957d88bb9237b7fab6583",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 56,
+          "location": null,
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 기대값이 명시되어 있어, 이슈 28 의 기대 동작(alpha 플래그만 반환)과 일치한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_d0b8ef289dd957d88bb9237b7fab6583",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "src/feature_flags/cache.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagCache._key` 가 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환하여 캐시 키가 테넌트 간 공유된다. 테넌트 격리 위반의 2차 경로 후보다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_761eb0bf47c85c1486bea2fb00a00544",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 56,
+          "location": null,
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`test_returns_requested_tenant_value_after_prior_lookup` 가 tenant-alpha 조회 후 tenant-beta 조회 시 각 테넌트 값을 반환할 것을 기대하여, 현재 `_key` 구현이 테넌트 격리 요구사항과 충돌함을 보여준다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_761eb0bf47c85c1486bea2fb00a00544",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 7,
+          "location": null,
+          "file_path": "src/feature_flags/__init__.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "패키지 `src/feature_flags` 는 `repository.py`(테넌트별 플래그 저장소), `cache.py`, `service.py` 등으로 구성된 테넌트별 기능 플래그 조회 Python 라이브러리이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_6fab997c7d725281ae2403eec197794f",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 40,
+          "location": null,
+          "file_path": "src/feature_flags/service.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`FeatureFlagService.is_enabled` 는 캐시 확인 후 `repository.get` 으로 조회하며, `LegacyFeatureFlagService` 는 `if cached:` 로 캐시된 False 를 미스로 취급하는 결함이 있다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_a3e21ca7f9c656d798d51ad21f0780af",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 31,
+          "location": null,
+          "file_path": "pyproject.toml",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`uv run pytest` 기반 테스트 실행 절차와 pytest `addopts \"-q\"`, `testpaths [\"tests\"]` 설정을 확인한다. 재현 검증 절차의 근거이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_86bd2da1ac6950c2bb3331af5286186a",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": null,
+          "file_path": "src/feature_flags/rollout.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`is_in_rollout` 의 `bucket <= percentage` 경계 포함과 `rollout_bucket` 의 내장 `hash()` 사용이 각각 경계·프로세스 간 안정성 요구사항과 충돌한다. 이슈 28 증상과는 직접 관련이 없다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_60203f0293eb5cf099ff3f492e11e44e",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 14,
+          "location": null,
+          "file_path": "src/feature_flags/authorization.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`can_manage_flag` 와 `can_edit_project_flag` 의 권한 판정 규칙을 확인한다. 테넌트 목록 조회 이슈와는 별개의 권한 도메인 규칙이다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_c61c15e53385595f821a35f366faa7e3",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": 9,
+          "location": null,
+          "file_path": "src/feature_flags/targeting.py",
+          "source_id": "28",
+          "start_line": 1,
+          "evidence_id": null,
+          "observation": "`matches_country` 의 대소문자 구분 동등 비교와 `matches_allowlist` 의 빈 허용목록 False 반환이 각각 규칙 위반으로 문서화되어 있다. 이슈 28 증상과는 직접 관련이 없다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_49ce373514b859c5a1a750e83c167e53",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 28 은 tenant-alpha 목록 조회가 tenant-beta 플래그까지 반환하는 데이터 격리 깨짐을 보고한다(재현: alpha/beta 각각 플래그 저장 후 alpha 목록 조회).",
+          "verified": true
+        },
+        {
+          "fact": "패키지는 `src/feature_flags` 에 위치하며 `repository.py`(테넌트별 플래그 저장소), `cache.py`, `service.py`, `authorization.py`, `rollout.py`, `targeting.py` 로 구성된다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagRepository` 는 `FeatureFlag(tenant_id, name, enabled)` 를 `dict[(tenant_id, name.casefold())]` 로 저장하며, `save`/`get` 은 이름을 casefold 로 정규화하지만 `delete` 는 casefold 를 적용하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "`list_for_tenant` 는 테넌트 필터 없이 저장된 모든 값을 리스트로 반환하도록 문서화되어 있어 `list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 기대값과 충돌한다.",
+          "verified": true
+        },
+        {
+          "fact": "`FeatureFlagCache._key` 는 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환해 캐시 키가 테넌트 간 공유된다.",
+          "verified": true
+        },
+        {
+          "fact": "`rollout.py` 의 `is_in_rollout` 은 `bucket <= percentage`, `rollout_bucket` 은 내장 `hash(user_id) % 100` 을 사용하여 경계 포함 및 PYTHONHASHSEED 의존 문제가 지적된다.",
+          "verified": true
+        },
+        {
+          "fact": "`authorization.py` 의 `can_manage_flag(role)` 는 `role.casefold()` 가 {owner, admin} 에 포함될 때만 True 를 반환하며, `can_edit_project_flag` 는 프로젝트 일치 여부와 무관하게 role 이 owner 일 때만 True 를 반환한다.",
+          "verified": true
+        },
+        {
+          "fact": "`targeting.py` 의 `matches_country` 는 단순 동등 비교로 대소문자를 구분하고, `matches_allowlist` 는 `user_id in allowed_user_ids` 로 빈 허용목록에서 항상 False 를 반환한다.",
+          "verified": true
+        },
+        {
+          "fact": "테스트·빌드 운영은 uv 기반(`uv sync --extra dev`, `uv run pytest`)이며 pytest 는 `addopts \"-q\"`, `testpaths [\"tests\"]` 를 사용한다.",
+          "verified": true
+        },
+        {
+          "fact": "재현 절차에서 실제 저장/조회 코드 경로는 제공된 코드 근거에 포함되어 있지 않아, 저장 규모·동시성 등 런타임 조건은 확인되지 않았다.",
+          "verified": false
+        }
+      ],
+      "issue_id": 28,
+      "warnings": [
+        "Dropped a knowledge citation without knowledge_id.",
+        "Dropped a knowledge citation without knowledge_id.",
+        "Dropped a knowledge citation without knowledge_id."
+      ],
+      "relations": [],
+      "confidence": 0.72,
+      "hypotheses": [
+        {
+          "evidence": [
+            "kn_d0b8ef289dd957d88bb9237b7fab6583: `list_for_tenant`: 저장된 모든 값을 리스트로 반환한다, `list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 테스트 기대값과 충돌"
+          ],
+          "confidence": 0.82,
+          "hypothesis": "FeatureFlagRepository.list_for_tenant 가 tenant_id 로 필터링하지 않고 저장된 모든 값을 리스트로 반환하여 tenant-alpha 조회에 tenant-beta 플래그까지 포함된다."
+        },
+        {
+          "evidence": [
+            "kn_761eb0bf47c85c1486bea2fb00a00544: `_key` 정적 메서드는 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환하여 캐시 키가 테넌트 간 공유됨"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "FeatureFlagCache._key 가 tenant_id 를 무시하고 flag_name.casefold() 만 반환해 캐시 키가 테넌트 간 공유되어, 서비스/캐시 계층에서 테넌트가 섞인 값이 반환될 수 있다."
+        }
+      ],
+      "project_id": 28,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`list_for_tenant` 에 필터를 추가하면서 정렬·반환 타입 등 기존 호출자의 기대 동작이 바뀔 수 있다.",
+            "mitigation": "수정 전후 반환 타입과 순서를 고정하는 테스트를 유지하고, service 계층 호출 경로를 함께 확인한다."
+          },
+          {
+            "risk": "`_key` 에 tenant_id 를 추가하면 기존 캐시 항목이 무효화되어 일시적으로 캐시 미스가 증가할 수 있다.",
+            "mitigation": "캐시는 조회 시 재적재되므로 기능 영향이 없음을 확인하고, 캐시 히트/미스를 검증하는 테스트를 추가한다."
+          },
+          {
+            "risk": "이슈 28 증상과 직접 관련 없는 `rollout.py`, `authorization.py`, `targeting.py` 의 별개 결함(경계 포함, PYTHONHASHSEED 의존, 대소문자 구분 등)을 함께 고치려다 범위가 확대될 수 있다.",
+            "mitigation": "이번 계획은 테넌트 격리(repository/cache/service)에 한정하고, 나머지는 별도 이슈로 분리해 추적한다."
+          },
+          {
+            "risk": "재현 절차의 실제 저장/조회 코드 경로가 제공된 코드 근거에 포함되어 있지 않고 저장 규모·동시성 등 런타임 조건이 미확인이다.",
+            "mitigation": "단위 테스트 수준에서 재현을 고정한 뒤, 실제 호출 경로를 확인하는 통합 테스트를 추가로 작성한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트로 현재 결함을 고정한다",
+            "details": "`tests/test_feature_flags.py` 에서 tenant-alpha 와 tenant-beta 에 각각 플래그를 저장한 뒤 `list_for_tenant(\"tenant-alpha\")` 가 alpha 플래그만 반환하는지 검증하는 테스트를 먼저 실행해 실패를 확인한다. 실행 명령은 `uv sync --extra dev` 후 `uv run pytest` 이며 pytest 설정은 `addopts \"-q\"`, `testpaths [\"tests\"]` 이다."
+          },
+          {
+            "id": 2,
+            "action": "`FeatureFlagRepository.list_for_tenant` 에 tenant_id 필터링을 구현한다",
+            "details": "`src/feature_flags/repository.py` 의 `list_for_tenant` 가 `dict[(tenant_id, name.casefold())]` 저장 구조에서 키의 `tenant_id` 가 인자와 일치하는 항목만 반환하도록 수정한다. 저장된 모든 값을 반환하는 현재 동작을 제거한다."
+          },
+          {
+            "id": 3,
+            "action": "`delete` 의 casefold 정규화 불일치를 수정한다",
+            "details": "`save`/`get` 과 동일하게 `delete` 도 이름을 casefold 로 정규화하도록 맞춰, 대소문자만 다른 이름에 대해 삭제가 누락되거나 다른 항목을 지우는 잠재 버그를 제거한다."
+          },
+          {
+            "id": 4,
+            "action": "`FeatureFlagCache._key` 에 tenant_id 를 포함시킨다",
+            "details": "`src/feature_flags/cache.py` 의 `_key` 가 `flag_name.casefold()` 만 반환하지 않고 `tenant_id` 를 키에 포함하도록 수정하여, tenant-alpha 조회 후 tenant-beta 조회 시(`test_returns_requested_tenant_value_after_prior_lookup` 기대값) 캐시 키 공유로 인한 테넌트 간 값 혼입이 발생하지 않도록 한다."
+          },
+          {
+            "id": 5,
+            "action": "`LegacyFeatureFlagService` 의 캐시된 False 미스 취급을 수정한다",
+            "details": "`src/feature_flags/service.py` 에서 `if cached:` 가 캐시된 False 를 미스로 취급해 `repository.get` 을 다시 호출하는 결함을, 캐시 존재 여부(None 여부)를 기준으로 판정하도록 변경한다."
+          },
+          {
+            "id": 6,
+            "action": "테넌트 격리 회귀 테스트를 보강하고 전체 스위트를 실행한다",
+            "details": "`list_for_tenant` 격리, `delete` casefold 일치, 캐시 테넌트 격리, 캐시된 False 처리 각각에 대한 테스트를 `tests/test_feature_flags.py` 에 추가하고 `uv run pytest` 로 전체 통과를 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "28",
+        "acceptance_criteria": [
+          "`list_for_tenant(\"tenant-alpha\")` 는 tenant-alpha 로 저장된 플래그만 반환하고 tenant-beta 플래그를 포함하지 않는다.",
+          "tenant-alpha 와 tenant-beta 에 각각 플래그를 저장한 뒤 alpha 목록 조회 시 beta 값이 노출되지 않는다(이슈 28 재현 절차가 더 이상 증상이 나타나지 않는다).",
+          "`_key` 가 tenant_id 를 포함하여 `test_returns_requested_tenant_value_after_prior_lookup` 이 통과하고, 테넌트 간 캐시 키가 공유되지 않는다.",
+          "`delete` 가 `save`/`get` 과 동일한 casefold 정규화를 적용하여 대소문자 변형 이름에 대해 일관되게 동작한다.",
+          "`LegacyFeatureFlagService` 가 캐시된 False 값을 미스로 취급하지 않고 그대로 사용한다.",
+          "`uv run pytest` 전체 테스트가 실패 없이 통과한다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 72,
+            "rationale": "`FeatureFlagRepository.list_for_tenant` 가 테넌트 필터 없이 저장된 모든 값을 반환하고, 2차 경로로 `FeatureFlagCache._key` 가 `tenant_id` 를 무시해 캐시 키가 테넌트 간 공유된다. 특정 테넌트가 아니라 저장소를 공유하는 모든 테넌트의 목록 조회 흐름이 영향을 받는 전역적 범위다."
+          },
+          {
+            "name": "심각도",
+            "score": 70,
+            "rationale": "크래시나 데이터 손실은 아니지만 테넌트 간 데이터 격리 위반으로, 다른 고객의 플래그 구성·이름이 노출되는 정보 노출/프라이버시 결함이다. 기능 플래그 특성상 롤아웃·타게팅 설정이 유출되면 간접적 보안 영향이 있다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 85,
+            "rationale": "재현 절차(alpha/beta 각각 저장 후 alpha 목록 조회)가 결정적으로 재현되며, `list_for_tenant` 는 필터 자체가 없어 조건부가 아니라 항상 발생한다. `_key` 도 항상 `tenant_id` 를 무시해 두 경로 모두 상시 결함이다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 68,
+            "rationale": "`list_for_tenant` 호출자는 반환된 리스트를 자체적으로 `tenant_id` 기준 재필터링해야 하며, 캐시 계층은 키가 테넌트 간 공유되어 캐시를 끄거나 우회하지 않는 한 회피가 어렵다. 라이브러리 소비자 측에서 코드 수정 없이 안전하게 우회할 수단이 없다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 72,
+            "rationale": "테넌트 격리는 멀티테넌트 SaaS의 신뢰·계약상 핵심 요건으로, 목록 조회가 오염되면 관리자가 다른 테넌트 플래그를 조회·오인할 수 있다. 결제 흐름 직접 손상은 아니나 고객 신뢰 훼손과 규정 위반 소지가 크다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "`FeatureFlagRepository.list_for_tenant` 가 `tenant_id` 필터 없이 전체 저장값을 반환해 tenant-alpha 조회에 tenant-beta 플래그가 섞이는 테넌트 데이터 격리 위반이며(repository.py, 신뢰도 0.82), `FeatureFlagCache._key` 가 `tenant_id` 를 무시해 캐시 키를 공유하는 2차 경로도 확인된다(cache.py). 테스트 기대값(`list_for_tenant(\\\"tenant-alpha\\\")` 가 타 테넌트 플래그를 노출하지 않아야 함, `test_returns_requested_tenant_value_after_prior_lookup`)과 정면 충돌하고 alpha/beta 저장·조회 절차로 결정적으로 재현된다. 전체 아웃티지·데이터 손실은 아니고 목록 조회 계층에 국한되지만, 저장소를 공유하는 모든 테넌트에 상시 발생하고 소비자 측 코드 수정 없이는 우회가 어려운 정보 노출/격리 결함이므로 P1 높음 구간(70-84)에 해당한다. 참고로 delete 의 casefold 미적용, rollout/authorization/targeting 관련 항목은 본 증상과 직접 관련이 없어 점수에 반영하지 않았다.",
+        "risk_score": 72
+      },
+      "workflow_run_id": 28
+    }
+  },
+  "workflow": {
+    "id": 28,
+    "project_id": 28,
+    "request_id": "process-bug-28",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": [
+          "Dropped a knowledge citation without knowledge_id.",
+          "Dropped a knowledge citation without knowledge_id.",
+          "Dropped a knowledge citation without knowledge_id."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 28 은 tenant-alpha 목록 조회가 tenant-beta 플래그까지 반환하는 데이터 격리 깨짐을 보고한다(재현: alpha/beta 각각 플래그 저장 후 alpha 목록 조회).",
+            "verified": true
+          },
+          {
+            "fact": "패키지는 `src/feature_flags` 에 위치하며 `repository.py`(테넌트별 플래그 저장소), `cache.py`, `service.py`, `authorization.py`, `rollout.py`, `targeting.py` 로 구성된다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagRepository` 는 `FeatureFlag(tenant_id, name, enabled)` 를 `dict[(tenant_id, name.casefold())]` 로 저장하며, `save`/`get` 은 이름을 casefold 로 정규화하지만 `delete` 는 casefold 를 적용하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "`list_for_tenant` 는 테넌트 필터 없이 저장된 모든 값을 리스트로 반환하도록 문서화되어 있어 `list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 기대값과 충돌한다.",
+            "verified": true
+          },
+          {
+            "fact": "`FeatureFlagCache._key` 는 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환해 캐시 키가 테넌트 간 공유된다.",
+            "verified": true
+          },
+          {
+            "fact": "`rollout.py` 의 `is_in_rollout` 은 `bucket <= percentage`, `rollout_bucket` 은 내장 `hash(user_id) % 100` 을 사용하여 경계 포함 및 PYTHONHASHSEED 의존 문제가 지적된다.",
+            "verified": true
+          },
+          {
+            "fact": "`authorization.py` 의 `can_manage_flag(role)` 는 `role.casefold()` 가 {owner, admin} 에 포함될 때만 True 를 반환하며, `can_edit_project_flag` 는 프로젝트 일치 여부와 무관하게 role 이 owner 일 때만 True 를 반환한다.",
+            "verified": true
+          },
+          {
+            "fact": "`targeting.py` 의 `matches_country` 는 단순 동등 비교로 대소문자를 구분하고, `matches_allowlist` 는 `user_id in allowed_user_ids` 로 빈 허용목록에서 항상 False 를 반환한다.",
+            "verified": true
+          },
+          {
+            "fact": "테스트·빌드 운영은 uv 기반(`uv sync --extra dev`, `uv run pytest`)이며 pytest 는 `addopts \"-q\"`, `testpaths [\"tests\"]` 를 사용한다.",
+            "verified": true
+          },
+          {
+            "fact": "재현 절차에서 실제 저장/조회 코드 경로는 제공된 코드 근거에 포함되어 있지 않아, 저장 규모·동시성 등 런타임 조건은 확인되지 않았다.",
+            "verified": false
+          }
+        ],
+        "status": "llm",
+        "issue_id": "28",
+        "citations": [
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 27,
+            "location": null,
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagRepository` 의 `list_for_tenant` 가 저장된 모든 값을 리스트로 반환하고, get/delete 간 casefold 정규화 불일치가 잠재 버그 지점으로 문서화되어 있다. 이슈 28 의 다른 테넌트 데이터 포함 증상과 직접 일치한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_d0b8ef289dd957d88bb9237b7fab6583",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 56,
+            "location": null,
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 기대값이 명시되어 있어, 이슈 28 의 기대 동작(alpha 플래그만 반환)과 일치한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_d0b8ef289dd957d88bb9237b7fab6583",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "src/feature_flags/cache.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagCache._key` 가 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환하여 캐시 키가 테넌트 간 공유된다. 테넌트 격리 위반의 2차 경로 후보다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_761eb0bf47c85c1486bea2fb00a00544",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 56,
+            "location": null,
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`test_returns_requested_tenant_value_after_prior_lookup` 가 tenant-alpha 조회 후 tenant-beta 조회 시 각 테넌트 값을 반환할 것을 기대하여, 현재 `_key` 구현이 테넌트 격리 요구사항과 충돌함을 보여준다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_761eb0bf47c85c1486bea2fb00a00544",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 7,
+            "location": null,
+            "file_path": "src/feature_flags/__init__.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "패키지 `src/feature_flags` 는 `repository.py`(테넌트별 플래그 저장소), `cache.py`, `service.py` 등으로 구성된 테넌트별 기능 플래그 조회 Python 라이브러리이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_6fab997c7d725281ae2403eec197794f",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 40,
+            "location": null,
+            "file_path": "src/feature_flags/service.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`FeatureFlagService.is_enabled` 는 캐시 확인 후 `repository.get` 으로 조회하며, `LegacyFeatureFlagService` 는 `if cached:` 로 캐시된 False 를 미스로 취급하는 결함이 있다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_a3e21ca7f9c656d798d51ad21f0780af",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 31,
+            "location": null,
+            "file_path": "pyproject.toml",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`uv run pytest` 기반 테스트 실행 절차와 pytest `addopts \"-q\"`, `testpaths [\"tests\"]` 설정을 확인한다. 재현 검증 절차의 근거이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_86bd2da1ac6950c2bb3331af5286186a",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": null,
+            "file_path": "src/feature_flags/rollout.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`is_in_rollout` 의 `bucket <= percentage` 경계 포함과 `rollout_bucket` 의 내장 `hash()` 사용이 각각 경계·프로세스 간 안정성 요구사항과 충돌한다. 이슈 28 증상과는 직접 관련이 없다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_60203f0293eb5cf099ff3f492e11e44e",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 14,
+            "location": null,
+            "file_path": "src/feature_flags/authorization.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`can_manage_flag` 와 `can_edit_project_flag` 의 권한 판정 규칙을 확인한다. 테넌트 목록 조회 이슈와는 별개의 권한 도메인 규칙이다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_c61c15e53385595f821a35f366faa7e3",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": 9,
+            "location": null,
+            "file_path": "src/feature_flags/targeting.py",
+            "source_id": "28",
+            "start_line": 1,
+            "evidence_id": null,
+            "observation": "`matches_country` 의 대소문자 구분 동등 비교와 `matches_allowlist` 의 빈 허용목록 False 반환이 각각 규칙 위반으로 문서화되어 있다. 이슈 28 증상과는 직접 관련이 없다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_49ce373514b859c5a1a750e83c167e53",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.72,
+        "evidence_counts": {
+          "code": 8,
+          "history": 0,
+          "documents": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "kn_d0b8ef289dd957d88bb9237b7fab6583: `list_for_tenant`: 저장된 모든 값을 리스트로 반환한다, `list_for_tenant(\"tenant-alpha\")` 가 다른 테넌트 플래그를 노출하지 않아야 한다는 테스트 기대값과 충돌"
+            ],
+            "confidence": 0.82,
+            "hypothesis": "FeatureFlagRepository.list_for_tenant 가 tenant_id 로 필터링하지 않고 저장된 모든 값을 리스트로 반환하여 tenant-alpha 조회에 tenant-beta 플래그까지 포함된다."
+          },
+          {
+            "evidence": [
+              "kn_761eb0bf47c85c1486bea2fb00a00544: `_key` 정적 메서드는 `tenant_id` 를 무시하고 `flag_name.casefold()` 만 반환하여 캐시 키가 테넌트 간 공유됨"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "FeatureFlagCache._key 가 tenant_id 를 무시하고 flag_name.casefold() 만 반환해 캐시 키가 테넌트 간 공유되어, 서비스/캐시 계층에서 테넌트가 섞인 값이 반환될 수 있다."
+          }
+        ]
+      },
+      "issue_id": "28",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "`list_for_tenant` 에 필터를 추가하면서 정렬·반환 타입 등 기존 호출자의 기대 동작이 바뀔 수 있다.",
+            "mitigation": "수정 전후 반환 타입과 순서를 고정하는 테스트를 유지하고, service 계층 호출 경로를 함께 확인한다."
+          },
+          {
+            "risk": "`_key` 에 tenant_id 를 추가하면 기존 캐시 항목이 무효화되어 일시적으로 캐시 미스가 증가할 수 있다.",
+            "mitigation": "캐시는 조회 시 재적재되므로 기능 영향이 없음을 확인하고, 캐시 히트/미스를 검증하는 테스트를 추가한다."
+          },
+          {
+            "risk": "이슈 28 증상과 직접 관련 없는 `rollout.py`, `authorization.py`, `targeting.py` 의 별개 결함(경계 포함, PYTHONHASHSEED 의존, 대소문자 구분 등)을 함께 고치려다 범위가 확대될 수 있다.",
+            "mitigation": "이번 계획은 테넌트 격리(repository/cache/service)에 한정하고, 나머지는 별도 이슈로 분리해 추적한다."
+          },
+          {
+            "risk": "재현 절차의 실제 저장/조회 코드 경로가 제공된 코드 근거에 포함되어 있지 않고 저장 규모·동시성 등 런타임 조건이 미확인이다.",
+            "mitigation": "단위 테스트 수준에서 재현을 고정한 뒤, 실제 호출 경로를 확인하는 통합 테스트를 추가로 작성한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "재현 테스트로 현재 결함을 고정한다",
+            "details": "`tests/test_feature_flags.py` 에서 tenant-alpha 와 tenant-beta 에 각각 플래그를 저장한 뒤 `list_for_tenant(\"tenant-alpha\")` 가 alpha 플래그만 반환하는지 검증하는 테스트를 먼저 실행해 실패를 확인한다. 실행 명령은 `uv sync --extra dev` 후 `uv run pytest` 이며 pytest 설정은 `addopts \"-q\"`, `testpaths [\"tests\"]` 이다."
+          },
+          {
+            "id": 2,
+            "action": "`FeatureFlagRepository.list_for_tenant` 에 tenant_id 필터링을 구현한다",
+            "details": "`src/feature_flags/repository.py` 의 `list_for_tenant` 가 `dict[(tenant_id, name.casefold())]` 저장 구조에서 키의 `tenant_id` 가 인자와 일치하는 항목만 반환하도록 수정한다. 저장된 모든 값을 반환하는 현재 동작을 제거한다."
+          },
+          {
+            "id": 3,
+            "action": "`delete` 의 casefold 정규화 불일치를 수정한다",
+            "details": "`save`/`get` 과 동일하게 `delete` 도 이름을 casefold 로 정규화하도록 맞춰, 대소문자만 다른 이름에 대해 삭제가 누락되거나 다른 항목을 지우는 잠재 버그를 제거한다."
+          },
+          {
+            "id": 4,
+            "action": "`FeatureFlagCache._key` 에 tenant_id 를 포함시킨다",
+            "details": "`src/feature_flags/cache.py` 의 `_key` 가 `flag_name.casefold()` 만 반환하지 않고 `tenant_id` 를 키에 포함하도록 수정하여, tenant-alpha 조회 후 tenant-beta 조회 시(`test_returns_requested_tenant_value_after_prior_lookup` 기대값) 캐시 키 공유로 인한 테넌트 간 값 혼입이 발생하지 않도록 한다."
+          },
+          {
+            "id": 5,
+            "action": "`LegacyFeatureFlagService` 의 캐시된 False 미스 취급을 수정한다",
+            "details": "`src/feature_flags/service.py` 에서 `if cached:` 가 캐시된 False 를 미스로 취급해 `repository.get` 을 다시 호출하는 결함을, 캐시 존재 여부(None 여부)를 기준으로 판정하도록 변경한다."
+          },
+          {
+            "id": 6,
+            "action": "테넌트 격리 회귀 테스트를 보강하고 전체 스위트를 실행한다",
+            "details": "`list_for_tenant` 격리, `delete` casefold 일치, 캐시 테넌트 격리, 캐시된 False 처리 각각에 대한 테스트를 `tests/test_feature_flags.py` 에 추가하고 `uv run pytest` 로 전체 통과를 확인한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "28",
+        "acceptance_criteria": [
+          "`list_for_tenant(\"tenant-alpha\")` 는 tenant-alpha 로 저장된 플래그만 반환하고 tenant-beta 플래그를 포함하지 않는다.",
+          "tenant-alpha 와 tenant-beta 에 각각 플래그를 저장한 뒤 alpha 목록 조회 시 beta 값이 노출되지 않는다(이슈 28 재현 절차가 더 이상 증상이 나타나지 않는다).",
+          "`_key` 가 tenant_id 를 포함하여 `test_returns_requested_tenant_value_after_prior_lookup` 이 통과하고, 테넌트 간 캐시 키가 공유되지 않는다.",
+          "`delete` 가 `save`/`get` 과 동일한 casefold 정규화를 적용하여 대소문자 변형 이름에 대해 일관되게 동작한다.",
+          "`LegacyFeatureFlagService` 가 캐시된 False 값을 미스로 취급하지 않고 그대로 사용한다.",
+          "`uv run pytest` 전체 테스트가 실패 없이 통과한다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:30:44.802927Z",
+    "completed_at": "2026-09-28T07:31:14.844133Z",
+    "created_at": "2026-09-28T07:30:44.792211Z",
+    "updated_at": "2026-09-28T07:31:14.846201Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 32.388
+  }
+}

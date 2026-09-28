@@ -1,0 +1,642 @@
+{
+  "input": {
+    "id": "repository-delete-case-short",
+    "report": {
+      "title": "플래그 이름 대소문자가 다르면 삭제 실패",
+      "description": "삭제 API만 flag name의 표기 차이를 허용하지 않습니다.",
+      "steps_to_reproduce": [
+        "혼합 대소문자로 저장하고 대문자로 삭제합니다."
+      ],
+      "expected_behavior": "같은 플래그가 삭제되어야 합니다.",
+      "actual_behavior": "삭제되지 않습니다.",
+      "reproduction_command": "pytest tests/test_feature_flags.py::test_delete_normalizes_flag_name"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 26,
+    "name": "benchmark-20260928T065850Z-59223a30-repository-delete-case-short",
+    "description": "Clio Benchmark feature-flags-30: repository-delete-case-short",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:27:21.307158Z",
+    "updatedAt": "2026-09-28T07:27:21.307158Z"
+  },
+  "clio_repository": {
+    "id": 26,
+    "projectId": 26,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:27:54.190805Z",
+    "createdAt": "2026-09-28T07:27:21.313531Z",
+    "updatedAt": "2026-09-28T07:27:54.195670Z"
+  },
+  "bug": {
+    "id": 26,
+    "project_id": 26,
+    "issue_id": 26,
+    "title": "플래그 이름 대소문자가 다르면 삭제 실패",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:27:56.011157Z",
+    "created_at": "2026-09-28T07:27:56.022901Z"
+  },
+  "analysis": {
+    "analysisResultId": 26,
+    "workflowRunId": 26,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def delete(self, tenant_id: str, flag_name: str) -> None:\n        self._flags.pop((tenant_id, flag_name), None)",
+          "end_line": 24,
+          "location": "src/feature_flags/repository.py:23-24",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "26",
+          "start_line": 23,
+          "evidence_id": "repo_delete_no_casefold",
+          "observation": "FeatureFlagRepository.delete는 키로 (tenant_id, flag_name)을 그대로 사용하여 casefold를 적용하지 않는다. 저장(save)과 조회(get)는 정규화하지만 delete만 정규화하지 않아 대소문자 표기가 다르면 pop이 매칭되지 않아 삭제가 실패(no-op)한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def save(self, flag: FeatureFlag) -> None:\n        self._flags[(flag.tenant_id, flag.name.casefold())] = flag\n\n    def get(self, tenant_id: str, flag_name: str) -> FeatureFlag | None:\n        return self._flags.get((tenant_id, flag_name.casefold()))",
+          "end_line": 21,
+          "location": "src/feature_flags/repository.py:17-21",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "26",
+          "start_line": 17,
+          "evidence_id": "repo_save_get_casefold",
+          "observation": "save와 get은 flag_name에 casefold를 적용해 키를 정규화한다. delete만 정규화를 빠뜨린 것이 대소문자 표기 차이 삭제 실패의 원인임을 대비적으로 보여준다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def list_for_tenant(self, tenant_id: str) -> list[FeatureFlag]:\n        return list(self._flags.values())",
+          "end_line": 27,
+          "location": "src/feature_flags/repository.py:26-27",
+          "file_path": "src/feature_flags/repository.py",
+          "source_id": "26",
+          "start_line": 26,
+          "evidence_id": "repo_list_for_tenant_leak",
+          "observation": "list_for_tenant는 tenant_id 인자를 받지만 필터링에 사용하지 않고 전체 _flags 값을 반환한다. 따라서 다른 테넌트의 플래그가 섞여 반환되는 테넌트 격리 결함이 있다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def test_delete_normalizes_flag_name() -> None:\n    repository = FeatureFlagRepository()\n    repository.save(FeatureFlag(\"tenant-alpha\", \"New-Checkout\", enabled=True))\n\n    repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")\n\n    assert repository.get(\"tenant-alpha\", \"new-checkout\") is None",
+          "end_line": 44,
+          "location": "tests/test_feature_flags.py:38-44",
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": "26",
+          "start_line": 38,
+          "evidence_id": "test_delete_normalizes",
+          "observation": "테스트는 'New-Checkout' 저장 후 'NEW-CHECKOUT'로 delete를 호출하고 get이 None이길 기대한다. 현재 delete가 casefold를 하지 않으므로 이 테스트는 실패한다(삭제 실패 검증).",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": "def test_list_for_tenant_does_not_leak_other_tenants() -> None:\n    repository = FeatureFlagRepository()\n    repository.save(FeatureFlag(\"tenant-alpha\", \"checkout\", enabled=True))\n    repository.save(FeatureFlag(\"tenant-beta\", \"billing\", enabled=False))\n\n    flags = repository.list_for_tenant(\"tenant-alpha\")\n\n    assert [(flag.tenant_id, flag.name) for flag in flags] == [\n        (\"tenant-alpha\", \"checkout\")\n    ]",
+          "end_line": 56,
+          "location": "tests/test_feature_flags.py:47-56",
+          "file_path": "tests/test_feature_flags.py",
+          "source_id": "26",
+          "start_line": 47,
+          "evidence_id": "test_list_for_tenant_isolation",
+          "observation": "테스트는 list_for_tenant('tenant-alpha')가 tenant-alpha 플래그만 반환하고 tenant-beta는 포함하지 않기를 기대한다. 현재 구현은 tenant 필터가 없으므로 이 테스트는 실패한다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "26",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": null,
+          "location": "src/feature_flags/repository.py:1-27",
+          "file_path": null,
+          "source_id": "26",
+          "start_line": null,
+          "evidence_id": null,
+          "observation": "repository.py는 (tenant_id, name.casefold()) 키를 쓰는 인메모리 저장소를 정의하며, delete는 casefold하지 않아 정규화가 불일치하고 list_for_tenant는 테넌트 누수를 일으킨다고 정리되어 있다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_2be951ba403955a2b0d4b25e3d7c8222",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": null,
+          "location": "src/feature_flags/__init__.py:1-7",
+          "file_path": null,
+          "source_id": "26",
+          "start_line": null,
+          "evidence_id": null,
+          "observation": "FeatureFlagRepository는 패키지 __all__로 공개되는 API로, 외부 소비자가 직접 사용한다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_70a4ba9dd8985313aec0fa3b5ecf66e1",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        },
+        {
+          "commit": null,
+          "snippet": null,
+          "end_line": null,
+          "location": "src/feature_flags/cache.py:1-16",
+          "file_path": null,
+          "source_id": "26",
+          "start_line": null,
+          "evidence_id": null,
+          "observation": "다른 계층(cache.py)에서도 키 정규화/테넌트 분리 관련 결함이 보고되어 있어, 본 이슈는 대소문자 정규화 일관성 문제의 저장소 계층 발현으로 볼 수 있다.",
+          "source_type": "knowledge",
+          "knowledge_id": "kn_354d9dcfb13a5d2abea5a489c22c33c2",
+          "repository_id": null,
+          "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "knowledge_revision": 1
+        }
+      ],
+      "findings": [
+        {
+          "fact": "저장소 키는 (tenant_id, name.casefold()) 튜플이며 FeatureFlagRepository.save는 flag.name.casefold()로, get은 flag_name.casefold()로 키를 정규화한다.",
+          "verified": true
+        },
+        {
+          "fact": "FeatureFlagRepository.delete는 self._flags.pop((tenant_id, flag_name), None)으로 원본 flag_name을 그대로 키에 사용하여 casefold 정규화를 하지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "저장 시 casefold된 키가 만들어지므로 delete에 대문자 등 다른 표기의 flag_name이 전달되면 pop이 매칭되지 않고 None을 반환하는 no-op이 되어 플래그가 삭제되지 않는다.",
+          "verified": true
+        },
+        {
+          "fact": "이슈 재현 절차(혼합 대소문자 저장 후 대문자 삭제)는 저장 시 casefold 키와 delete의 미정규화 키가 불일치하는 경로에 정확히 대응한다.",
+          "verified": true
+        },
+        {
+          "fact": "테스트 test_delete_normalizes_flag_name은 'New-Checkout' 저장 후 'NEW-CHECKOUT'로 delete하고 get('tenant-alpha', 'new-checkout') is None을 기대하므로 현재 delete 구현에서 실패한다.",
+          "verified": true
+        },
+        {
+          "fact": "같은 파일의 list_for_tenant는 tenant_id를 필터링에 사용하지 않고 list(self._flags.values())를 반환하여 다른 테넌트 플래그까지 노출하며, test_list_for_tenant_does_not_leak_other_tenants가 이를 검증한다.",
+          "verified": true
+        },
+        {
+          "fact": "이슈 #26의 raw_payload.benchmark_case_id는 'repository-delete-case-short'로, 대소문자 삭제 실패 시나리오를 지시한다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 26,
+      "warnings": [],
+      "relations": [],
+      "confidence": 0.88,
+      "hypotheses": [
+        {
+          "evidence": [
+            "repo_delete_no_casefold: src/feature_flags/repository.py 23-24 self._flags.pop((tenant_id, flag_name), None)",
+            "repo_save_get_casefold: src/feature_flags/repository.py 17-21 save는 flag.name.casefold(), get은 flag_name.casefold() 사용",
+            "test_delete_normalizes: tests/test_feature_flags.py 38-44 'New-Checkout' 저장 후 'NEW-CHECKOUT' delete 시 get None 기대"
+          ],
+          "confidence": 0.95,
+          "hypothesis": "FeatureFlagRepository.delete가 (tenant_id, flag_name)을 casefold 없이 키로 조회해, save가 casefold로 저장한 키와 불일치하므로 대소문자 표기가 다른 flag name의 삭제가 no-op으로 실패한다."
+        },
+        {
+          "evidence": [
+            "repo_save_get_casefold와 repo_delete_no_casefold의 대비(contrasts_with 관계)",
+            "kn_2be951ba403955a2b0d4b25e3d7c8222: delete는 casefold하지 않아 정규화가 불일치하고 테스트는 delete 정규화를 기대"
+          ],
+          "confidence": 0.85,
+          "hypothesis": "delete만 정규화가 빠진 것이 회귀 원인이며, save/get과 동일하게 flag_name.casefold()를 키에 적용하면 삭제가 정상 동작한다."
+        },
+        {
+          "evidence": [
+            "repo_list_for_tenant_leak: src/feature_flags/repository.py 26-27 tenant_id 미사용, 전체 값 반환",
+            "test_list_for_tenant_isolation: tests/test_feature_flags.py 47-56 테넌트 비누출 기대"
+          ],
+          "confidence": 0.7,
+          "hypothesis": "삭제 API가 표기 차이를 허용하지 않는다는 이슈 설명은 위 delete 정규화 누락과 직접 일치하며, 동일 스냅샷에 존재하는 list_for_tenant 테넌트 누수는 별개 결함이다."
+        }
+      ],
+      "project_id": 26,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "delete에 casefold를 적용하면 저장 당시 사용한 표기와 다른 형식의 flag_name으로도 삭제가 가능해져, 표기 구분을 전제한 호출자가 의도치 않게 플래그를 제거할 수 있다.",
+            "mitigation": "이미 save/get이 casefold 키를 쓰므로 저장소의 키 규약상 대소문자 무관 식별이 일관된 동작이다. 동작 변경을 릴리스 노트/이슈 코멘트에 명시하고, 표기 구분이 필요한 요구가 있는지 확인한다."
+          },
+          {
+            "risk": "casefold는 단순 lower보다 적용 범위가 넓어(예: 'ß' → 'ss') 동일시되는 이름 집합이 기존 저장 데이터와 어긋날 수 있다.",
+            "mitigation": "save/get도 동일한 casefold를 사용하므로 불일치는 발생하지 않지만, 혼합 표기 케이스(전각/독일어 ß 등)를 테스트로 추가해 정규화 결과를 고정한다."
+          },
+          {
+            "risk": "list_for_tenant 테넌트 누수와 cache.py의 tenant_id 미포함 키가 같은 파일·같은 스냅샷에 존재하여, 이번 수정 범위가 넓어지거나 실제 수정 없이 관련 이슈가 방치될 수 있다.",
+            "mitigation": "본 계획에서는 delete 정규화만 필수 수정으로 확정하고, list_for_tenant와 cache.py 결함은 각각 별도 이슈로 등록해 추적한다. 함께 수정하는 경우 각 결함에 대응하는 테스트를 반드시 동반한다."
+          },
+          {
+            "risk": "인메모리 저장소를 넘어 외부 영속 저장소로 전환될 경우 대소문자 정규화 규약이 이전되지 않아 동일 결함이 재발할 수 있다.",
+            "mitigation": "키 정규화 책임을 repository 계층 한 곳으로 모으고, 저장·조회·삭제 모두 정규화된 키를 통과시키는 규약을 테스트(정규화 일관성 테스트)로 문서화한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 실패 상태를 기준선으로 재현한다.",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 스냅샷에서 pytest -q tests/test_feature_flags.py::test_delete_normalizes_flag_name tests/test_feature_flags.py::test_list_for_tenant_does_not_leak_other_tenants 를 실행해 두 테스트가 실패함을 기록한다. 실패 메시지에서 delete가 no-op으로 남아 get('tenant-alpha','new-checkout')이 None이 아님을, list_for_tenant가 tenant-beta flag를 포함함을 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository.delete에서 flag_name을 casefold로 정규화한다.",
+            "details": "src/feature_flags/repository.py:23-24의 self._flags.pop((tenant_id, flag_name), None)를 self._flags.pop((tenant_id, flag_name.casefold()), None)로 변경한다. 인메모리 저장소 키 규약이 (tenant_id, name.casefold())이므로 src/feature_flags/repository.py:17-18 save, :20-21 get과 동일한 정규화를 적용해 세 메서드를 일관되게 맞춘다. tenant_id는 기존과 같이 정규화하지 않는다."
+          },
+          {
+            "id": 3,
+            "action": "삭제 경로의 대소문자 무관 동작을 회귀 테스트로 고정한다.",
+            "details": "tests/test_feature_flags.py의 test_delete_normalizes_flag_name(38-44행)이 통과하는지 확인하고, 추가로 저장한 원본 표기('New-Checkout' 그대로의 delete), 전각/혼합 표기 등 정규화가 동일 결과를 내는 케이스와 존재하지 않는 flag_name 삭제 시 예외 없이 no-op으로 끝나는 케이스를 테스트로 보강한다. 이때 객체 동일성은 get 반환값이 None인지로 검증한다."
+          },
+          {
+            "id": 4,
+            "action": "list_for_tenant의 테넌트 누수 결함을 분리 처리한다.",
+            "details": "src/feature_flags/repository.py:26-27의 list_for_tenant는 tenant_id를 받고도 필터링하지 않아 전체 _flags.values()를 반환하며 test_list_for_tenant_does_not_leak_other_tenants(47-56행)가 실패한다. 이슈 #26의 1차 원인(delete 정규화 누락)과는 별개의 결함으로 취급하되, 동일 파일의 키 규약 문제이므로 동일 스냅샷 내에서 함께 수정할지 별도 이슈로 분리할지 결정한다. 함께 처리하는 경우 키의 tenant_id 요소로 필터링하는 구현과 테스트를 추가한다."
+          },
+          {
+            "id": 5,
+            "action": "동일 키 정규화 결함이 있는 인접 계층을 점검한다.",
+            "details": "src/feature_flags/cache.py의 FeatureFlagCache._key(14-16행)가 flag_name.casefold()만 반환하고 tenant_id를 키에 포함하지 않아 테넌트 간 캐시가 공유된다(kn_354d9dcfb13a5d2abea5a489c22c33c2). 이슈 #26 범위는 저장소 계층이므로 이 항목은 별도 후속 이슈로 등록하고, 본 계획에서는 src/feature_flags/__init__.py가 노출하는 공개 API(FeatureFlagCache, FeatureFlagRepository, FeatureFlagService) 중 이번 변경이 delete 시그니처·반환 타입에 영향을 주지 않음을 확인하는 데 그친다."
+          },
+          {
+            "id": 6,
+            "action": "수정 후 전체 테스트와 정적 검사를 실행한다.",
+            "details": "pytest -q로 tests 전체를 돌리고, ruff(line-length 100, target-version py311, 규칙 E,F,I,UP,B,SIM)를 실행한다. src/feature_flags/repository.py 한 줄 수준 변경이나 인메모리 저장소 테스트 스위트에 국한되어야 한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "acceptance_criteria": [
+          "tests/test_feature_flags.py::test_delete_normalizes_flag_name 이 통과한다: 'New-Checkout' 저장 후 delete('tenant-alpha','NEW-CHECKOUT') 호출 시 repository.get('tenant-alpha','new-checkout') is None 을 만족한다.",
+          "delete가 save/get과 동일하게 flag_name.casefold()를 키에 적용하며, 저장 시 사용한 표기와 다른 대소문자로 delete해도 플래그가 실제로 제거된다(no-op이 아님).",
+          "delete가 키에 존재하지 않는 flag_name에 대해 예외를 발생시키지 않고 조용히 종료한다(pop의 default None 동작 유지).",
+          "tenant_id는 정규화 대상이 아님을 유지하여 서로 다른 테넌트의 동일 이름 플래그가 삭제로 인해 서로 영향을 주지 않는다.",
+          "pytest -q 전체 실행 결과가 실패 0건이며, ruff 검사(line-length 100, py311, E/F/I/UP/B/SIM)가 통과한다.",
+          "list_for_tenant 테넌트 누수(tests/test_feature_flags.py::test_list_for_tenant_does_not_leak_other_tenants)를 이번에 함께 처리하는 경우 해당 테스트도 통과하고, 분리하는 경우 후속 이슈로 등록되어 추적된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 55,
+            "rationale": "FeatureFlagRepository는 src/feature_flags/__init__.py의 __all__로 공개된 API(kn_70a4ba9dd8985313aec0fa3b5ecf66e1)로 외부 소비자가 직접 사용하며, delete 경로 전반에 영향이 있다. 다만 대소문자 표기가 저장 시와 다른 경우에만 발현되므로 전체 플래그가 아니라 해당 표기 케이스에 국한된다."
+          },
+          {
+            "name": "심각도",
+            "score": 45,
+            "rationale": "삭제 요청이 pop의 no-op(기대값 None)으로 조용히 실패해 플래그가 잔존한다. 크래시나 데이터 손상은 아니지만, 삭제된 것으로 간주된 플래그가 계속 평가되어 기능 플래그 제어가 무력화될 수 있는 논리적 정합성 결함이다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 60,
+            "rationale": "src/feature_flags/repository.py:23-24의 self._flags.pop((tenant_id, flag_name), None)이 casefold를 적용하지 않아, 혼합 대소문자 저장 후 다른 표기로 삭제하면 결정론적으로 100% 재현된다. 단 표기 차이가 없는 경우에는 정상 동작하므로 조건부 재현이다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 40,
+            "rationale": "저장 시 사용한 것과 동일한 표기(정확히 casefold 결과와 일치하는 문자열)로 delete를 호출하면 삭제가 성공하므로 클라이언트 측 정규화로 우회 가능하다. 다만 API 사용자가 저장 표기를 추적해야 하므로 우회 비용이 낮지는 않다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 50,
+            "rationale": "기능 플래그 수명주기 관리의 핵심 경로인 삭제 기능이 실패하면 릴리스 제어·킬 스위치 회수 등 운영 절차가 지연된다. 결제 로직이나 계정 자체를 직접 손상시키지는 않으나 테넌트 단위 플래그 운영 신뢰성에 영향을 준다."
+          },
+          {
+            "name": "연관 결함 확산 위험",
+            "score": 72,
+            "rationale": "동일 파일의 list_for_tenant는 src/feature_flags/repository.py:26-27에서 tenant_id를 필터링에 쓰지 않고 list(self._flags.values())를 반환해 테넌트 격리 누수가 있으며(test_list_for_tenant_does_not_leak_other_tenants 실패), src/feature_flags/cache.py에서도 키 정규화/테넌트 분리 결함이 보고됐다(kn_354d9dcfb13a5d2abea5a489c22c33c2). 테넌트 간 데이터 노출 가능성이 동반된 계층적 정규화 결함이라는 점에서 위험도가 가중된다."
+          }
+        ],
+        "priority": "P2",
+        "rationale": "src/feature_flags/repository.py:23-24에서 save/get은 flag.name.casefold()/flag_name.casefold()로 키를 정규화하지만 delete만 (tenant_id, flag_name) 원본을 그대로 사용해 정규화가 불일치하며, 이로 인해 대소문자 표기가 다른 flag name의 삭제가 no-op으로 실패한다(신뢰도 0.88~0.95). 삭제 실패는 혼합 대소문자 저장 후 다른 표기 삭제 시 100% 결정론적으로 재현되고, 저장 표기를 맞추면 우회되지만 테스트 test_delete_normalizes_flag_name이 이미 실패하는 상태다. 크래시·데이터 손상·보안 노출 자체는 아니므로 P0(85-100)는 아니며, 공개 API이지만 발현 조건이 표기 차이에 국한되어 완전한 코어 기능 전면 차단(P1 상위)보다는 부분 기능 결함에 해당한다. 다만 동일 파일의 list_for_tenant 테넌트 누수(src/feature_flags/repository.py:26-27)와 cache.py의 유사 결함이 동반된 계층적 정규화 문제라는 점에서 단순 표기 이슈보다 위험도가 높다. 종합적으로 P2 보통(부분 기능 결함, 우회 존재) 구간의 상단인 58점으로 산정한다.",
+        "risk_score": 58
+      },
+      "workflow_run_id": 26
+    }
+  },
+  "workflow": {
+    "id": 26,
+    "project_id": 26,
+    "request_id": "process-bug-26",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "passed",
+        "reasons": [],
+        "warnings": []
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "저장소 키는 (tenant_id, name.casefold()) 튜플이며 FeatureFlagRepository.save는 flag.name.casefold()로, get은 flag_name.casefold()로 키를 정규화한다.",
+            "verified": true
+          },
+          {
+            "fact": "FeatureFlagRepository.delete는 self._flags.pop((tenant_id, flag_name), None)으로 원본 flag_name을 그대로 키에 사용하여 casefold 정규화를 하지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "저장 시 casefold된 키가 만들어지므로 delete에 대문자 등 다른 표기의 flag_name이 전달되면 pop이 매칭되지 않고 None을 반환하는 no-op이 되어 플래그가 삭제되지 않는다.",
+            "verified": true
+          },
+          {
+            "fact": "이슈 재현 절차(혼합 대소문자 저장 후 대문자 삭제)는 저장 시 casefold 키와 delete의 미정규화 키가 불일치하는 경로에 정확히 대응한다.",
+            "verified": true
+          },
+          {
+            "fact": "테스트 test_delete_normalizes_flag_name은 'New-Checkout' 저장 후 'NEW-CHECKOUT'로 delete하고 get('tenant-alpha', 'new-checkout') is None을 기대하므로 현재 delete 구현에서 실패한다.",
+            "verified": true
+          },
+          {
+            "fact": "같은 파일의 list_for_tenant는 tenant_id를 필터링에 사용하지 않고 list(self._flags.values())를 반환하여 다른 테넌트 플래그까지 노출하며, test_list_for_tenant_does_not_leak_other_tenants가 이를 검증한다.",
+            "verified": true
+          },
+          {
+            "fact": "이슈 #26의 raw_payload.benchmark_case_id는 'repository-delete-case-short'로, 대소문자 삭제 실패 시나리오를 지시한다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def delete(self, tenant_id: str, flag_name: str) -> None:\n        self._flags.pop((tenant_id, flag_name), None)",
+            "end_line": 24,
+            "location": "src/feature_flags/repository.py:23-24",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "26",
+            "start_line": 23,
+            "evidence_id": "repo_delete_no_casefold",
+            "observation": "FeatureFlagRepository.delete는 키로 (tenant_id, flag_name)을 그대로 사용하여 casefold를 적용하지 않는다. 저장(save)과 조회(get)는 정규화하지만 delete만 정규화하지 않아 대소문자 표기가 다르면 pop이 매칭되지 않아 삭제가 실패(no-op)한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def save(self, flag: FeatureFlag) -> None:\n        self._flags[(flag.tenant_id, flag.name.casefold())] = flag\n\n    def get(self, tenant_id: str, flag_name: str) -> FeatureFlag | None:\n        return self._flags.get((tenant_id, flag_name.casefold()))",
+            "end_line": 21,
+            "location": "src/feature_flags/repository.py:17-21",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "26",
+            "start_line": 17,
+            "evidence_id": "repo_save_get_casefold",
+            "observation": "save와 get은 flag_name에 casefold를 적용해 키를 정규화한다. delete만 정규화를 빠뜨린 것이 대소문자 표기 차이 삭제 실패의 원인임을 대비적으로 보여준다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def list_for_tenant(self, tenant_id: str) -> list[FeatureFlag]:\n        return list(self._flags.values())",
+            "end_line": 27,
+            "location": "src/feature_flags/repository.py:26-27",
+            "file_path": "src/feature_flags/repository.py",
+            "source_id": "26",
+            "start_line": 26,
+            "evidence_id": "repo_list_for_tenant_leak",
+            "observation": "list_for_tenant는 tenant_id 인자를 받지만 필터링에 사용하지 않고 전체 _flags 값을 반환한다. 따라서 다른 테넌트의 플래그가 섞여 반환되는 테넌트 격리 결함이 있다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def test_delete_normalizes_flag_name() -> None:\n    repository = FeatureFlagRepository()\n    repository.save(FeatureFlag(\"tenant-alpha\", \"New-Checkout\", enabled=True))\n\n    repository.delete(\"tenant-alpha\", \"NEW-CHECKOUT\")\n\n    assert repository.get(\"tenant-alpha\", \"new-checkout\") is None",
+            "end_line": 44,
+            "location": "tests/test_feature_flags.py:38-44",
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": "26",
+            "start_line": 38,
+            "evidence_id": "test_delete_normalizes",
+            "observation": "테스트는 'New-Checkout' 저장 후 'NEW-CHECKOUT'로 delete를 호출하고 get이 None이길 기대한다. 현재 delete가 casefold를 하지 않으므로 이 테스트는 실패한다(삭제 실패 검증).",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": "def test_list_for_tenant_does_not_leak_other_tenants() -> None:\n    repository = FeatureFlagRepository()\n    repository.save(FeatureFlag(\"tenant-alpha\", \"checkout\", enabled=True))\n    repository.save(FeatureFlag(\"tenant-beta\", \"billing\", enabled=False))\n\n    flags = repository.list_for_tenant(\"tenant-alpha\")\n\n    assert [(flag.tenant_id, flag.name) for flag in flags] == [\n        (\"tenant-alpha\", \"checkout\")\n    ]",
+            "end_line": 56,
+            "location": "tests/test_feature_flags.py:47-56",
+            "file_path": "tests/test_feature_flags.py",
+            "source_id": "26",
+            "start_line": 47,
+            "evidence_id": "test_list_for_tenant_isolation",
+            "observation": "테스트는 list_for_tenant('tenant-alpha')가 tenant-alpha 플래그만 반환하고 tenant-beta는 포함하지 않기를 기대한다. 현재 구현은 tenant 필터가 없으므로 이 테스트는 실패한다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "26",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": null,
+            "location": "src/feature_flags/repository.py:1-27",
+            "file_path": null,
+            "source_id": "26",
+            "start_line": null,
+            "evidence_id": null,
+            "observation": "repository.py는 (tenant_id, name.casefold()) 키를 쓰는 인메모리 저장소를 정의하며, delete는 casefold하지 않아 정규화가 불일치하고 list_for_tenant는 테넌트 누수를 일으킨다고 정리되어 있다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_2be951ba403955a2b0d4b25e3d7c8222",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": null,
+            "location": "src/feature_flags/__init__.py:1-7",
+            "file_path": null,
+            "source_id": "26",
+            "start_line": null,
+            "evidence_id": null,
+            "observation": "FeatureFlagRepository는 패키지 __all__로 공개되는 API로, 외부 소비자가 직접 사용한다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_70a4ba9dd8985313aec0fa3b5ecf66e1",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          },
+          {
+            "commit": null,
+            "snippet": null,
+            "end_line": null,
+            "location": "src/feature_flags/cache.py:1-16",
+            "file_path": null,
+            "source_id": "26",
+            "start_line": null,
+            "evidence_id": null,
+            "observation": "다른 계층(cache.py)에서도 키 정규화/테넌트 분리 관련 결함이 보고되어 있어, 본 이슈는 대소문자 정규화 일관성 문제의 저장소 계층 발현으로 볼 수 있다.",
+            "source_type": "knowledge",
+            "knowledge_id": "kn_354d9dcfb13a5d2abea5a489c22c33c2",
+            "repository_id": null,
+            "source_revision": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "knowledge_revision": 1
+          }
+        ],
+        "confidence": 0.88,
+        "evidence_counts": {
+          "code": 5,
+          "knowledge": 8
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "repo_delete_no_casefold: src/feature_flags/repository.py 23-24 self._flags.pop((tenant_id, flag_name), None)",
+              "repo_save_get_casefold: src/feature_flags/repository.py 17-21 save는 flag.name.casefold(), get은 flag_name.casefold() 사용",
+              "test_delete_normalizes: tests/test_feature_flags.py 38-44 'New-Checkout' 저장 후 'NEW-CHECKOUT' delete 시 get None 기대"
+            ],
+            "confidence": 0.95,
+            "hypothesis": "FeatureFlagRepository.delete가 (tenant_id, flag_name)을 casefold 없이 키로 조회해, save가 casefold로 저장한 키와 불일치하므로 대소문자 표기가 다른 flag name의 삭제가 no-op으로 실패한다."
+          },
+          {
+            "evidence": [
+              "repo_save_get_casefold와 repo_delete_no_casefold의 대비(contrasts_with 관계)",
+              "kn_2be951ba403955a2b0d4b25e3d7c8222: delete는 casefold하지 않아 정규화가 불일치하고 테스트는 delete 정규화를 기대"
+            ],
+            "confidence": 0.85,
+            "hypothesis": "delete만 정규화가 빠진 것이 회귀 원인이며, save/get과 동일하게 flag_name.casefold()를 키에 적용하면 삭제가 정상 동작한다."
+          },
+          {
+            "evidence": [
+              "repo_list_for_tenant_leak: src/feature_flags/repository.py 26-27 tenant_id 미사용, 전체 값 반환",
+              "test_list_for_tenant_isolation: tests/test_feature_flags.py 47-56 테넌트 비누출 기대"
+            ],
+            "confidence": 0.7,
+            "hypothesis": "삭제 API가 표기 차이를 허용하지 않는다는 이슈 설명은 위 delete 정규화 누락과 직접 일치하며, 동일 스냅샷에 존재하는 list_for_tenant 테넌트 누수는 별개 결함이다."
+          }
+        ]
+      },
+      "issue_id": "26",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "delete에 casefold를 적용하면 저장 당시 사용한 표기와 다른 형식의 flag_name으로도 삭제가 가능해져, 표기 구분을 전제한 호출자가 의도치 않게 플래그를 제거할 수 있다.",
+            "mitigation": "이미 save/get이 casefold 키를 쓰므로 저장소의 키 규약상 대소문자 무관 식별이 일관된 동작이다. 동작 변경을 릴리스 노트/이슈 코멘트에 명시하고, 표기 구분이 필요한 요구가 있는지 확인한다."
+          },
+          {
+            "risk": "casefold는 단순 lower보다 적용 범위가 넓어(예: 'ß' → 'ss') 동일시되는 이름 집합이 기존 저장 데이터와 어긋날 수 있다.",
+            "mitigation": "save/get도 동일한 casefold를 사용하므로 불일치는 발생하지 않지만, 혼합 표기 케이스(전각/독일어 ß 등)를 테스트로 추가해 정규화 결과를 고정한다."
+          },
+          {
+            "risk": "list_for_tenant 테넌트 누수와 cache.py의 tenant_id 미포함 키가 같은 파일·같은 스냅샷에 존재하여, 이번 수정 범위가 넓어지거나 실제 수정 없이 관련 이슈가 방치될 수 있다.",
+            "mitigation": "본 계획에서는 delete 정규화만 필수 수정으로 확정하고, list_for_tenant와 cache.py 결함은 각각 별도 이슈로 등록해 추적한다. 함께 수정하는 경우 각 결함에 대응하는 테스트를 반드시 동반한다."
+          },
+          {
+            "risk": "인메모리 저장소를 넘어 외부 영속 저장소로 전환될 경우 대소문자 정규화 규약이 이전되지 않아 동일 결함이 재발할 수 있다.",
+            "mitigation": "키 정규화 책임을 repository 계층 한 곳으로 모으고, 저장·조회·삭제 모두 정규화된 키를 통과시키는 규약을 테스트(정규화 일관성 테스트)로 문서화한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "현재 실패 상태를 기준선으로 재현한다.",
+            "details": "commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 스냅샷에서 pytest -q tests/test_feature_flags.py::test_delete_normalizes_flag_name tests/test_feature_flags.py::test_list_for_tenant_does_not_leak_other_tenants 를 실행해 두 테스트가 실패함을 기록한다. 실패 메시지에서 delete가 no-op으로 남아 get('tenant-alpha','new-checkout')이 None이 아님을, list_for_tenant가 tenant-beta flag를 포함함을 확인한다."
+          },
+          {
+            "id": 2,
+            "action": "FeatureFlagRepository.delete에서 flag_name을 casefold로 정규화한다.",
+            "details": "src/feature_flags/repository.py:23-24의 self._flags.pop((tenant_id, flag_name), None)를 self._flags.pop((tenant_id, flag_name.casefold()), None)로 변경한다. 인메모리 저장소 키 규약이 (tenant_id, name.casefold())이므로 src/feature_flags/repository.py:17-18 save, :20-21 get과 동일한 정규화를 적용해 세 메서드를 일관되게 맞춘다. tenant_id는 기존과 같이 정규화하지 않는다."
+          },
+          {
+            "id": 3,
+            "action": "삭제 경로의 대소문자 무관 동작을 회귀 테스트로 고정한다.",
+            "details": "tests/test_feature_flags.py의 test_delete_normalizes_flag_name(38-44행)이 통과하는지 확인하고, 추가로 저장한 원본 표기('New-Checkout' 그대로의 delete), 전각/혼합 표기 등 정규화가 동일 결과를 내는 케이스와 존재하지 않는 flag_name 삭제 시 예외 없이 no-op으로 끝나는 케이스를 테스트로 보강한다. 이때 객체 동일성은 get 반환값이 None인지로 검증한다."
+          },
+          {
+            "id": 4,
+            "action": "list_for_tenant의 테넌트 누수 결함을 분리 처리한다.",
+            "details": "src/feature_flags/repository.py:26-27의 list_for_tenant는 tenant_id를 받고도 필터링하지 않아 전체 _flags.values()를 반환하며 test_list_for_tenant_does_not_leak_other_tenants(47-56행)가 실패한다. 이슈 #26의 1차 원인(delete 정규화 누락)과는 별개의 결함으로 취급하되, 동일 파일의 키 규약 문제이므로 동일 스냅샷 내에서 함께 수정할지 별도 이슈로 분리할지 결정한다. 함께 처리하는 경우 키의 tenant_id 요소로 필터링하는 구현과 테스트를 추가한다."
+          },
+          {
+            "id": 5,
+            "action": "동일 키 정규화 결함이 있는 인접 계층을 점검한다.",
+            "details": "src/feature_flags/cache.py의 FeatureFlagCache._key(14-16행)가 flag_name.casefold()만 반환하고 tenant_id를 키에 포함하지 않아 테넌트 간 캐시가 공유된다(kn_354d9dcfb13a5d2abea5a489c22c33c2). 이슈 #26 범위는 저장소 계층이므로 이 항목은 별도 후속 이슈로 등록하고, 본 계획에서는 src/feature_flags/__init__.py가 노출하는 공개 API(FeatureFlagCache, FeatureFlagRepository, FeatureFlagService) 중 이번 변경이 delete 시그니처·반환 타입에 영향을 주지 않음을 확인하는 데 그친다."
+          },
+          {
+            "id": 6,
+            "action": "수정 후 전체 테스트와 정적 검사를 실행한다.",
+            "details": "pytest -q로 tests 전체를 돌리고, ruff(line-length 100, target-version py311, 규칙 E,F,I,UP,B,SIM)를 실행한다. src/feature_flags/repository.py 한 줄 수준 변경이나 인메모리 저장소 테스트 스위트에 국한되어야 한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "26",
+        "acceptance_criteria": [
+          "tests/test_feature_flags.py::test_delete_normalizes_flag_name 이 통과한다: 'New-Checkout' 저장 후 delete('tenant-alpha','NEW-CHECKOUT') 호출 시 repository.get('tenant-alpha','new-checkout') is None 을 만족한다.",
+          "delete가 save/get과 동일하게 flag_name.casefold()를 키에 적용하며, 저장 시 사용한 표기와 다른 대소문자로 delete해도 플래그가 실제로 제거된다(no-op이 아님).",
+          "delete가 키에 존재하지 않는 flag_name에 대해 예외를 발생시키지 않고 조용히 종료한다(pop의 default None 동작 유지).",
+          "tenant_id는 정규화 대상이 아님을 유지하여 서로 다른 테넌트의 동일 이름 플래그가 삭제로 인해 서로 영향을 주지 않는다.",
+          "pytest -q 전체 실행 결과가 실패 0건이며, ruff 검사(line-length 100, py311, E/F/I/UP/B/SIM)가 통과한다.",
+          "list_for_tenant 테넌트 누수(tests/test_feature_flags.py::test_list_for_tenant_does_not_leak_other_tenants)를 이번에 함께 처리하는 경우 해당 테스트도 통과하고, 분리하는 경우 후속 이슈로 등록되어 추적된다."
+        ]
+      },
+      "analysis_profile": "full-clio"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:27:56.761735Z",
+    "completed_at": "2026-09-28T07:28:53.290906Z",
+    "created_at": "2026-09-28T07:27:56.750287Z",
+    "updated_at": "2026-09-28T07:28:53.293738Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 58.745
+  }
+}

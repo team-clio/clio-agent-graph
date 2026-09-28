@@ -1,0 +1,520 @@
+{
+  "input": {
+    "id": "auth-role-escalation-symptom",
+    "report": {
+      "title": "일반 관리자가 중요 플래그를 변경",
+      "description": "조직 소유자가 아닌 관리자 계정에서 중요 플래그 편집 버튼이 활성화됩니다.",
+      "steps_to_reproduce": [
+        "admin 계정으로 권한을 평가합니다.",
+        "플래그 관리 가능 결과를 확인합니다."
+      ],
+      "expected_behavior": "소유자가 아니므로 false여야 합니다.",
+      "actual_behavior": "true가 반환됩니다.",
+      "reproduction_command": "pytest tests/test_authorization.py::test_admin_cannot_manage_owner_only_flag"
+    }
+  },
+  "fixture_commit_sha": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+  "project": {
+    "id": 9,
+    "name": "benchmark-20260928T073431Z-64ae54ac-auth-role-escalation-symptom",
+    "description": "Clio Benchmark feature-flags-30: auth-role-escalation-symptom",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-28T07:43:01.363277Z",
+    "updatedAt": "2026-09-28T07:43:01.363277Z"
+  },
+  "clio_repository": {
+    "id": 9,
+    "projectId": 9,
+    "provider": "GITHUB",
+    "owner": "team-clio",
+    "name": "clio-benchmark-fixture-feature-flags",
+    "url": "https://github.com/team-clio/clio-benchmark-fixture-feature-flags.git",
+    "defaultBranch": "task/benchmark-30-cases",
+    "includePaths": [],
+    "excludePaths": [
+      "benchmark.json",
+      "DATASET.md"
+    ],
+    "enabled": true,
+    "syncStatus": "SYNCED",
+    "lastSyncedAt": "2026-09-28T07:43:34.330233Z",
+    "createdAt": "2026-09-28T07:43:01.384474Z",
+    "updatedAt": "2026-09-28T07:43:34.331143Z"
+  },
+  "bug": {
+    "id": 9,
+    "project_id": 9,
+    "issue_id": 9,
+    "title": "일반 관리자가 중요 플래그를 변경",
+    "source": "MANUAL",
+    "error_type": "ReportedBehaviorMismatch",
+    "top_stack_frame": null,
+    "status": "TRIAGED",
+    "severity": null,
+    "occurred_at": "2026-09-28T07:43:35.693286Z",
+    "created_at": "2026-09-28T07:43:35.704083Z"
+  },
+  "analysis": {
+    "analysisResultId": 9,
+    "workflowRunId": 9,
+    "issueAnalysis": {
+      "status": "COMPLETED",
+      "evidence": [
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 3,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 3,
+          "evidence_id": null,
+          "observation": "README.md 3행은 이 프로젝트를 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리로 소개합니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 16,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 16,
+          "evidence_id": null,
+          "observation": "README.md 16행은 src/feature_flags/repository.py를 테넌트별 플래그 저장소로 기술하며, 권한 판정에 관련될 수 있는 저장소 계층의 존재를 시사합니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        },
+        {
+          "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+          "snippet": null,
+          "end_line": 18,
+          "location": null,
+          "file_path": "README.md",
+          "source_id": null,
+          "start_line": 18,
+          "evidence_id": null,
+          "observation": "README.md 18행은 src/feature_flags/service.py를 플래그 조회 서비스로 기술하며, 플래그 관리 가능 여부 판정이 위치할 가능성이 있는 계층입니다.",
+          "source_type": "repository",
+          "knowledge_id": null,
+          "repository_id": "9",
+          "source_revision": null,
+          "knowledge_revision": null
+        }
+      ],
+      "findings": [
+        {
+          "fact": "이슈 9는 조직 소유자가 아닌 관리자 계정에서 중요 플래그 편집 버튼이 활성화되고, 플래그 관리 가능 결과가 true로 반환된다고 보고합니다.",
+          "verified": true
+        },
+        {
+          "fact": "bug_context의 기대 동작은 소유자가 아니므로 false여야 한다는 것입니다.",
+          "verified": true
+        },
+        {
+          "fact": "오류 유형은 ReportedBehaviorMismatch이며 message는 \"true가 반환됩니다.\"이고 stack_trace는 비어 있습니다.",
+          "verified": true
+        },
+        {
+          "fact": "raw_payload의 benchmark_case_id는 \"auth-role-escalation-symptom\"입니다.",
+          "verified": true
+        },
+        {
+          "fact": "제공된 코드 증거 저장소는 repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520이며 파일은 README.md뿐입니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md에 따르면 이 프로젝트는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+          "verified": true
+        },
+        {
+          "fact": "README.md는 src/feature_flags/repository.py를 테넌트별 플래그 저장소, src/feature_flags/service.py를 플래그 조회 서비스로 기술하지만, 해당 두 파일의 실제 구현 코드는 제공된 증거에 포함되어 있지 않습니다.",
+          "verified": true
+        }
+      ],
+      "issue_id": 9,
+      "warnings": [
+        "Quality Gate is disabled for this benchmark profile."
+      ],
+      "relations": [],
+      "confidence": 0.3,
+      "hypotheses": [
+        {
+          "evidence": [
+            "bug_context.actual: \"true가 반환됩니다.\" (소유자 아님에도 true)",
+            "bug_context.expected: \"소유자가 아니므로 false여야 합니다.\"",
+            "제공된 코드 증거에는 권한 판정 함수 구현이 포함되어 있지 않음"
+          ],
+          "confidence": 0.45,
+          "hypothesis": "중요 플래그 편집 가능 여부를 판단하는 권한 검사 로직이 조직 소유자(owner) 여부를 제대로 반영하지 않고, 관리자 역할만 확인하도록 구현되어 있을 가능성이 높습니다. 즉 소유자 판정에 사용되어야 할 멤버십/소유권 데이터가 조건에 포함되지 않아 비소유자 관리자에게도 true가 반환됩니다."
+        },
+        {
+          "evidence": [
+            "README.md: \"src/feature_flags/repository.py: 테넌트별 플래그 저장소\"",
+            "제공된 코드 증거에 repository.py 실제 구현이 없음"
+          ],
+          "confidence": 0.2,
+          "hypothesis": "플래그 저장소(repository) 조회 계층에서 테넌트/조직 경계 확인이 누락되어, 서비스 계층의 권한 판정이 항상 허용(true)으로 귀결될 가능성이 있습니다."
+        },
+        {
+          "evidence": [
+            "README.md: \"src/feature_flags/service.py: 플래그 조회 서비스\"",
+            "제공된 코드 증거에 service.py 실제 구현이 없음"
+          ],
+          "confidence": 0.15,
+          "hypothesis": "서비스 계층의 판정 기본값 또는 예외 처리 경로가 fail-open(허용)으로 설정되어, 권한 정보를 확인할 수 없는 경우에도 true를 반환할 가능성이 있습니다."
+        },
+        {
+          "evidence": [
+            "제공된 코드 증거가 README.md만 포함하고 있어 결함 위치를 특정할 구현 코드가 없음"
+          ],
+          "confidence": 0.1,
+          "hypothesis": "이슈는 인증/권한 프레임워크 라이브러리(예: 재사용된 스킬 정의) 수준의 문제로 분류되어, 이 서비스 저장소 코드 자체의 결함이 아닐 가능성도 있습니다."
+        }
+      ],
+      "project_id": 9,
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거가 README.md뿐이라 repository.py / service.py의 실제 구현을 확인할 수 없어 결함 위치 특정이 지연된다.",
+            "mitigation": "코드 원본과 전체 커밋 이력을 먼저 확보하고, 확보 전에는 수정을 시작하지 않는다."
+          },
+          {
+            "risk": "역할(role) 기반 판정을 소유자 기반으로 변경하면, 소유자와 관리자 역할이 겹치는 기존 사용자에게 회귀가 발생할 수 있다.",
+            "mitigation": "소유자·비소유자·테넌트 교차 계정별 회귀 테스트로 판정 매트릭스를 검증하고, 역할별 기대값을 명시적으로 고정한다."
+          },
+          {
+            "risk": "fail-closed 전환으로 인해 일시적인 권한 데이터 조회 실패가 정상 사용자의 편집을 차단할 수 있다.",
+            "mitigation": "조회 실패에 대한 명시적 로깅/모니터링을 추가하고, 데이터 소스 가용성 알림을 연동해 차단이 조기에 감지되도록 한다."
+          },
+          {
+            "risk": "이슈가 서비스 저장소가 아닌 공유 인증/권한 프레임워크 라이브러리 결함(가설 conf 0.1)일 경우, 이 저장소의 수정만으로는 해결되지 않는다.",
+            "mitigation": "수정 전 조사 단계에서 결함 계층을 확정하고, 라이브러리 수준 문제로 판명되면 수정 대상을 명확히 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 판정 로직의 실제 구현 위치를 확인한다",
+            "details": "repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 src/feature_flags/service.py(플래그 조회 서비스)와 src/feature_flags/repository.py(테넌트별 플래그 저장소)의 실제 구현을 확보한다. 증거에는 README.md만 포함되어 있고 두 파일의 구현 코드는 없으므로, 먼저 코드 원본을 수집하지 않고는 결함 위치를 특정할 수 없다. '중요 플래그 편집 가능 여부' 판정이 어느 계층(service vs repository)에서 이루어지는지 매핑한다."
+          },
+          {
+            "id": 2,
+            "action": "소유자(owner) 판정에 사용되는 멤버십/소유권 데이터 흐름을 추적한다",
+            "details": "판정 함수가 테넌트 소유권(owner) 또는 멤버십 데이터를 조회하는지, 조회 시 tenant/organization 경계와 사용자 계정 ID를 함께 전달하는지 확인한다. 역할(role)만으로 비교하고 소유자 ID를 비교하지 않으면 비소유자 관리자에게 true가 반환된다는 가설(conf 0.45)을 검증한다."
+          },
+          {
+            "id": 3,
+            "action": "repo 계층의 테넌트/조직 경계 확인 누락 여부를 점검한다",
+            "details": "repository.py에서 플래그 조회 시 테넌트 경계를 명시적으로 검증하는지, 아니면 호출측 서비스에 위임하는지 확인한다. 경계 확인이 누락되어 서비스 계층 판정이 항상 허용(True)로 귀결되는지(가설 conf 0.2)를 확인한다."
+          },
+          {
+            "id": 4,
+            "action": "판정 기본값 및 예외 경로의 fail-open 여부를 점검한다",
+            "details": "권한 정보를 확인할 수 없거나 예외가 발생했을 때 True를 반환하는 기본값(fail-open)이 있는지 확인한다. 회귀 대상 재현 케이스 benchmark_case_id \"auth-role-escalation-symptom\" 조건을 그대로 사용한다."
+          },
+          {
+            "id": 5,
+            "action": "벤치마크 케이스로 결함을 재현하는 테스트를 추가하고 원인을 확정한다",
+            "details": "benchmark_case_id auth-role-escalation-symptom을 재현하는 회귀 테스트를 작성해, 비소유자 관리자 계정에서 중요 플래그 편집 판정이 기대값 false가 아니라 true로 반환되는 것을 실패 테스트로 고정한다."
+          },
+          {
+            "id": 6,
+            "action": "권한 판정 로직을 소유자/멤버십 기반으로 수정한다",
+            "details": "판정 함수가 소유자(owner) 여부 또는 유효한 멤버십 데이터를 명시적으로 조회·검증하도록 수정한다. 소유자가 아니면 관리자 역할과 무관하게 false를 반환한다. 이슈가 인증/권한 프레임워크 라이브러리 수준 문제(가설 conf 0.1)로 분류될 경우, 이 서비스 저장소 코드가 아닌 해당 라이브러리/스킬 정의를 수정 대상으로 전환한다."
+          },
+          {
+            "id": 7,
+            "action": "기본값/예외 경로를 fail-closed로 전환한다",
+            "details": "권한 정보 부재, 조회 실패, 예외 발생 시 기본 반환값을 false(거부)로 설정해, 확인 불가 상태에서 편집이 활성화되지 않도록 한다."
+          },
+          {
+            "id": 8,
+            "action": "회귀 검증 및 교차 계층 회귀 테스트를 수행한다",
+            "details": "추가한 회귀 테스트와 기존 테스트 스위트를 subset을 구성해 실행한다. 소유자 계정, 소유자가 아닌 관리자 계정, 테넌트 경계를 넘는 계정 각각에서 중요 플래그 편집 판정 결과를 확인하고, repository/service 계층 동작이 일관됨을 검증한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "acceptance_criteria": [
+          "benchmark_case_id \"auth-role-escalation-symptom\" 재현 테스트에서 비소유자 관리자 계정의 중요 플래그 편집 가능 여부 판정이 false를 반환한다.",
+          "조직 소유자(owner) 본인 계정의 경우 중요 플래그 편집 가능 여부 판정이 기존과 동일하게 true를 반환한다.",
+          "권한 정보 조회 실패 또는 예외 상황에서 판정이 fail-closed(거부, false)로 동작한다.",
+          "repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 전체 회귀 테스트가 통과한다.",
+          "수정된 판정 로직이 service.py와 repository.py 계층에서 동일한 결과를 내도록 계층 간 검증이 완료된다."
+        ]
+      },
+      "risk_assessment": {
+        "status": "llm",
+        "factors": [
+          {
+            "name": "영향 범위",
+            "score": 72,
+            "rationale": "테넌트별 기능 플래그 조회를 제공하는 라이브러리 전체에서 권한 판정 로직이 영향을 받을 수 있습니다. 조직 소유자가 아닌 모든 관리자 계정이 중요 플래그 관리 권한을 획득하게 되어, 다수 조직/테넌트의 플래그 편집 흐름이 노출됩니다."
+          },
+          {
+            "name": "심각도",
+            "score": 78,
+            "rationale": "권한 상승(role escalation) 성격의 결함으로, 비소유자 관리자가 중요 플래그를 변경할 수 있어 보안 노출 및 설정 무결성 훼손이 발생합니다. 다만 크래시나 직접적 데이터 손실/손상은 아니며 stack_trace도 비어 있습니다."
+          },
+          {
+            "name": "발생 빈도·재현성",
+            "score": 85,
+            "rationale": "재현 절차(admin 계정으로 권한 평가 → 플래그 관리 가능 결과 확인)에서 항상 true가 반환되는 결정적 동작으로, 보고된 message 자체가 \"true가 반환됩니다.\"입니다. 소유자 아닌 관리자에게 100% 재현되는 것으로 보입니다."
+          },
+          {
+            "name": "우회 가능성",
+            "score": 62,
+            "rationale": "UI 버튼 비활성화를 우회하려면 서버 측 권한 판정 자체를 수정해야 하며, 관리자 계정 사용자는 API/서비스 계층 호출로 편집이 가능해 실질적 우회 수단이 제한적입니다. 소유자 검증을 별도로 수행하지 않는 한 회피가 어렵습니다."
+          },
+          {
+            "name": "비즈니스 임계성",
+            "score": 80,
+            "rationale": "조직 소유권(owner) 기반 접근 제어가 무력화되어 결제·계정·핵심 경로 설정을 좌우하는 기능 플래그 관리 권한이 확대됩니다. raw_payload의 benchmark_case_id \"auth-role-escalation-symptom\"도 권한 상승 시나리오임을 시사합니다."
+          },
+          {
+            "name": "근본 원인 특정도",
+            "score": 45,
+            "rationale": "제공된 코드 증거가 README.md뿐이어서 src/feature_flags/service.py, repository.py 실제 구현이 없어 결함 위치가 특정되지 않았습니다. root_cause_hypotheses 최고 신뢰도도 0.45(소유자 판정 누락)이며 analysis confidence는 0.3에 불과해 진단 불확실성이 큽니다."
+          }
+        ],
+        "priority": "P1",
+        "rationale": "소유자가 아닌 관리자 계정에서 중요 플래그 관리 가능 결과가 true로 반환되는 권한 상승(role escalation) 이슈입니다. 예상 동작은 false이나 실제로는 true가 결정적으로 반환되어, 조직 소유권 기반 접근 제어가 무력화되고 비소유자 관리자가 중요 기능 플래그를 변경할 수 있습니다. 보안 노출과 설정 무결성 훼손을 수반하고 다수 테넌트의 관리자 흐름에 영향이 있어 P1 높음 밴드(70-84)에 해당합니다. 다만 서비스 중단(full outage)이나 직접적 데이터 손실/손상은 아니며, 제공 증거가 README.md로 제한되어 근본 원인이 특정되지 않았다는 점에서 P0 긴급(85-100)까지는 아니라고 판단했습니다. 최우선 조치로 소유권(owner) 판정을 권한 검사 조건에 포함하고, 권한 확인 불가 시 fail-closed(거부) 기본값 적용 및 회귀 테스트 추가가 필요합니다.",
+        "risk_score": 74
+      },
+      "workflow_run_id": 9
+    }
+  },
+  "workflow": {
+    "id": 9,
+    "project_id": 9,
+    "request_id": "process-bug-9",
+    "request_type": "process_report",
+    "status": "COMPLETED",
+    "latest_checkpoint": null,
+    "result_snapshot": {
+      "action": "analysis_completed",
+      "quality": {
+        "status": "not_evaluated",
+        "reasons": [],
+        "warnings": [
+          "Quality Gate is disabled for this benchmark profile."
+        ]
+      },
+      "analysis": {
+        "facts": [
+          {
+            "fact": "이슈 9는 조직 소유자가 아닌 관리자 계정에서 중요 플래그 편집 버튼이 활성화되고, 플래그 관리 가능 결과가 true로 반환된다고 보고합니다.",
+            "verified": true
+          },
+          {
+            "fact": "bug_context의 기대 동작은 소유자가 아니므로 false여야 한다는 것입니다.",
+            "verified": true
+          },
+          {
+            "fact": "오류 유형은 ReportedBehaviorMismatch이며 message는 \"true가 반환됩니다.\"이고 stack_trace는 비어 있습니다.",
+            "verified": true
+          },
+          {
+            "fact": "raw_payload의 benchmark_case_id는 \"auth-role-escalation-symptom\"입니다.",
+            "verified": true
+          },
+          {
+            "fact": "제공된 코드 증거 저장소는 repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520이며 파일은 README.md뿐입니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md에 따르면 이 프로젝트는 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리입니다.",
+            "verified": true
+          },
+          {
+            "fact": "README.md는 src/feature_flags/repository.py를 테넌트별 플래그 저장소, src/feature_flags/service.py를 플래그 조회 서비스로 기술하지만, 해당 두 파일의 실제 구현 코드는 제공된 증거에 포함되어 있지 않습니다.",
+            "verified": true
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "citations": [
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 3,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 3,
+            "evidence_id": null,
+            "observation": "README.md 3행은 이 프로젝트를 테넌트별 기능 플래그 조회를 제공하는 작은 Python 서비스 라이브러리로 소개합니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 16,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 16,
+            "evidence_id": null,
+            "observation": "README.md 16행은 src/feature_flags/repository.py를 테넌트별 플래그 저장소로 기술하며, 권한 판정에 관련될 수 있는 저장소 계층의 존재를 시사합니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          },
+          {
+            "commit": "b30e31e3c83d0faf4e27a38a29498b859d8f7520",
+            "snippet": null,
+            "end_line": 18,
+            "location": null,
+            "file_path": "README.md",
+            "source_id": null,
+            "start_line": 18,
+            "evidence_id": null,
+            "observation": "README.md 18행은 src/feature_flags/service.py를 플래그 조회 서비스로 기술하며, 플래그 관리 가능 여부 판정이 위치할 가능성이 있는 계층입니다.",
+            "source_type": "repository",
+            "knowledge_id": null,
+            "repository_id": "9",
+            "source_revision": null,
+            "knowledge_revision": null
+          }
+        ],
+        "confidence": 0.3,
+        "evidence_counts": {
+          "code": 6,
+          "history": 0,
+          "documents": 0
+        },
+        "root_cause_hypotheses": [
+          {
+            "evidence": [
+              "bug_context.actual: \"true가 반환됩니다.\" (소유자 아님에도 true)",
+              "bug_context.expected: \"소유자가 아니므로 false여야 합니다.\"",
+              "제공된 코드 증거에는 권한 판정 함수 구현이 포함되어 있지 않음"
+            ],
+            "confidence": 0.45,
+            "hypothesis": "중요 플래그 편집 가능 여부를 판단하는 권한 검사 로직이 조직 소유자(owner) 여부를 제대로 반영하지 않고, 관리자 역할만 확인하도록 구현되어 있을 가능성이 높습니다. 즉 소유자 판정에 사용되어야 할 멤버십/소유권 데이터가 조건에 포함되지 않아 비소유자 관리자에게도 true가 반환됩니다."
+          },
+          {
+            "evidence": [
+              "README.md: \"src/feature_flags/repository.py: 테넌트별 플래그 저장소\"",
+              "제공된 코드 증거에 repository.py 실제 구현이 없음"
+            ],
+            "confidence": 0.2,
+            "hypothesis": "플래그 저장소(repository) 조회 계층에서 테넌트/조직 경계 확인이 누락되어, 서비스 계층의 권한 판정이 항상 허용(true)으로 귀결될 가능성이 있습니다."
+          },
+          {
+            "evidence": [
+              "README.md: \"src/feature_flags/service.py: 플래그 조회 서비스\"",
+              "제공된 코드 증거에 service.py 실제 구현이 없음"
+            ],
+            "confidence": 0.15,
+            "hypothesis": "서비스 계층의 판정 기본값 또는 예외 처리 경로가 fail-open(허용)으로 설정되어, 권한 정보를 확인할 수 없는 경우에도 true를 반환할 가능성이 있습니다."
+          },
+          {
+            "evidence": [
+              "제공된 코드 증거가 README.md만 포함하고 있어 결함 위치를 특정할 구현 코드가 없음"
+            ],
+            "confidence": 0.1,
+            "hypothesis": "이슈는 인증/권한 프레임워크 라이브러리(예: 재사용된 스킬 정의) 수준의 문제로 분류되어, 이 서비스 저장소 코드 자체의 결함이 아닐 가능성도 있습니다."
+          }
+        ]
+      },
+      "issue_id": "9",
+      "resolution_plan": {
+        "risks": [
+          {
+            "risk": "제공된 코드 증거가 README.md뿐이라 repository.py / service.py의 실제 구현을 확인할 수 없어 결함 위치 특정이 지연된다.",
+            "mitigation": "코드 원본과 전체 커밋 이력을 먼저 확보하고, 확보 전에는 수정을 시작하지 않는다."
+          },
+          {
+            "risk": "역할(role) 기반 판정을 소유자 기반으로 변경하면, 소유자와 관리자 역할이 겹치는 기존 사용자에게 회귀가 발생할 수 있다.",
+            "mitigation": "소유자·비소유자·테넌트 교차 계정별 회귀 테스트로 판정 매트릭스를 검증하고, 역할별 기대값을 명시적으로 고정한다."
+          },
+          {
+            "risk": "fail-closed 전환으로 인해 일시적인 권한 데이터 조회 실패가 정상 사용자의 편집을 차단할 수 있다.",
+            "mitigation": "조회 실패에 대한 명시적 로깅/모니터링을 추가하고, 데이터 소스 가용성 알림을 연동해 차단이 조기에 감지되도록 한다."
+          },
+          {
+            "risk": "이슈가 서비스 저장소가 아닌 공유 인증/권한 프레임워크 라이브러리 결함(가설 conf 0.1)일 경우, 이 저장소의 수정만으로는 해결되지 않는다.",
+            "mitigation": "수정 전 조사 단계에서 결함 계층을 확정하고, 라이브러리 수준 문제로 판명되면 수정 대상을 명확히 분리한다."
+          }
+        ],
+        "steps": [
+          {
+            "id": 1,
+            "action": "권한 판정 로직의 실제 구현 위치를 확인한다",
+            "details": "repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준으로 src/feature_flags/service.py(플래그 조회 서비스)와 src/feature_flags/repository.py(테넌트별 플래그 저장소)의 실제 구현을 확보한다. 증거에는 README.md만 포함되어 있고 두 파일의 구현 코드는 없으므로, 먼저 코드 원본을 수집하지 않고는 결함 위치를 특정할 수 없다. '중요 플래그 편집 가능 여부' 판정이 어느 계층(service vs repository)에서 이루어지는지 매핑한다."
+          },
+          {
+            "id": 2,
+            "action": "소유자(owner) 판정에 사용되는 멤버십/소유권 데이터 흐름을 추적한다",
+            "details": "판정 함수가 테넌트 소유권(owner) 또는 멤버십 데이터를 조회하는지, 조회 시 tenant/organization 경계와 사용자 계정 ID를 함께 전달하는지 확인한다. 역할(role)만으로 비교하고 소유자 ID를 비교하지 않으면 비소유자 관리자에게 true가 반환된다는 가설(conf 0.45)을 검증한다."
+          },
+          {
+            "id": 3,
+            "action": "repo 계층의 테넌트/조직 경계 확인 누락 여부를 점검한다",
+            "details": "repository.py에서 플래그 조회 시 테넌트 경계를 명시적으로 검증하는지, 아니면 호출측 서비스에 위임하는지 확인한다. 경계 확인이 누락되어 서비스 계층 판정이 항상 허용(True)로 귀결되는지(가설 conf 0.2)를 확인한다."
+          },
+          {
+            "id": 4,
+            "action": "판정 기본값 및 예외 경로의 fail-open 여부를 점검한다",
+            "details": "권한 정보를 확인할 수 없거나 예외가 발생했을 때 True를 반환하는 기본값(fail-open)이 있는지 확인한다. 회귀 대상 재현 케이스 benchmark_case_id \"auth-role-escalation-symptom\" 조건을 그대로 사용한다."
+          },
+          {
+            "id": 5,
+            "action": "벤치마크 케이스로 결함을 재현하는 테스트를 추가하고 원인을 확정한다",
+            "details": "benchmark_case_id auth-role-escalation-symptom을 재현하는 회귀 테스트를 작성해, 비소유자 관리자 계정에서 중요 플래그 편집 판정이 기대값 false가 아니라 true로 반환되는 것을 실패 테스트로 고정한다."
+          },
+          {
+            "id": 6,
+            "action": "권한 판정 로직을 소유자/멤버십 기반으로 수정한다",
+            "details": "판정 함수가 소유자(owner) 여부 또는 유효한 멤버십 데이터를 명시적으로 조회·검증하도록 수정한다. 소유자가 아니면 관리자 역할과 무관하게 false를 반환한다. 이슈가 인증/권한 프레임워크 라이브러리 수준 문제(가설 conf 0.1)로 분류될 경우, 이 서비스 저장소 코드가 아닌 해당 라이브러리/스킬 정의를 수정 대상으로 전환한다."
+          },
+          {
+            "id": 7,
+            "action": "기본값/예외 경로를 fail-closed로 전환한다",
+            "details": "권한 정보 부재, 조회 실패, 예외 발생 시 기본 반환값을 false(거부)로 설정해, 확인 불가 상태에서 편집이 활성화되지 않도록 한다."
+          },
+          {
+            "id": 8,
+            "action": "회귀 검증 및 교차 계층 회귀 테스트를 수행한다",
+            "details": "추가한 회귀 테스트와 기존 테스트 스위트를 subset을 구성해 실행한다. 소유자 계정, 소유자가 아닌 관리자 계정, 테넌트 경계를 넘는 계정 각각에서 중요 플래그 편집 판정 결과를 확인하고, repository/service 계층 동작이 일관됨을 검증한다."
+          }
+        ],
+        "status": "llm",
+        "issue_id": "9",
+        "acceptance_criteria": [
+          "benchmark_case_id \"auth-role-escalation-symptom\" 재현 테스트에서 비소유자 관리자 계정의 중요 플래그 편집 가능 여부 판정이 false를 반환한다.",
+          "조직 소유자(owner) 본인 계정의 경우 중요 플래그 편집 가능 여부 판정이 기존과 동일하게 true를 반환한다.",
+          "권한 정보 조회 실패 또는 예외 상황에서 판정이 fail-closed(거부, false)로 동작한다.",
+          "repository_id 9, commit b30e31e3c83d0faf4e27a38a29498b859d8f7520 기준 전체 회귀 테스트가 통과한다.",
+          "수정된 판정 로직이 service.py와 repository.py 계층에서 동일한 결과를 내도록 계층 간 검증이 완료된다."
+        ]
+      },
+      "analysis_profile": "one-shot"
+    },
+    "failure_code": null,
+    "failure_message": null,
+    "started_at": "2026-09-28T07:43:36.473740Z",
+    "completed_at": "2026-09-28T07:44:01.818002Z",
+    "created_at": "2026-09-28T07:43:36.443552Z",
+    "updated_at": "2026-09-28T07:44:01.819530Z"
+  },
+  "execution_error": null,
+  "efficiency": {
+    "duration_seconds": 26.454
+  }
+}
