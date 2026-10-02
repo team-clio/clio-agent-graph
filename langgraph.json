@@ -9,5 +9,8 @@
     "issue_analyzer": "./src/clio_agent_graph/workflows/analysis/graph.py:issue_analyzer_graph",
     "issue_reanalyzer": "./src/clio_agent_graph/workflows/analysis/graph.py:issue_reanalyzer_graph"
   },
-  "env": ".env"
+  "env": ".env",
+  "http": {
+    "app": "./src/clio_agent_graph/observability/benchmark_api.py:app"
+  }
 }

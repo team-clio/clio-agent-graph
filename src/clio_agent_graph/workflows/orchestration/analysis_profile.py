@@ -6,6 +6,8 @@ import os
 from dataclasses import dataclass
 from enum import StrEnum
 
+from clio_agent_graph.observability.benchmark import benchmark_mode_enabled
+
 
 class AnalysisProfile(StrEnum):
     """동일 분석 계약에서 근거 수집과 검증 구성을 구분한다."""
@@ -72,17 +74,5 @@ class AnalysisProfileSettings:
             raise ValueError(f"CLIO_ANALYSIS_PROFILE must be one of: {supported}.") from exc
         return cls(
             profile=profile,
-            benchmark_mode=_read_boolean("CLIO_BENCHMARK_MODE", default=False),
+            benchmark_mode=benchmark_mode_enabled(),
         )
-
-
-def _read_boolean(name: str, *, default: bool) -> bool:
-    raw = os.getenv(name)
-    if raw is None:
-        return default
-    normalized = raw.strip().casefold()
-    if normalized in {"1", "true", "yes", "on"}:
-        return True
-    if normalized in {"0", "false", "no", "off"}:
-        return False
-    raise ValueError(f"{name} must be a boolean value.")

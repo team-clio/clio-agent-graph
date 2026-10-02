@@ -69,3 +69,24 @@ docker compose -f compose.observability.yaml down
 ```
 
 데이터까지 초기화하려면 `down -v`가 필요하다. 해당 명령은 저장된 metric·trace·Grafana 상태를 삭제하므로 증거 캡처 후에만 사용한다.
+
+## 벤치마크 상세 Tool 로그
+
+`CLIO_BENCHMARK_MODE=true`로 실행하면 기존 runtime callback이 Tool 인자·반환값·오류를
+SQLite에 기록합니다. OTEL 활성화와 무관하며, 일반 모드에서는 상세 로그를 생성하지 않습니다.
+`CLIO_BENCHMARK_LOG_PATH`로 저장 위치를 변경할 수 있습니다(기본 `.clio/benchmark-tools.sqlite3`).
+
+LangGraph HTTP 앱이 제공하는 API는 다음과 같습니다.
+
+- `GET /benchmark/tool-calls/boundary`: 저장소 ID, 마지막 호출 순번, Agent UTC 시각
+- `GET /benchmark/tool-calls?after=0&through=10&store_id=<id>&limit=100`: 시작 순번 초과,
+  종료 순번 이하의 호출 조회. `next_cursor`가 있으면 다음 페이지로 전달합니다.
+
+벗어난 범위·page size는 422, 일반 모드는 409, 수집 중 저장소 교체는 409를 반환합니다.
+조회 범위는 호출 시작 순번으로 고정됩니다. 아직 종료되지 않은 호출은 `running`이며
+수집 중 종료되면 이후 조회에서 최종 상태를 읽을 수 있습니다.
+
+인자와 반환값은 크기를 자르지 않고 JSON으로 보존합니다. JSON 변환이 불가능한 객체는
+`serialization=repr`과 타입·표현을 기록합니다. 실패 로그에는 오류 종류와 메시지가 남습니다.
+벤치마크 종료 후에도 Agent 저장소는 자동 삭제하지 않습니다. 보관할 필요가 없으면
+Agent 종료 후 해당 SQLite 파일을 삭제합니다. 재기동은 같은 파일의 로그를 유지합니다.
