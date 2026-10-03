@@ -80,7 +80,7 @@ def build_report_processing_graph():
         try:
             return await processing_graph.ainvoke(state)
         except Exception as error:
-            mark_failed(state, error)
+            await asyncio.to_thread(mark_failed, state, error)
             raise
 
     builder = StateGraph(ReportWorkflowState)

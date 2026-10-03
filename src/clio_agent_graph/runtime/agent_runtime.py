@@ -17,6 +17,7 @@ from pydantic import BaseModel, ValidationError
 from clio_agent_graph.observability import get_telemetry
 from clio_agent_graph.runtime.observation_callback import RuntimeObservationCallback
 from clio_agent_graph.runtime.structured_output import tool_strategy
+from clio_agent_graph.runtime.tool_response_middleware import CompleteToolResponsesMiddleware
 
 StructuredResult = TypeVar("StructuredResult", bound=BaseModel)
 
@@ -94,6 +95,7 @@ class StructuredToolAgent(Generic[StructuredResult]):
             system_prompt=system_prompt.rstrip() + TOOL_AUTONOMY_RULES,
             response_format=tool_strategy(response_model),
             middleware=(
+                CompleteToolResponsesMiddleware(),
                 ToolCallLimitMiddleware(
                     run_limit=self._limits.max_tool_calls,
                     exit_behavior="error",

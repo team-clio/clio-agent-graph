@@ -19,6 +19,7 @@ from clio_agent_graph.observability import get_telemetry
 from clio_agent_graph.runtime.agent_runtime import AgentExecutionLimitError, AgentLimits
 from clio_agent_graph.runtime.observation_callback import RuntimeObservationCallback
 from clio_agent_graph.runtime.structured_output import tool_strategy
+from clio_agent_graph.runtime.tool_response_middleware import CompleteToolResponsesMiddleware
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
 
@@ -121,6 +122,7 @@ class ToolCallingAgent:
             ),
             response_format=tool_strategy(self.response_model),
             middleware=(
+                CompleteToolResponsesMiddleware(),
                 ToolCallLimitMiddleware(
                     run_limit=self.limits.max_tool_calls,
                     exit_behavior="error",
