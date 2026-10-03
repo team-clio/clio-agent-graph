@@ -55,6 +55,7 @@ def test_custom_endpoint_options_apply_to_the_selected_global_model(
             "base_url": "http://localhost:8000/v1",
             "api_key": "test-key",
             "extra_body": {"thinking": {"type": "disabled"}},
+            "model_kwargs": {"parallel_tool_calls": False},
         },
     }
 
@@ -177,3 +178,16 @@ def test_match_decision_normalizes_qualitative_confidence() -> None:
     )
 
     assert result.confidence == 0.8
+
+
+def test_openai_compatible_model_disables_parallel_tool_calls(monkeypatch):
+    monkeypatch.setenv("CLIO_MODEL", "openai:deepseek-v4-flash")
+    captured = {}
+
+    def fake_init(model, **kwargs):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(llm, "init_chat_model", fake_init)
+    llm.build_chat_model()
+    assert captured["model_kwargs"]["parallel_tool_calls"] is False

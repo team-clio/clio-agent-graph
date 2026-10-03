@@ -79,6 +79,9 @@ def build_chat_model():
 
     selected = LLMSettings.from_env()
     model_kwargs: dict[str, Any] = {}
+    # OpenAI 호환 API에서는 구조화 응답 Tool과 일반 Tool을 한 번에 섞지 않는다.
+    if selected.model.startswith("openai:"):
+        model_kwargs["model_kwargs"] = {"parallel_tool_calls": False}
     if selected.base_url:
         model_kwargs["base_url"] = selected.base_url
     if selected.api_key:
