@@ -81,7 +81,7 @@ def test_prepare_fails_after_second_provider_error() -> None:
     model = FakeEmbeddingModel(failures=2)
     repository = ScopeRepository(RetrievalScope(eligible_bug_count=0, indexed_bug_count=0))
 
-    with pytest.raises(RetrievalOperationError):
+    with pytest.raises(RetrievalOperationError, match="temporary\ provider\ failure"):
         IssueRetrieverService(repository, model).prepare(_request())
 
     assert model.calls == 2

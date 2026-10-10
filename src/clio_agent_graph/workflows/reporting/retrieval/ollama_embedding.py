@@ -13,6 +13,9 @@ from clio_agent_graph.workflows.reporting.retrieval.errors import (
 
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_TIMEOUT_SECONDS = 120.0
+# Ollama embedding 메모리는 context 크기에 비례한다.
+# 3GB급 Docker 환경에서도 안정적인 값을 기본으로 한다.
+DEFAULT_OLLAMA_EMBED_CONTEXT_TOKENS = 1024
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 QUERY_INSTRUCTION = (
     "Given a software Bug, retrieve previous Bugs caused by the same "
@@ -30,6 +33,7 @@ class OllamaEmbeddingModel:
         *,
         base_url: str | None = None,
         timeout_seconds: float | None = None,
+        context_tokens: int | None = None,
     ) -> None:
         configured_name = (
             model_name if model_name is not None else os.getenv("OLLAMA_EMBEDDING_MODEL", "")
@@ -59,6 +63,13 @@ class OllamaEmbeddingModel:
                 "CLIO_OLLAMA_TIMEOUT_SECONDS must be greater than zero."
             )
         self._timeout_seconds = configured_timeout
+        self._context_tokens = (
+            context_tokens if context_tokens is not None else _configured_context_tokens()
+        )
+        if self._context_tokens <= 0:
+            raise RetrievalConfigurationError(
+                "CLIO_OLLAMA_EMBED_CONTEXT_TOKENS must be a positive integer."
+            )
 
     @property
     def model_name(self) -> str:
@@ -88,7 +99,13 @@ class OllamaEmbeddingModel:
         request = Request(
             f"{self._base_url}/api/embed",
             data=json.dumps(
-                {"model": self._require_model_name(), "input": text},
+                {
+                    "model": self._require_model_name(),
+                    "input": text,
+                    # 상한을 넘는 입력은 뒤를 잘라 메모리 사용량을 설정값 안에 고정한다.
+                    "truncate": True,
+                    "options": {"num_ctx": self._context_tokens},
+                },
                 ensure_ascii=False,
             ).encode("utf-8"),
             headers={"Content-Type": "application/json"},
@@ -124,3 +141,15 @@ class OllamaEmbeddingModel:
         if not self._ollama_model:
             raise RetrievalConfigurationError("OLLAMA_EMBEDDING_MODEL is not configured.")
         return self._ollama_model
+
+
+def _configured_context_tokens() -> int:
+    value = os.getenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", "").strip()
+    if not value:
+        return DEFAULT_OLLAMA_EMBED_CONTEXT_TOKENS
+    try:
+        return int(value)
+    except ValueError as error:
+        raise RetrievalConfigurationError(
+            "CLIO_OLLAMA_EMBED_CONTEXT_TOKENS must be a positive integer."
+        ) from error

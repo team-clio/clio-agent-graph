@@ -36,6 +36,7 @@ async def test_ollama_embedding_uses_model_and_pcm_dimensions(monkeypatch) -> No
         return _FakeResponse(json.dumps({"embeddings": vectors}).encode())
 
     monkeypatch.setattr("clio_agent_graph.context.pcm.embedding.urlopen", fake_urlopen)
+    monkeypatch.delenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", raising=False)
     provider = OllamaEmbeddingProvider(
         "qwen3-embedding:0.6b",
         base_url="http://ollama.test:11434/",
@@ -53,6 +54,8 @@ async def test_ollama_embedding_uses_model_and_pcm_dimensions(monkeypatch) -> No
         "model": "qwen3-embedding:0.6b",
         "input": ["첫 문서", "둘째 문서"],
         "dimensions": PCM_EMBEDDING_DIMENSIONS,
+        "truncate": True,
+        "options": {"num_ctx": 1024},
     }
     assert requests[1]["input"] == [f"Instruct: {QUERY_INSTRUCTION}\nQuery: 저장된 검색 수정 권한"]
 
@@ -62,3 +65,11 @@ def test_ollama_embedding_requires_model_environment(monkeypatch) -> None:
 
     with pytest.raises(ValueError, match="OLLAMA_EMBEDDING_MODEL"):
         _ = OllamaEmbeddingProvider().model_id
+
+
+@pytest.mark.parametrize("value", ["0", "large"])
+def test_ollama_embedding_context_limit_must_be_a_positive_integer(monkeypatch, value) -> None:
+    monkeypatch.setenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", value)
+
+    with pytest.raises(ValueError, match="CLIO_OLLAMA_EMBED_CONTEXT_TOKENS"):
+        OllamaEmbeddingProvider("qwen3-embedding:0.6b")

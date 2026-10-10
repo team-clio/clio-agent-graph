@@ -83,3 +83,31 @@ def test_ollama_factory_requires_model_environment(monkeypatch) -> None:
 
     with pytest.raises(RetrievalConfigurationError, match="OLLAMA_EMBEDDING_MODEL"):
         _ = load_default_embedding_model().model_name
+
+
+def test_ollama_adapter_caps_embedding_context_to_bound_memory(monkeypatch) -> None:
+    payloads: list[dict] = []
+
+    def fake_urlopen(request, *, timeout):
+        payloads.append(json.loads(request.data))
+        return _FakeResponse(b'{"embeddings": [[0.1]]}')
+
+    monkeypatch.setattr(
+        "clio_agent_graph.workflows.reporting.retrieval.ollama_embedding.urlopen",
+        fake_urlopen,
+    )
+    monkeypatch.delenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", raising=False)
+    OllamaEmbeddingModel("qwen3-embedding:0.6b").embed_document("bug")
+    monkeypatch.setenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", "512")
+    OllamaEmbeddingModel("qwen3-embedding:0.6b").embed_query("bug")
+
+    assert [p["options"]["num_ctx"] for p in payloads] == [1024, 512]
+    assert all(p["truncate"] is True for p in payloads)
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "large"])
+def test_ollama_context_limit_must_be_a_positive_integer(monkeypatch, value) -> None:
+    monkeypatch.setenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", value)
+
+    with pytest.raises(RetrievalConfigurationError, match="CLIO_OLLAMA_EMBED_CONTEXT_TOKENS"):
+        OllamaEmbeddingModel("qwen3-embedding:0.6b")

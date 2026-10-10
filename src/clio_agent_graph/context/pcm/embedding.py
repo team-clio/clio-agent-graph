@@ -12,6 +12,9 @@ from urllib.request import Request, urlopen
 
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_TIMEOUT_SECONDS = 120.0
+# Ollama embedding 메모리는 context 크기에 비례한다.
+# 3GB급 Docker 환경에서도 안정적인 값을 기본으로 한다.
+DEFAULT_OLLAMA_EMBED_CONTEXT_TOKENS = 1024
 PCM_EMBEDDING_DIMENSIONS = 384
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 QUERY_INSTRUCTION = (
@@ -56,6 +59,7 @@ class OllamaEmbeddingProvider:
         base_url: str | None = None,
         timeout_seconds: float | None = None,
         dimensions: int = PCM_EMBEDDING_DIMENSIONS,
+        context_tokens: int | None = None,
     ) -> None:
         configured_model_name = (
             model_name if model_name is not None else os.getenv("OLLAMA_EMBEDDING_MODEL", "")
@@ -86,6 +90,20 @@ class OllamaEmbeddingProvider:
         )
         if self._timeout_seconds <= 0:
             raise ValueError("CLIO_OLLAMA_TIMEOUT_SECONDS must be greater than zero.")
+
+        if context_tokens is None:
+            context_value = os.getenv("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS", "").strip()
+            try:
+                context_tokens = (
+                    int(context_value) if context_value else DEFAULT_OLLAMA_EMBED_CONTEXT_TOKENS
+                )
+            except ValueError as error:
+                raise ValueError(
+                    "CLIO_OLLAMA_EMBED_CONTEXT_TOKENS must be a positive integer."
+                ) from error
+        if context_tokens <= 0:
+            raise ValueError("CLIO_OLLAMA_EMBED_CONTEXT_TOKENS must be a positive integer.")
+        self._context_tokens = context_tokens
 
     @property
     def model_id(self) -> str:
@@ -122,6 +140,9 @@ class OllamaEmbeddingProvider:
                     "model": self._require_model_name(),
                     "input": texts,
                     "dimensions": self.dimensions,
+                    # 상한을 넘는 입력은 뒤를 잘라 메모리 사용량을 설정값 안에 고정한다.
+                    "truncate": True,
+                    "options": {"num_ctx": self._context_tokens},
                 },
                 ensure_ascii=False,
             ).encode("utf-8"),
