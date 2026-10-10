@@ -58,11 +58,10 @@ def test_custom_endpoint_options_apply_to_the_selected_global_model(
     assert captured == {
         "model": "openai:local-model",
         "kwargs": {
-            "max_tokens": 32768,
             "callbacks": captured["kwargs"]["callbacks"],
             "base_url": "http://localhost:8000/v1",
             "api_key": "test-key",
-            "extra_body": {"thinking": {"type": "disabled"}},
+            "extra_body": {"thinking": {"type": "disabled"}, "max_tokens": 32768},
             "model_kwargs": {"parallel_tool_calls": False},
         },
     }
@@ -280,3 +279,31 @@ def test_completed_response_passes_the_truncation_guard(monkeypatch):
     _use_fake_provider(monkeypatch, finish_reason="stop", message=AIMessage(content="done"))
 
     assert llm.build_chat_model().invoke("answer").content == "done"
+
+
+def test_compatible_endpoint_receives_the_standard_max_tokens_field(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    monkeypatch.setenv("CLIO_MODEL", "openai:deepseek-v4-flash")
+    monkeypatch.setenv("CLIO_MODEL_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("CLIO_MODEL_API_KEY_ENV", "TEST_KEY")
+    monkeypatch.setenv("TEST_KEY", "test-key")
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "4096")
+    monkeypatch.delenv("CLIO_MODEL_EXTRA_BODY", raising=False)
+
+    payload = llm.build_chat_model()._get_request_payload([("user", "hi")])
+
+    assert payload["extra_body"]["max_tokens"] == 4096
+    assert "max_completion_tokens" not in payload
+
+
+def test_official_openai_endpoint_receives_max_completion_tokens(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    monkeypatch.setenv("CLIO_MODEL", "openai:gpt-4.1-mini")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "4096")
+    for name in ("CLIO_MODEL_BASE_URL", "CLIO_MODEL_API_KEY_ENV", "CLIO_MODEL_EXTRA_BODY"):
+        monkeypatch.delenv(name, raising=False)
+
+    payload = llm.build_chat_model()._get_request_payload([("user", "hi")])
+
+    assert payload["max_completion_tokens"] == 4096

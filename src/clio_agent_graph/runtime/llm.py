@@ -128,7 +128,6 @@ def build_chat_model():
 
     selected = LLMSettings.from_env()
     model_kwargs: dict[str, Any] = {
-        "max_tokens": selected.max_tokens,
         "callbacks": [OutputTruncationGuard(selected.max_tokens)],
     }
     # OpenAI 호환 API에서는 구조화 응답 Tool과 일반 Tool을 한 번에 섞지 않는다.
@@ -138,8 +137,15 @@ def build_chat_model():
         model_kwargs["base_url"] = selected.base_url
     if selected.api_key:
         model_kwargs["api_key"] = selected.api_key
-    if selected.extra_body:
-        model_kwargs["extra_body"] = selected.extra_body
+    extra_body = dict(selected.extra_body or {})
+    # langchain-openai는 max_tokens를 max_completion_tokens로 바꿔 보내지만 DeepSeek 등 호환
+    # endpoint는 이를 무시한다. base_url을 지정한 경우 요청 본문에 표준 max_tokens를 직접 싣는다.
+    if selected.model.startswith("openai:") and selected.base_url:
+        extra_body.setdefault("max_tokens", selected.max_tokens)
+    else:
+        model_kwargs["max_tokens"] = selected.max_tokens
+    if extra_body:
+        model_kwargs["extra_body"] = extra_body
     return init_chat_model(selected.model, **model_kwargs)
 
 
