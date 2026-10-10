@@ -11,6 +11,8 @@ from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitM
 from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
 from langchain.agents.middleware.tool_call_limit import ToolCallLimitExceededError
 from langchain.chat_models import init_chat_model
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.outputs import LLMResult
 from langchain_core.tools import BaseTool
 from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel
@@ -24,6 +26,20 @@ from clio_agent_graph.runtime.tool_response_middleware import CompleteToolRespon
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
 
 DEFAULT_MODEL = "openai:gpt-4.1-mini"
+# provider 기본값(DeepSeek 8192 등)은 저장소 규모의 구조화 출력을 자르므로 명시적으로 지정한다.
+DEFAULT_MAX_TOKENS = 32768
+TRUNCATED_FINISH_REASONS = frozenset({"length", "max_tokens"})
+
+
+class ModelOutputTruncatedError(RuntimeError):
+    """모델 응답이 출력 토큰 상한에서 잘려 결과를 신뢰할 수 없는 경우."""
+
+    def __init__(self, max_tokens: int) -> None:
+        self.max_tokens = max_tokens
+        super().__init__(
+            f"Model output was truncated at the {max_tokens} token output limit. "
+            "Increase CLIO_MODEL_MAX_TOKENS or reduce the input size."
+        )
 
 
 @dataclass(frozen=True)
@@ -35,6 +51,7 @@ class LLMSettings:
     api_key_env: str | None = None
     api_key: str | None = None
     extra_body: dict[str, Any] | None = None
+    max_tokens: int = DEFAULT_MAX_TOKENS
 
     @classmethod
     def from_env(cls) -> "LLMSettings":
@@ -60,12 +77,23 @@ class LLMSettings:
                 raise ValueError("CLIO_MODEL_EXTRA_BODY must be a JSON object.")
             extra_body = parsed_extra_body
 
+        max_tokens_value = os.getenv("CLIO_MODEL_MAX_TOKENS", "").strip()
+        max_tokens = DEFAULT_MAX_TOKENS
+        if max_tokens_value:
+            try:
+                max_tokens = int(max_tokens_value)
+            except ValueError as exc:
+                raise ValueError("CLIO_MODEL_MAX_TOKENS must be a positive integer.") from exc
+            if max_tokens <= 0:
+                raise ValueError("CLIO_MODEL_MAX_TOKENS must be a positive integer.")
+
         return cls(
             model=model,
             base_url=os.getenv("CLIO_MODEL_BASE_URL", "").strip() or None,
             api_key_env=api_key_env,
             api_key=api_key,
             extra_body=extra_body,
+            max_tokens=max_tokens,
         )
 
     @property
@@ -75,11 +103,33 @@ class LLMSettings:
         return self.model.split(":", 1)[0]
 
 
+class OutputTruncationGuard(BaseCallbackHandler):
+    """잘린 응답이 파싱 실패나 빈 구조화 출력으로 위장되지 않게 즉시 실패시킨다."""
+
+    raise_error = True
+
+    def __init__(self, max_tokens: int) -> None:
+        self.max_tokens = max_tokens
+
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        for generations in response.generations:
+            for generation in generations:
+                metadata = {
+                    **(generation.generation_info or {}),
+                    **getattr(getattr(generation, "message", None), "response_metadata", {}),
+                }
+                reason = metadata.get("finish_reason") or metadata.get("stop_reason")
+                if reason in TRUNCATED_FINISH_REASONS:
+                    raise ModelOutputTruncatedError(self.max_tokens)
+
+
 def build_chat_model():
     """전역 선택을 LangChain provider integration에 위임해 ChatModel을 만든다."""
 
     selected = LLMSettings.from_env()
-    model_kwargs: dict[str, Any] = {}
+    model_kwargs: dict[str, Any] = {
+        "callbacks": [OutputTruncationGuard(selected.max_tokens)],
+    }
     # OpenAI 호환 API에서는 구조화 응답 Tool과 일반 Tool을 한 번에 섞지 않는다.
     if selected.model.startswith("openai:"):
         model_kwargs["model_kwargs"] = {"parallel_tool_calls": False}
@@ -87,8 +137,15 @@ def build_chat_model():
         model_kwargs["base_url"] = selected.base_url
     if selected.api_key:
         model_kwargs["api_key"] = selected.api_key
-    if selected.extra_body:
-        model_kwargs["extra_body"] = selected.extra_body
+    extra_body = dict(selected.extra_body or {})
+    # langchain-openai는 max_tokens를 max_completion_tokens로 바꿔 보내지만 DeepSeek 등 호환
+    # endpoint는 이를 무시한다. base_url을 지정한 경우 요청 본문에 표준 max_tokens를 직접 싣는다.
+    if selected.model.startswith("openai:") and selected.base_url:
+        extra_body.setdefault("max_tokens", selected.max_tokens)
+    else:
+        model_kwargs["max_tokens"] = selected.max_tokens
+    if extra_body:
+        model_kwargs["extra_body"] = extra_body
     return init_chat_model(selected.model, **model_kwargs)
 
 

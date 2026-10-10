@@ -1,9 +1,13 @@
 import pytest
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic import BaseModel
 
 from clio_agent_graph.context.tools.reports import load_report
 from clio_agent_graph.runtime import llm
-from clio_agent_graph.runtime.llm import LLMSettings, ToolCallingAgent
+from clio_agent_graph.runtime.llm import LLMSettings, ModelOutputTruncatedError, ToolCallingAgent
+from clio_agent_graph.runtime.structured_output import bind_structured_output
 from clio_agent_graph.workflows.orchestration.agents.models import (
     IssueAnalysisOutput,
     MatchDecision,
@@ -19,6 +23,7 @@ def test_openai_model_is_the_single_default_selection(
         "CLIO_MODEL_BASE_URL",
         "CLIO_MODEL_API_KEY_ENV",
         "CLIO_MODEL_EXTRA_BODY",
+        "CLIO_MODEL_MAX_TOKENS",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -27,6 +32,7 @@ def test_openai_model_is_the_single_default_selection(
     assert settings.provider == "openai"
     assert settings.model == "openai:gpt-4.1-mini"
     assert settings.base_url is None
+    assert settings.max_tokens == 32768
 
 
 def test_custom_endpoint_options_apply_to_the_selected_global_model(
@@ -52,9 +58,10 @@ def test_custom_endpoint_options_apply_to_the_selected_global_model(
     assert captured == {
         "model": "openai:local-model",
         "kwargs": {
+            "callbacks": captured["kwargs"]["callbacks"],
             "base_url": "http://localhost:8000/v1",
             "api_key": "test-key",
-            "extra_body": {"thinking": {"type": "disabled"}},
+            "extra_body": {"thinking": {"type": "disabled"}, "max_tokens": 32768},
             "model_kwargs": {"parallel_tool_calls": False},
         },
     }
@@ -191,3 +198,112 @@ def test_openai_compatible_model_disables_parallel_tool_calls(monkeypatch):
     monkeypatch.setattr(llm, "init_chat_model", fake_init)
     llm.build_chat_model()
     assert captured["model_kwargs"]["parallel_tool_calls"] is False
+
+
+def test_output_token_limit_is_configurable(monkeypatch):
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "65536")
+
+    assert LLMSettings.from_env().max_tokens == 65536
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "many"])
+def test_output_token_limit_must_be_a_positive_integer(monkeypatch, value):
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", value)
+
+    with pytest.raises(ValueError, match="CLIO_MODEL_MAX_TOKENS"):
+        LLMSettings.from_env()
+
+
+class _TruncatingChatModel(BaseChatModel):
+    """요청마다 지정한 finish_reason으로 응답하는 fake provider model."""
+
+    max_tokens: int | None = None
+    finish_reason: str = "length"
+    message: AIMessage = AIMessage(content="")
+
+    @property
+    def _llm_type(self) -> str:
+        return "truncating"
+
+    def bind_tools(self, tools, **kwargs):
+        return self
+
+    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        message = self.message.model_copy(
+            update={"response_metadata": {"finish_reason": self.finish_reason}}
+        )
+        return ChatResult(generations=[ChatGeneration(message=message)])
+
+
+def _use_fake_provider(monkeypatch, **fields):
+    monkeypatch.setenv("CLIO_MODEL", "fake:model")
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "100")
+    for name in ("CLIO_MODEL_BASE_URL", "CLIO_MODEL_API_KEY_ENV", "CLIO_MODEL_EXTRA_BODY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(
+        llm,
+        "init_chat_model",
+        lambda model, **kwargs: _TruncatingChatModel(**kwargs, **fields),
+    )
+
+
+def test_truncated_structured_output_fails_as_truncation_not_as_invalid_output(monkeypatch):
+    class Answer(BaseModel):
+        answer: str
+
+    truncated_call = AIMessage(
+        content="",
+        invalid_tool_calls=[
+            {"id": "call", "name": "Answer", "args": '{"answer": "tru', "error": None}
+        ],
+    )
+    _use_fake_provider(monkeypatch, message=truncated_call)
+    model = bind_structured_output(llm.build_chat_model(), Answer)
+
+    with pytest.raises(ModelOutputTruncatedError, match="100 token output limit"):
+        model.invoke("answer")
+
+
+def test_truncated_agent_response_fails_as_truncation(monkeypatch):
+    class Answer(BaseModel):
+        answer: str
+
+    _use_fake_provider(monkeypatch)
+    agent = ToolCallingAgent(name="test", system_prompt="test", tools=[], response_model=Answer)
+
+    with pytest.raises(ModelOutputTruncatedError):
+        agent.invoke("answer")
+
+
+def test_completed_response_passes_the_truncation_guard(monkeypatch):
+    _use_fake_provider(monkeypatch, finish_reason="stop", message=AIMessage(content="done"))
+
+    assert llm.build_chat_model().invoke("answer").content == "done"
+
+
+def test_compatible_endpoint_receives_the_standard_max_tokens_field(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    monkeypatch.setenv("CLIO_MODEL", "openai:deepseek-v4-flash")
+    monkeypatch.setenv("CLIO_MODEL_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("CLIO_MODEL_API_KEY_ENV", "TEST_KEY")
+    monkeypatch.setenv("TEST_KEY", "test-key")
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "4096")
+    monkeypatch.delenv("CLIO_MODEL_EXTRA_BODY", raising=False)
+
+    payload = llm.build_chat_model()._get_request_payload([("user", "hi")])
+
+    assert payload["extra_body"]["max_tokens"] == 4096
+    assert "max_completion_tokens" not in payload
+
+
+def test_official_openai_endpoint_receives_max_completion_tokens(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    monkeypatch.setenv("CLIO_MODEL", "openai:gpt-4.1-mini")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("CLIO_MODEL_MAX_TOKENS", "4096")
+    for name in ("CLIO_MODEL_BASE_URL", "CLIO_MODEL_API_KEY_ENV", "CLIO_MODEL_EXTRA_BODY"):
+        monkeypatch.delenv(name, raising=False)
+
+    payload = llm.build_chat_model()._get_request_payload([("user", "hi")])
+
+    assert payload["max_completion_tokens"] == 4096
