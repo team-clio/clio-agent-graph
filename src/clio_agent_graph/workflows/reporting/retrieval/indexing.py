@@ -129,4 +129,7 @@ def _retry_index_operation(operation: Callable[[], T]) -> T:
             raise
         except Exception as error:
             last_error = error
-    raise RetrievalOperationError("Index operation failed after one retry.") from last_error
+    # 원인이 컨테이너 로그에만 남지 않도록 마지막 오류를 메시지에 포함한다.
+    raise RetrievalOperationError(
+        f"Index operation failed after one retry: {last_error}"
+    ) from last_error

@@ -396,7 +396,13 @@ CLIO_DATABASE_URL=postgresql+psycopg://clio:clio@localhost:5432/clio
 OLLAMA_EMBEDDING_MODEL=qwen3-embedding:0.6b
 CLIO_OLLAMA_BASE_URL=http://127.0.0.1:11434
 CLIO_OLLAMA_TIMEOUT_SECONDS=120
+CLIO_OLLAMA_EMBED_CONTEXT_TOKENS=1024
 ```
+
+`CLIO_OLLAMA_EMBED_CONTEXT_TOKENS`(기본 1024)는 모든 embedding 요청의 context 상한입니다. Ollama의
+embedding 메모리는 이 값에 비례합니다. 3GB급 Docker 환경에서 4096으로 두면 약 1,250토큰 이상의 버그
+리포트에서 llama-server가 OOM으로 종료되었습니다. 상한을 넘는 입력은 뒤가 잘리므로 메모리 여유가 있으면
+값을 늘립니다.
 
 아래 명령으로 Ollama만 실행할 수 있습니다.
 
