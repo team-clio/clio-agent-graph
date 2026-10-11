@@ -29,6 +29,8 @@ def validate_request(state: ClioState) -> dict[str, object]:
     }
     if isinstance(request, ProcessReportRequest):
         update["bug_id"] = request.payload.bug_id
+        if request.payload.match_override is not None:
+            update["match_override"] = request.payload.match_override
     elif isinstance(request, AnalyzeIssueRequest):
         update["issue_id"] = request.payload.issue_id
     elif isinstance(request, ReadCodeEvidenceRequest):

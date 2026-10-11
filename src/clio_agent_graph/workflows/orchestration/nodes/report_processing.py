@@ -89,6 +89,9 @@ def search_issue_candidates(state: ClioState) -> dict[str, object]:
     """Hybrid retrieval 결과를 matcher가 소비할 후보 상태로 변환한다."""
 
     candidates = state.get("issue_candidates")
+    if candidates is None and state.get("match_override") == "create_new":
+        # 사람이 신규 Issue를 고른 버그는 후보를 비교하지 않으므로 검색도 생략한다.
+        candidates = []
     if candidates is None:
         result = build_issue_retrieval_subgraph().invoke(
             {
@@ -165,6 +168,16 @@ def _replayed_result(result: dict[str, object] | None) -> dict[str, object]:
 def match_report(state: ClioState) -> dict[str, object]:
     """후보가 없으면 신규 Issue를 만들고, 있으면 LLM 비교를 실행한다."""
 
+    if state.get("match_override") == "create_new":
+        return {
+            "match_decision": {
+                "action": "create_new",
+                "issue_id": None,
+                "confidence": 1.0,
+                "reason": "매칭 검토에서 사람이 신규 이슈를 선택했습니다.",
+            },
+            "completed_nodes": {"match_report": True},
+        }
     candidates = state.get("issue_candidates", [])
     if not candidates:
         return {
@@ -241,6 +254,9 @@ def apply_match_decision(state: ClioState) -> dict[str, object]:
                 "action": action,
                 "bug_id": state["bug_id"],
                 "candidate_issue_id": decision.get("issue_id"),
+                # Server 검토 화면이 사람에게 보여 줄 판단 근거다.
+                "confidence": decision["confidence"],
+                "reason": decision["reason"],
             },
             "completed_nodes": {"apply_match_decision": True},
         }

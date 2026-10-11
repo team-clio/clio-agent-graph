@@ -19,6 +19,8 @@ class ProcessReportPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     bug_id: str = Field(pattern=r"^[1-9]\d*$")
+    # 사람이 매칭 검토에서 신규 Issue를 고른 경우 Server가 보낸다. 매칭을 건너뛴다.
+    match_override: Literal["create_new"] | None = None
 
     _validate_bug_id = field_validator("bug_id")(_validate_long_id)
 
