@@ -46,6 +46,7 @@ class FakeClioServer:
         self.failed_runs: list[tuple[str, int, str, str]] = []
         self.saved_analyses: list[dict[str, object]] = []
         self.created_issues: list[tuple[str, int, str, float]] = []
+        self.started_payloads: list[dict[str, object]] = []
         self.load_error: Exception | None = None
         self.complete_error: Exception | None = None
         self.workflow_start = WorkflowStart(501, "RUNNING")
@@ -59,6 +60,7 @@ class FakeClioServer:
         request_type: str,
         request_payload: dict[str, object],
     ) -> WorkflowStart:
+        self.started_payloads.append(request_payload)
         return self.workflow_start
 
     def complete_workflow(
@@ -638,6 +640,9 @@ def test_strong_match_without_shared_error_signal_finishes_as_needs_review() -> 
     assert result["result"]["action"] == "needs_review"
     assert "prepare_analysis" not in result["completed_nodes"]
     assert "index_normalized_report" not in result["completed_nodes"]
+    assert result["result"]["candidate_issue_id"] == "23"
+    assert result["result"]["confidence"] == 0.97
+    assert "정확히 일치하는 강한 오류 신호가 없습니다." in result["result"]["reason"]
 
 
 def test_completed_workflow_replay_skips_agent_execution() -> None:
@@ -882,3 +887,62 @@ def test_low_confidence_candidate_creates_a_new_issue_instead_of_linking() -> No
 
     assert result["result"]["action"] == "analysis_completed"
     assert len(server.created_issues) == 1
+
+
+def test_reviewed_create_new_override_skips_retrieval_and_matching(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    server = report_processing.get_application_services().clio_server
+    assert isinstance(server, FakeClioServer)
+
+    def fail_if_called(*args: object) -> object:
+        raise AssertionError("a reviewed create_new must not search or match candidates")
+
+    monkeypatch.setattr(report_processing, "build_issue_retrieval_subgraph", fail_if_called)
+    monkeypatch.setattr(report_processing, "build_report_matcher", fail_if_called)
+
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "process-bug-7-retry-1",
+                "request_type": "process_report",
+                "project_id": "1",
+                "payload": {"bug_id": "7", "match_override": "create_new"},
+            }
+        }
+    )
+
+    assert result["result"]["action"] == "analysis_completed"
+    assert len(server.created_issues) == 1
+
+
+def test_rejects_unknown_match_override_before_routing() -> None:
+    with pytest.raises(ValidationError, match="match_override"):
+        graph.invoke(
+            {
+                "request": {
+                    "request_id": "REQ-BAD-OVERRIDE",
+                    "request_type": "process_report",
+                    "project_id": "1",
+                    "payload": {"bug_id": "7", "match_override": "link_existing"},
+                }
+            }
+        )
+
+
+def test_process_report_without_override_keeps_the_original_payload_shape() -> None:
+    server = report_processing.get_application_services().clio_server
+    assert isinstance(server, FakeClioServer)
+
+    graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-PAYLOAD",
+                "request_type": "process_report",
+                "project_id": "1",
+                "payload": {"bug_id": "8"},
+            }
+        }
+    )
+
+    assert server.started_payloads == [{"bug_id": "8"}]

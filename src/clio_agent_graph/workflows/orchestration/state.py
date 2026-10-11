@@ -26,6 +26,7 @@ class RequestState(TypedDict, total=False):
     request_type: RequestType
     project_id: str
     bug_id: str
+    match_override: str
     workflow_run_id: int
     workflow_replayed: bool
     issue_id: str
