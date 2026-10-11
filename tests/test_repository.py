@@ -452,3 +452,20 @@ async def test_code_search_returns_at_most_two_lines_per_file(tmp_path: Path) ->
     hits = await service.search(snapshot=snapshot, query="candle")
 
     assert [hit.line for hit in hits] == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_code_search_tool_reports_truncated_matches(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {"src/A.java": "candle 1\ncandle 2\ncandle 3\n", "src/B.java": "candle 1\n"},
+    )
+    search_tool = RepositoryToolFactory(service).create_tools(snapshot)[2]
+
+    truncated = await search_tool.ainvoke({"query": "candle", "limit": 2})
+    complete = await search_tool.ainvoke({"query": "candle B", "limit": 2})
+
+    assert len(truncated["results"]) == 2
+    assert truncated["total_matches"] == 4
+    assert truncated["truncated"] is True
+    assert complete == {"results": [], "total_matches": 0, "truncated": False}

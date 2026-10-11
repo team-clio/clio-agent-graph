@@ -54,3 +54,29 @@ D1의 정렬로 구현되며, 회귀 테스트로 동작을 고정했다.
 선택 이유: 분석 Agent는 `read_repository_file`로 필요한 파일을 더 읽을 수 있으므로 검색은 넓게 보여 주는 편이 낫다.
 
 구현 규칙: `_SEARCH_HITS_PER_FILE = 2`. 파일마다 앞쪽 줄 번호 2개를 고른다.
+
+## D5. 잘림 정보 노출
+
+### 결정: A — `total_matches`, `truncated`를 Tool 응답에 노출
+
+- 대안 A: 검색 결과에 전체 매칭 수와 잘림 여부를 담아 Tool 응답에 노출한다. ← 선택
+- 대안 B: 로그·metric에만 남긴다. Agent의 검색 전략에는 영향이 없다.
+- 대안 C: 노출하지 않는다.
+
+선택 이유: 분석 Agent가 검색어를 좁히거나 파일을 직접 읽을지 판단할 근거가 된다.
+Tool 설명에도 정렬 순서, 파일당 2줄 상한, `truncated`의 의미를 적었다.
+
+## F1. 잘림 정보를 별도 메서드로 제공 (D5 보완, 구현 중 발견)
+
+### 결정: B — `search`는 목록 반환을 유지하고 `search_with_stats`를 추가
+
+- 대안 A: plan대로 `search`의 반환 타입을 `RepositorySearchResult`로 바꾼다. 분석 노드 `issue_analysis.search_code`도
+  함께 바뀐다.
+- 대안 B: `search_with_stats`가 `RepositorySearchResult(hits, total_matches, truncated)`를 반환하고, `search`는 그
+  `hits`를 반환한다. Tool만 새 메서드를 쓴다. ← 선택
+
+선택 이유: 진행 중인 KAN-23(`task/kan-23-code-query-ab`)이 `nodes/issue_analysis.py`를 81줄 수정하고 있어, 노드를
+건드리면 충돌이 커진다. plan D5의 기각 조건에 적어 둔 경로다. 잘림 정보가 필요한 곳은 검색어를 직접 고르는 Agent
+Tool이며, 노드는 고정 검색어로 초기 근거만 모으므로 기능 차이가 없다.
+
+`total_matches`는 파일당 상한을 적용하기 전 매칭 줄 수다.

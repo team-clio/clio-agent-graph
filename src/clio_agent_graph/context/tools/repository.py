@@ -47,10 +47,14 @@ class RepositoryToolFactory:
             repository_id: str | None = None,
             limit: int = 20,
         ) -> dict[str, object]:
-            """현재 snapshot commit의 tracked source에서 text 또는 symbol을 검색한다."""
+            """현재 snapshot commit의 tracked source에서 text 또는 symbol을 검색한다.
+
+            결과는 소스 → 테스트 → 설정 → 문서 순이고 파일당 최대 2줄이다. `truncated`가 true면
+            `total_matches` 중 일부만 반환된 것이므로 검색어를 좁히거나 파일을 직접 읽는다.
+            """
 
             try:
-                hits = await service.search(
+                result = await service.search_with_stats(
                     snapshot=snapshot,
                     query=query,
                     repository_id=repository_id,
@@ -58,7 +62,11 @@ class RepositoryToolFactory:
                 )
             except RepositoryError as error:
                 return {"error": str(error), "results": []}
-            return {"results": [hit.model_dump(mode="json") for hit in hits]}
+            return {
+                "results": [hit.model_dump(mode="json") for hit in result.hits],
+                "total_matches": result.total_matches,
+                "truncated": result.truncated,
+            }
 
         @tool
         async def read_repository_file(

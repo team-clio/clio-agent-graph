@@ -135,6 +135,16 @@ class RepositorySearchHit(BaseModel):
     content: str
 
 
+class RepositorySearchResult(BaseModel):
+    """상한으로 고른 검색 결과와, 잘렸는지 판단할 전체 매칭 수."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    hits: list[RepositorySearchHit]
+    total_matches: int = Field(ge=0)
+    truncated: bool
+
+
 @dataclass(frozen=True)
 class GitRepositoryService:
     """로컬 bare mirror를 관리하고 snapshot-bound 코드 탐색을 제공한다."""
@@ -425,6 +435,21 @@ class GitRepositoryService:
     ) -> list[RepositorySearchHit]:
         """snapshot에 고정된 tracked source를 검색해 인용 가능한 행을 반환한다."""
 
+        result = await self.search_with_stats(
+            snapshot=snapshot, query=query, repository_id=repository_id, limit=limit
+        )
+        return result.hits
+
+    async def search_with_stats(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+        query: str,
+        repository_id: str | None = None,
+        limit: int = 20,
+    ) -> RepositorySearchResult:
+        """검색 결과와 함께 전체 매칭 수를 반환해 호출자가 검색어를 좁힐지 판단하게 한다."""
+
         if not query.strip():
             raise RepositoryError("code search query must contain searchable text")
         if not 1 <= limit <= 50:
@@ -467,7 +492,12 @@ class GitRepositoryService:
                     )
                 )
         # git grep은 경로 알파벳 순으로 출력하므로 앞에서 자르면 docs/ 등이 결과를 독차지한다.
-        return _select_search_hits(hits, limit=limit)
+        selected = _select_search_hits(hits, limit=limit)
+        return RepositorySearchResult(
+            hits=selected,
+            total_matches=len(hits),
+            truncated=len(selected) < len(hits),
+        )
 
     async def list_files(
         self,
