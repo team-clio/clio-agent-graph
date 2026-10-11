@@ -7,7 +7,11 @@ from clio_agent_graph.context.application import get_application_services
 from clio_agent_graph.workflows.orchestration.agents.report_processing import ReportProcessingAgent
 from clio_agent_graph.workflows.orchestration.state import ClioState
 from clio_agent_graph.workflows.reporting.matching.defaults import load_default_issue_match_model
-from clio_agent_graph.workflows.reporting.matching.models import IssueCandidate, MatchAction
+from clio_agent_graph.workflows.reporting.matching.models import (
+    IssueCandidate,
+    MatchAction,
+    MatchDecision,
+)
 from clio_agent_graph.workflows.reporting.matching.retrieval_subgraph import (
     build_issue_retrieval_subgraph,
 )
@@ -202,11 +206,37 @@ def match_report(state: ClioState) -> dict[str, object]:
                 str(decision.matched_issue_id) if decision.matched_issue_id is not None else None
             ),
             "confidence": decision.confidence,
-            "reason": " ".join([*decision.supporting_reasons, *decision.review_reasons])
-            or "매칭 정책이 판단 근거를 남기지 않았습니다.",
+            "reason": _format_match_reason(decision),
         },
         "completed_nodes": {"match_report": True},
     }
+
+
+def _format_match_reason(decision: MatchDecision) -> str:
+    """근거·모순·검토 사유를 이름표로 묶고 항목마다 문장을 끝내 사람이 읽을 이유로 만든다.
+
+    LLM 항목은 명사구로 끝나는 경우가 많아 그대로 이으면 문장 경계가 사라진다.
+    """
+
+    groups = (
+        ("근거", decision.supporting_reasons),
+        ("모순", decision.contradictions),
+        ("검토 사유", decision.review_reasons),
+    )
+    sections = [
+        f"{label}: " + " ".join(_as_sentence(item) for item in items)
+        for label, items in groups
+        if items
+    ]
+    return " ".join(sections) or "매칭 정책이 판단 근거를 남기지 않았습니다."
+
+
+def _as_sentence(text: str) -> str:
+    stripped = text.strip()
+    return stripped if stripped.endswith(_SENTENCE_ENDINGS) else f"{stripped}."
+
+
+_SENTENCE_ENDINGS = (".", "!", "?", "。")
 
 
 # 독립 RM과 같은 action을 운영 workflow의 Server 반영 action으로 옮긴다.
