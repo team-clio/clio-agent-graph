@@ -350,3 +350,75 @@ def test_search_results_classify_files_by_extension_and_path(
     path: str, category: SearchFileCategory
 ) -> None:
     assert classify_search_path(path) is category
+
+
+async def _search_fixture(
+    tmp_path: Path, files: dict[str, str]
+) -> tuple[GitRepositoryService, ProjectContextSnapshot]:
+    source = tmp_path / "source"
+    source.mkdir()
+    git(source, "init", "-b", "main")
+    git(source, "config", "user.name", "Clio Test")
+    git(source, "config", "user.email", "clio@example.test")
+    for relative, content in files.items():
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    git(source, "add", ".")
+    git(source, "commit", "-m", "search fixture")
+    commit = git(source, "rev-parse", "HEAD")
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+    await service.register(
+        project_id="PROJECT-1", repository_id="backend", source_uri=str(source), branch="main"
+    )
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"backend": commit},
+    )
+    return service, snapshot
+
+
+@pytest.mark.asyncio
+async def test_code_search_returns_source_before_alphabetically_earlier_documents(
+    tmp_path: Path,
+) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "docs/candle-report.md": "Candle one\nCandle two\nCandle three\n",
+            "README.md": "Candle overview\n",
+            "src/main/java/app/CandleService.java": "class CandleService {}\n// Candle cache\n",
+            "src/test/java/app/CandleServiceTest.java": "class CandleServiceTest {}\n",
+            "src/main/resources/application.yml": "candle: enabled\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle", limit=4)
+
+    assert [(hit.path, hit.line) for hit in hits] == [
+        ("src/main/java/app/CandleService.java", 1),
+        ("src/main/java/app/CandleService.java", 2),
+        ("src/test/java/app/CandleServiceTest.java", 1),
+        ("src/main/resources/application.yml", 1),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_alternates_files_within_the_same_category(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "src/A.java": "candle 1\ncandle 2\ncandle 3\n",
+            "src/B.java": "candle 1\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle", limit=3)
+
+    assert [(hit.path, hit.line) for hit in hits] == [
+        ("src/A.java", 1),
+        ("src/B.java", 1),
+        ("src/A.java", 2),
+    ]

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from fnmatch import fnmatchcase
 from hashlib import sha256
+from itertools import groupby
 from pathlib import Path, PurePosixPath
 from tempfile import NamedTemporaryFile
 from urllib.parse import urlparse
@@ -463,9 +464,8 @@ class GitRepositoryService:
                         content=self._mask_secrets(matched)[:500],
                     )
                 )
-                if len(hits) >= limit:
-                    return hits
-        return hits
+        # git grep은 경로 알파벳 순으로 출력하므로 앞에서 자르면 docs/ 등이 결과를 독차지한다.
+        return _select_search_hits(hits, limit=limit)
 
     async def list_files(
         self,
@@ -731,3 +731,33 @@ class GitRepositoryService:
             )
             raise RepositoryError(f"Git {operation} failed for the requested repository object")
         return result.stdout
+
+
+def _select_search_hits(
+    hits: list[RepositorySearchHit], *, limit: int
+) -> list[RepositorySearchHit]:
+    """파일 종류 우선순위 안에서 파일별로 한 줄씩 번갈아 골라 상한까지 채운다."""
+
+    by_file: dict[tuple[str, str], list[RepositorySearchHit]] = {}
+    for hit in hits:
+        by_file.setdefault((hit.repository_id, hit.path), []).append(hit)
+    files = sorted(
+        by_file.items(),
+        key=lambda item: (classify_search_path(item[0][1]), item[0][0], item[0][1]),
+    )
+    selected: list[RepositorySearchHit] = []
+    for _category, group in groupby(files, key=lambda item: classify_search_path(item[0][1])):
+        queues = [list(file_hits) for _key, file_hits in group]
+        depth = 0
+        while queues and len(selected) < limit:
+            remaining = []
+            for queue in queues:
+                if depth < len(queue) and len(selected) < limit:
+                    selected.append(queue[depth])
+                if depth + 1 < len(queue):
+                    remaining.append(queue)
+            queues = remaining
+            depth += 1
+        if len(selected) >= limit:
+            break
+    return selected
