@@ -16,6 +16,10 @@ from clio_agent_graph.workflows.orchestration.analysis_profile import (
     AnalysisProfile,
     AnalysisProfileSettings,
 )
+from clio_agent_graph.workflows.orchestration.citations import (
+    describe_citation,
+    resolve_knowledge_reference,
+)
 from clio_agent_graph.workflows.orchestration.nodes import report_processing
 from clio_agent_graph.workflows.orchestration.state import ClioState
 from clio_agent_graph.workflows.reporting.normalization.models import NormalizeReportInput
@@ -237,7 +241,10 @@ async def quality_gate(state: ClioState) -> dict[str, object]:
             elif commit != expected:
                 reasons.append(f"Repository citation commit does not match: {repository_id}.")
             elif not _has_structured_code_location(citation):
-                warnings.append("Dropped a repository citation without a structured code location.")
+                warnings.append(
+                    "Dropped a repository citation without a structured code location: "
+                    f"{describe_citation(citation)}."
+                )
             else:
                 valid_citations.append(citation)
             continue
@@ -245,8 +252,16 @@ async def quality_gate(state: ClioState) -> dict[str, object]:
             continue
         knowledge_id = citation.get("knowledge_id")
         if not knowledge_id:
-            warnings.append("Dropped a knowledge citation without knowledge_id.")
-            continue
+            # LLM이 id를 빠뜨려도 제공된 검색 결과의 출처 위치로 유일하게 특정되면 보완한다.
+            reference = resolve_knowledge_reference(citation, state.get("document_evidence", []))
+            if reference is None:
+                warnings.append(
+                    "Dropped a knowledge citation without knowledge_id: "
+                    f"{describe_citation(citation)}."
+                )
+                continue
+            citation = {**citation, **reference}
+            knowledge_id = reference["knowledge_id"]
         try:
             document = await get_application_services().pcm.read_knowledge(
                 snapshot=_snapshot(state), knowledge_id=knowledge_id

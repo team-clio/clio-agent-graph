@@ -307,3 +307,19 @@ def test_official_openai_endpoint_receives_max_completion_tokens(monkeypatch):
     payload = llm.build_chat_model()._get_request_payload([("user", "hi")])
 
     assert payload["max_completion_tokens"] == 4096
+
+
+def test_citation_without_source_type_is_repository_when_it_has_code_location() -> None:
+    from clio_agent_graph.workflows.orchestration.agents.models import EvidenceCitation
+
+    code = EvidenceCitation.model_validate(
+        {"repository_id": "21", "commit": "a" * 40, "file_path": "src/A.java", "start_line": 3}
+    )
+    knowledge = EvidenceCitation.model_validate({"knowledge_id": "kn_1", "knowledge_revision": 1})
+    explicit = EvidenceCitation.model_validate(
+        {"source_type": "knowledge", "location": "k6/lib/data.js:1-120"}
+    )
+
+    assert code.source_type == "repository"
+    assert knowledge.source_type == "knowledge"
+    assert explicit.source_type == "knowledge"

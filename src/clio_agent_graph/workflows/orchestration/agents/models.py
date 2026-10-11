@@ -107,6 +107,20 @@ class EvidenceCitation(BaseModel):
     snippet: str | None = None
     observation: str | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def infer_repository_source_type(cls, value: object) -> object:
+        """source_type을 빠뜨린 코드 인용이 knowledge 기본값 때문에 버려지지 않게 한다."""
+
+        if (
+            isinstance(value, dict)
+            and not value.get("source_type")
+            and not value.get("knowledge_id")
+            and any(value.get(key) for key in ("repository_id", "commit", "file_path"))
+        ):
+            return {**value, "source_type": "repository"}
+        return value
+
     @model_validator(mode="after")
     def validate_code_location(self) -> "EvidenceCitation":
         if (
