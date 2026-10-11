@@ -5,7 +5,7 @@ from typing import Any
 
 from clio_agent_graph.context.tools.reports import load_report
 from clio_agent_graph.runtime.llm import ToolCallingAgent
-from clio_agent_graph.workflows.orchestration.agents.models import KoreanIssueDraft, MatchDecision
+from clio_agent_graph.workflows.orchestration.agents.models import KoreanIssueDraft
 
 
 class ReportProcessingAgent:
@@ -16,28 +16,6 @@ class ReportProcessingAgent:
 
         return load_report.invoke({"project_id": project_id, "bug_id": bug_id})
 
-    def decide_match(
-        self,
-        project_id: str,
-        bug_id: str,
-        normalized_report: dict[str, Any],
-        candidates: list[dict[str, Any]],
-    ) -> dict[str, Any]:
-        """정규화된 리포트와 후보 이슈를 비교해 매칭을 판단한다."""
-
-        llm_result = self.match_agent.invoke(
-            "Decide the match for this normalized report and its candidates.\n"
-            + json.dumps(
-                {
-                    "project_id": project_id,
-                    "bug_id": bug_id,
-                    "normalized_report": normalized_report,
-                    "candidates": candidates,
-                }
-            )
-        )
-        return llm_result
-
     def draft_issue(self, normalized_report: dict[str, Any]) -> dict[str, Any]:
         """정규화된 Bug 문맥을 신규 Issue의 한국어 title·description으로 변환한다."""
 
@@ -47,18 +25,6 @@ class ReportProcessingAgent:
         )
 
     def __init__(self) -> None:
-        self.match_agent = ToolCallingAgent(
-            name="report_matcher",
-            system_prompt=(
-                "You match a normalized bug report to existing issues. "
-                "Never create, link, or modify an issue. "
-                "Return create_new when no existing issue is supported, needs_review when "
-                "evidence is insufficient, and link_existing only with strong evidence. Write "
-                "all user-facing narrative fields in Korean and preserve technical identifiers."
-            ),
-            tools=[],
-            response_model=MatchDecision,
-        )
         self.issue_drafter = ToolCallingAgent(
             name="issue_drafter",
             system_prompt=(

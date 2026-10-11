@@ -1,7 +1,6 @@
 """LLM Agent의 구조화된 출력 계약."""
 
 import re
-from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
@@ -10,32 +9,6 @@ def _normalize_confidence(value: float | str) -> float | str:
     if not isinstance(value, str):
         return value
     return {"low": 0.25, "medium": 0.5, "high": 0.8}.get(value.lower(), value)
-
-
-MAX_LONG_ID = 9_223_372_036_854_775_807
-
-
-class MatchDecision(BaseModel):
-    """리포트를 기존 이슈에 연결할지 결정한 Agent의 최종 판단."""
-
-    action: Literal["link_existing", "create_new", "needs_review"]
-    issue_id: str | None = None
-    confidence: float = Field(ge=0, le=1)
-    reason: str = Field(min_length=1)
-
-    _normalize_confidence_value = field_validator("confidence", mode="before")(
-        _normalize_confidence
-    )
-
-    @model_validator(mode="after")
-    def validate_issue_id(self) -> "MatchDecision":
-        if self.action == "link_existing" and (
-            self.issue_id is None
-            or not self.issue_id.isdigit()
-            or not 0 < int(self.issue_id) <= MAX_LONG_ID
-        ):
-            raise ValueError("link_existing requires a positive numeric issue_id")
-        return self
 
 
 class KoreanIssueDraft(BaseModel):

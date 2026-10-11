@@ -25,8 +25,16 @@ from clio_agent_graph.workflows.orchestration.nodes import (
     memory_sync,
     report_processing,
 )
-from clio_agent_graph.workflows.reporting.matching.models import IssueCandidate
+from clio_agent_graph.workflows.reporting.matching.models import (
+    CandidateComparison,
+    IssueCandidate,
+    MatchComparisonDraft,
+    MatchPolicySettings,
+    RepresentativeBug,
+)
+from clio_agent_graph.workflows.reporting.matching.service import ReportMatcher
 from clio_agent_graph.workflows.reporting.normalization.models import (
+    AffectedSurface,
     ErrorSignals,
     NormalizedReport,
 )
@@ -145,12 +153,57 @@ class FakeReportNormalizer:
         return NormalizedReport(
             bug_id=report.bug_id,
             observed_behavior="Saving a search returns HTTP 500.",
+            affected_surface=AffectedSurface(feature="saved search"),
             error_signals=ErrorSignals(
-                error_type=report.error_type,
+                error_type="HttpServerError",
                 message="HTTP 500",
+                error_codes=["HTTP-500"],
                 stack_frames=report.stack_trace,
             ),
         )
+
+
+class FakeIssueMatchModel:
+    """후보의 검색 점수를 비교 신뢰도로 돌려 매칭 정책 분기를 테스트한다."""
+
+    def compare(self, report, candidates, *, correction_feedback=None) -> MatchComparisonDraft:
+        return MatchComparisonDraft(
+            comparisons=[
+                CandidateComparison(
+                    issue_id=candidate.issue_id,
+                    confidence=candidate.retrieval_score,
+                    supporting_reasons=["같은 저장 실패 증상입니다."],
+                )
+                for candidate in candidates
+            ]
+        )
+
+
+def candidate(issue_id: int, score: float, *, same_error_signal: bool) -> dict[str, object]:
+    """정책의 강한 오류 신호 조건을 선택적으로 만족하는 Issue 후보를 만든다."""
+
+    representatives = (
+        [
+            RepresentativeBug(
+                bug_id=1,
+                normalized_report=NormalizedReport(
+                    bug_id=1,
+                    observed_behavior="Saving a search returns HTTP 500.",
+                    error_signals=ErrorSignals(
+                        error_type="HttpServerError", error_codes=["HTTP-500"]
+                    ),
+                ),
+            )
+        ]
+        if same_error_signal
+        else []
+    )
+    return IssueCandidate(
+        issue_id=issue_id,
+        title="Saved search failure",
+        retrieval_score=score,
+        representative_bugs=representatives,
+    ).model_dump(mode="json")
 
 
 class FakeIndexerGraph:
@@ -173,32 +226,6 @@ def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
 
     def invoke(self: ToolCallingAgent, prompt: str) -> dict[str, object]:
         payload = json.loads(prompt.split("\n", 1)[1])
-        if self.name == "report_matcher":
-            assert payload["normalized_report"]["observed_behavior"] == (
-                "Saving a search returns HTTP 500."
-            )
-            candidates = payload["candidates"]
-            if not candidates:
-                return {
-                    "action": "create_new",
-                    "issue_id": None,
-                    "confidence": 1.0,
-                    "reason": "No matching issue was found.",
-                }
-            candidate = candidates[0]
-            if candidate.get("requires_review"):
-                return {
-                    "action": "needs_review",
-                    "issue_id": candidate["issue_id"],
-                    "confidence": candidate["confidence"],
-                    "reason": "The candidate requires human review.",
-                }
-            return {
-                "action": "link_existing",
-                "issue_id": candidate["issue_id"],
-                "confidence": candidate.get("confidence") or candidate["retrieval_score"],
-                "reason": "The candidate is a strong match.",
-            }
         if self.name == "issue_drafter":
             return {
                 "title": "저장된 검색이 HTTP 500으로 실패합니다",
@@ -346,6 +373,11 @@ def fake_llm_agent(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(report_processing, "build_report_normalizer", FakeReportNormalizer)
     monkeypatch.setattr(report_processing, "build_issue_retrieval_subgraph", FakeRetrievalGraph)
     monkeypatch.setattr(report_processing, "build_bug_retrieval_indexer_graph", FakeIndexerGraph)
+    monkeypatch.setattr(
+        report_processing,
+        "build_report_matcher",
+        lambda: ReportMatcher(FakeIssueMatchModel(), settings=MatchPolicySettings()),
+    )
     monkeypatch.setattr(reports, "get_application_services", lambda: services)
 
 
@@ -480,10 +512,10 @@ def test_new_report_supports_synchronous_graph_execution() -> None:
 def test_no_candidates_create_an_issue_without_matcher_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fail_if_called(*args: object) -> dict[str, object]:
+    def fail_if_called() -> ReportMatcher:
         raise AssertionError("matcher must not run without candidates")
 
-    monkeypatch.setattr(report_processing.report_agent, "decide_match", fail_if_called)
+    monkeypatch.setattr(report_processing, "build_report_matcher", fail_if_called)
 
     result = graph.invoke(
         {
@@ -535,12 +567,7 @@ def test_existing_issue_match_skips_issue_analysis_graph() -> None:
                 "project_id": "1",
                 "payload": {"bug_id": "2"},
             },
-            "issue_candidates": [
-                {
-                    "issue_id": "19",
-                    "confidence": 0.97,
-                }
-            ],
+            "issue_candidates": [candidate(19, 0.97, same_error_signal=True)],
         }
     )
 
@@ -559,11 +586,11 @@ def test_retrieval_candidates_are_used_for_existing_issue_match(
 ) -> None:
     retrieval = FakeRetrievalGraph(
         [
-            IssueCandidate(
-                issue_id=19,
-                title="Saved search failure",
-                retrieval_score=0.97,
-                retrieval_reasons=["matching error signal"],
+            IssueCandidate.model_validate(
+                {
+                    **candidate(19, 0.97, same_error_signal=True),
+                    "retrieval_reasons": ["matching error signal"],
+                }
             )
         ]
     )
@@ -594,7 +621,7 @@ def test_retrieval_candidates_are_used_for_existing_issue_match(
     assert result["completed_nodes"]["index_normalized_report"] is True
 
 
-def test_uncertain_match_finishes_as_needs_review() -> None:
+def test_strong_match_without_shared_error_signal_finishes_as_needs_review() -> None:
     result = graph.invoke(
         {
             "request": {
@@ -603,13 +630,7 @@ def test_uncertain_match_finishes_as_needs_review() -> None:
                 "project_id": "1",
                 "payload": {"bug_id": "3"},
             },
-            "issue_candidates": [
-                {
-                    "issue_id": "ISSUE-CANDIDATE",
-                    "confidence": 0.55,
-                    "requires_review": True,
-                }
-            ],
+            "issue_candidates": [candidate(23, 0.97, same_error_signal=False)],
         }
     )
 
@@ -701,9 +722,7 @@ def test_completion_error_marks_workflow_failed() -> None:
                     "project_id": "1",
                     "payload": {"bug_id": "2"},
                 },
-                "issue_candidates": [
-                    {"issue_id": "19", "confidence": 0.97},
-                ],
+                "issue_candidates": [candidate(19, 0.97, same_error_signal=True)],
             }
         )
 
@@ -843,3 +862,23 @@ async def test_routes_repository_change_to_incremental_mock_sync_graph() -> None
     assert result["status"] == "completed"
     assert result["result"]["action"] == "code_change_synced"
     assert result["completed_nodes"]["validate_code_change"] is True
+
+
+def test_low_confidence_candidate_creates_a_new_issue_instead_of_linking() -> None:
+    server = report_processing.get_application_services().clio_server
+    assert isinstance(server, FakeClioServer)
+
+    result = graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-LOW-CONFIDENCE",
+                "request_type": "process_report",
+                "project_id": "1",
+                "payload": {"bug_id": "6"},
+            },
+            "issue_candidates": [candidate(8, 0.60, same_error_signal=True)],
+        }
+    )
+
+    assert result["result"]["action"] == "analysis_completed"
+    assert len(server.created_issues) == 1
