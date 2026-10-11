@@ -80,3 +80,37 @@ Tool 설명에도 정렬 순서, 파일당 2줄 상한, `truncated`의 의미를
 Tool이며, 노드는 고정 검색어로 초기 근거만 모으므로 기능 차이가 없다.
 
 `total_matches`는 파일당 상한을 적용하기 전 매칭 줄 수다.
+
+## D6. 평가 방법
+
+### 결정: A — Finvibe 실제 버그 3건 + fixture 회귀
+
+- 대안 A: Finvibe 실제 버그 3건 재분석과 clio-benchmark fixture 회귀를 함께 본다. ← 선택
+- 대안 B: Finvibe 3건만.
+- 대안 C: 단위 테스트만.
+
+선택 이유: 실제 대형 저장소의 개선과 기존 fixture의 회귀를 함께 확인한다. 실행 비용 때문에 fixture는 사용자 확인을 거쳐
+30케이스 대신 결함이 서로 다른 detailed 5케이스로 줄였다.
+
+## F2. fixture 회귀를 간이 정답으로 평가 (D6 보완, 구현 중 발견)
+
+### 결정: A — 간이 정답으로 5케이스 비교 (사용자 결정)
+
+- 대안 A: DATASET의 결함 목록과 fixture 코드로 케이스별 원인 파일·위치를 정하고, 분석이 그 위치를 인용했는지 비교한다. ← 선택
+- 대안 B: 공식 oracle 경로를 받아 clio-benchmark로 채점한다.
+- 대안 C: fixture 회귀를 후속으로 미룬다.
+
+선택 이유: clio-benchmark 채점용 비공개 oracle(`oracles/feature-flags-30.json`)이 이 PC에 없었다. 공식 점수가 아님을 result에 명시한다.
+
+간이 정답:
+
+| 케이스 | 파일 | 위치 |
+|---|---|---|
+| cache-tenant-leak-detailed | `src/feature_flags/cache.py` | `_key` |
+| cache-false-miss-detailed | `src/feature_flags/service.py` | `if cached:` |
+| rollout-boundary-detailed | `src/feature_flags/rollout.py` | `is_in_rollout` |
+| rollout-hash-unstable-detailed | `src/feature_flags/rollout.py` | `rollout_bucket` |
+| repository-list-tenant-detailed | `src/feature_flags/repository.py` | `list_for_tenant` |
+
+평가 환경 조정: 체험 스택의 Docker 메모리(2.85GiB)에서 embedding 서버가 OOM으로 종료되어, 평가 동안만 `.env`에
+`CLIO_OLLAMA_EMBED_CONTEXT_TOKENS=512`를 두었다. 코드 검색과는 무관한 설정이고 두 조건에 같게 적용했다.
