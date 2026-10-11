@@ -31,6 +31,9 @@ def validate_request(state: ClioState) -> dict[str, object]:
         update["bug_id"] = request.payload.bug_id
         if request.payload.match_override is not None:
             update["match_override"] = request.payload.match_override
+        else:
+            # override 도입 전과 같은 payload로 Server request hash를 유지한다.
+            update["request"]["payload"].pop("match_override")
     elif isinstance(request, AnalyzeIssueRequest):
         update["issue_id"] = request.payload.issue_id
     elif isinstance(request, ReadCodeEvidenceRequest):

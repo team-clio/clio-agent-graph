@@ -46,6 +46,7 @@ class FakeClioServer:
         self.failed_runs: list[tuple[str, int, str, str]] = []
         self.saved_analyses: list[dict[str, object]] = []
         self.created_issues: list[tuple[str, int, str, float]] = []
+        self.started_payloads: list[dict[str, object]] = []
         self.load_error: Exception | None = None
         self.complete_error: Exception | None = None
         self.workflow_start = WorkflowStart(501, "RUNNING")
@@ -59,6 +60,7 @@ class FakeClioServer:
         request_type: str,
         request_payload: dict[str, object],
     ) -> WorkflowStart:
+        self.started_payloads.append(request_payload)
         return self.workflow_start
 
     def complete_workflow(
@@ -926,3 +928,21 @@ def test_rejects_unknown_match_override_before_routing() -> None:
                 }
             }
         )
+
+
+def test_process_report_without_override_keeps_the_original_payload_shape() -> None:
+    server = report_processing.get_application_services().clio_server
+    assert isinstance(server, FakeClioServer)
+
+    graph.invoke(
+        {
+            "request": {
+                "request_id": "REQ-PAYLOAD",
+                "request_type": "process_report",
+                "project_id": "1",
+                "payload": {"bug_id": "8"},
+            }
+        }
+    )
+
+    assert server.started_payloads == [{"bug_id": "8"}]
