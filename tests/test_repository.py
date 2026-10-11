@@ -422,3 +422,21 @@ async def test_code_search_alternates_files_within_the_same_category(tmp_path: P
         ("src/B.java", 1),
         ("src/A.java", 2),
     ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_keeps_documents_after_code_when_room_remains(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "docs/tasks/minute-candle.md": "calculateMissingCandleTimes ignores stored candles\n",
+            "src/MarketQueryService.java": "void calculateMissingCandleTimes() {}\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="calculateMissingCandleTimes")
+
+    assert [hit.path for hit in hits] == [
+        "src/MarketQueryService.java",
+        "docs/tasks/minute-candle.md",
+    ]
