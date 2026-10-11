@@ -24,15 +24,20 @@ def build_user_prompt(
     *,
     correction_feedback: str | None = None,
 ) -> str:
-    """동일한 입력이 항상 같은 문자열이 되도록 비교 자료를 JSON으로 만든다."""
+    """입력 Bug를 먼저 두고 후보와 구분되는 이름표를 붙여 비교 자료를 만든다.
 
-    payload = {
-        "normalized_report": report.model_dump(mode="json"),
-        "issue_candidates": [candidate.model_dump(mode="json") for candidate in candidates],
-    }
+    후보의 representative_bugs도 normalized_report를 담고 있어서, 하나의 JSON으로 합치면
+    모델이 대표 Bug를 입력 Bug로 착각한다. 섹션 순서와 이름표로 둘을 분리한다.
+    """
+
     sections = [
-        "아래 Bug와 모든 Issue 후보를 비교해 structured output으로 반환하세요.",
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        "아래 입력 Bug(input_bug)를 기존 Issue 후보(issue_candidates) 각각과 비교해 "
+        "structured output으로 반환하세요. issue_candidates 안의 representative_bugs는 "
+        "기존 Issue의 대표 사례이며 입력 Bug가 아닙니다.",
+        "[input_bug]",
+        _to_json(report.model_dump(mode="json")),
+        "[issue_candidates]",
+        _to_json([candidate.model_dump(mode="json") for candidate in candidates]),
     ]
     if correction_feedback is not None:
         sections.extend(
@@ -42,3 +47,9 @@ def build_user_prompt(
             )
         )
     return "\n".join(sections)
+
+
+def _to_json(value: object) -> str:
+    """동일한 입력이 항상 같은 문자열이 되도록 직렬화한다."""
+
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
