@@ -6,8 +6,14 @@ from typing import Literal
 from clio_agent_graph.context.application import get_application_services
 from clio_agent_graph.workflows.orchestration.agents.report_processing import ReportProcessingAgent
 from clio_agent_graph.workflows.orchestration.state import ClioState
+from clio_agent_graph.workflows.reporting.matching.defaults import load_default_issue_match_model
+from clio_agent_graph.workflows.reporting.matching.models import IssueCandidate, MatchAction
 from clio_agent_graph.workflows.reporting.matching.retrieval_subgraph import (
     build_issue_retrieval_subgraph,
+)
+from clio_agent_graph.workflows.reporting.matching.service import (
+    ReportMatcher,
+    load_match_policy_settings,
 )
 from clio_agent_graph.workflows.reporting.normalization.defaults import (
     load_default_normalization_model,
@@ -171,16 +177,37 @@ def match_report(state: ClioState) -> dict[str, object]:
             "completed_nodes": {"match_report": True},
         }
 
-    decision = report_agent.decide_match(
-        state["project_id"],
-        state["bug_id"],
-        state["normalized_report"],
-        candidates,
+    decision = build_report_matcher().match(
+        bug_id=int(state["bug_id"]),
+        report=_normalized_report_for_retrieval(state),
+        candidates=[IssueCandidate.model_validate(candidate) for candidate in candidates],
     )
     return {
-        "match_decision": decision,
+        "match_decision": {
+            "action": _MATCH_ACTIONS[decision.action],
+            "issue_id": (
+                str(decision.matched_issue_id) if decision.matched_issue_id is not None else None
+            ),
+            "confidence": decision.confidence,
+            "reason": " ".join([*decision.supporting_reasons, *decision.review_reasons])
+            or "매칭 정책이 판단 근거를 남기지 않았습니다.",
+        },
         "completed_nodes": {"match_report": True},
     }
+
+
+# 독립 RM과 같은 action을 운영 workflow의 Server 반영 action으로 옮긴다.
+_MATCH_ACTIONS = {
+    MatchAction.AUTO_LINK: "link_existing",
+    MatchAction.REVIEW: "needs_review",
+    MatchAction.CREATE_NEW: "create_new",
+}
+
+
+def build_report_matcher() -> ReportMatcher:
+    """운영 경로도 독립 RM과 같은 후보 비교와 보수적 연결 정책(임계값·차단 조건)을 쓴다."""
+
+    return ReportMatcher(load_default_issue_match_model(), settings=load_match_policy_settings())
 
 
 def apply_match_decision(state: ClioState) -> dict[str, object]:

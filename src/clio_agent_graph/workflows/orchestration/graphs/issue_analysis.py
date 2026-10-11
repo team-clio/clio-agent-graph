@@ -36,9 +36,7 @@ def build_issue_analysis_graph(settings: AnalysisProfileSettings | None = None):
         observe_node("prepare_analysis", partial(prepare_analysis, settings=selected)),
     )
     if topology.search_documents:
-        builder.add_node(
-            "search_documents", observe_node("search_documents", search_documents)
-        )
+        builder.add_node("search_documents", observe_node("search_documents", search_documents))
     if topology.search_code:
         builder.add_node("search_code", observe_node("search_code", search_code))
     if topology.search_history:

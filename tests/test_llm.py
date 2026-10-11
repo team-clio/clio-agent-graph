@@ -10,7 +10,6 @@ from clio_agent_graph.runtime.llm import LLMSettings, ModelOutputTruncatedError,
 from clio_agent_graph.runtime.structured_output import bind_structured_output
 from clio_agent_graph.workflows.orchestration.agents.models import (
     IssueAnalysisOutput,
-    MatchDecision,
     ResolutionPlan,
 )
 
@@ -177,14 +176,6 @@ def test_resolution_plan_accepts_a_structured_risk() -> None:
     )
 
     assert result.risks[0].risk == "The change can reject valid traffic."
-
-
-def test_match_decision_normalizes_qualitative_confidence() -> None:
-    result = MatchDecision.model_validate(
-        {"action": "create_new", "confidence": "high", "reason": "No candidates exist."}
-    )
-
-    assert result.confidence == 0.8
 
 
 def test_openai_compatible_model_disables_parallel_tool_calls(monkeypatch):
