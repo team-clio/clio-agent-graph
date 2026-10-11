@@ -6,8 +6,10 @@ import re
 import shutil
 import subprocess
 from dataclasses import dataclass
+from enum import IntEnum
 from fnmatch import fnmatchcase
 from hashlib import sha256
+from itertools import groupby
 from pathlib import Path, PurePosixPath
 from tempfile import NamedTemporaryFile
 from urllib.parse import urlparse
@@ -56,6 +58,52 @@ _SOURCE_EXTENSIONS = {
     ".yml",
 }
 
+# 검색 결과 우선순위를 정하는 파일 분류. 값이 작을수록 먼저 반환한다.
+_DOCUMENT_EXTENSIONS = {".adoc", ".md", ".mdx", ".rst", ".txt"}
+_CONFIG_EXTENSIONS = {
+    ".cfg",
+    ".conf",
+    ".gradle",
+    ".ini",
+    ".json",
+    ".properties",
+    ".toml",
+    ".xml",
+    ".yaml",
+    ".yml",
+}
+# 한 파일이 결과 상한을 독차지하지 않도록 파일당 반환 줄 수를 제한한다.
+_SEARCH_HITS_PER_FILE = 2
+_TEST_DIRECTORIES = {"__tests__", "spec", "test", "tests"}
+_TEST_FILE_PATTERN = re.compile(
+    r"^(test_.+|.+_test\.[^.]+|.+Tests?\.[^.]+|.+\.(spec|test)\.[^.]+)$"
+)
+
+
+class SearchFileCategory(IntEnum):
+    """코드 검색 결과에서 파일 종류별 우선순위."""
+
+    SOURCE = 0
+    TEST = 1
+    CONFIG = 2
+    DOCUMENT = 3
+
+
+def classify_search_path(path: str) -> SearchFileCategory:
+    """확장자와 경로 규칙으로 검색 결과 파일의 종류를 판정한다."""
+
+    posix_path = PurePosixPath(path)
+    suffix = posix_path.suffix.casefold()
+    if suffix in _DOCUMENT_EXTENSIONS:
+        return SearchFileCategory.DOCUMENT
+    if _TEST_DIRECTORIES.intersection(posix_path.parts[:-1]) or _TEST_FILE_PATTERN.match(
+        posix_path.name
+    ):
+        return SearchFileCategory.TEST
+    if suffix in _CONFIG_EXTENSIONS:
+        return SearchFileCategory.CONFIG
+    return SearchFileCategory.SOURCE
+
 
 class RepositoryError(RuntimeError):
     """Repository 등록 또는 snapshot 읽기 계약 위반."""
@@ -85,6 +133,16 @@ class RepositorySearchHit(BaseModel):
     path: str
     line: int = Field(ge=1)
     content: str
+
+
+class RepositorySearchResult(BaseModel):
+    """상한으로 고른 검색 결과와, 잘렸는지 판단할 전체 매칭 수."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    hits: list[RepositorySearchHit]
+    total_matches: int = Field(ge=0)
+    truncated: bool
 
 
 @dataclass(frozen=True)
@@ -377,6 +435,21 @@ class GitRepositoryService:
     ) -> list[RepositorySearchHit]:
         """snapshot에 고정된 tracked source를 검색해 인용 가능한 행을 반환한다."""
 
+        result = await self.search_with_stats(
+            snapshot=snapshot, query=query, repository_id=repository_id, limit=limit
+        )
+        return result.hits
+
+    async def search_with_stats(
+        self,
+        *,
+        snapshot: ProjectContextSnapshot,
+        query: str,
+        repository_id: str | None = None,
+        limit: int = 20,
+    ) -> RepositorySearchResult:
+        """검색 결과와 함께 전체 매칭 수를 반환해 호출자가 검색어를 좁힐지 판단하게 한다."""
+
         if not query.strip():
             raise RepositoryError("code search query must contain searchable text")
         if not 1 <= limit <= 50:
@@ -418,9 +491,13 @@ class GitRepositoryService:
                         content=self._mask_secrets(matched)[:500],
                     )
                 )
-                if len(hits) >= limit:
-                    return hits
-        return hits
+        # git grep은 경로 알파벳 순으로 출력하므로 앞에서 자르면 docs/ 등이 결과를 독차지한다.
+        selected = _select_search_hits(hits, limit=limit)
+        return RepositorySearchResult(
+            hits=selected,
+            total_matches=len(hits),
+            truncated=len(selected) < len(hits),
+        )
 
     async def list_files(
         self,
@@ -686,3 +763,38 @@ class GitRepositoryService:
             )
             raise RepositoryError(f"Git {operation} failed for the requested repository object")
         return result.stdout
+
+
+def _select_search_hits(
+    hits: list[RepositorySearchHit], *, limit: int
+) -> list[RepositorySearchHit]:
+    """파일 종류 우선순위 안에서 파일별로 한 줄씩 번갈아 골라 상한까지 채운다.
+
+    한 파일에서는 최대 ``_SEARCH_HITS_PER_FILE``줄만 고른다. 더 필요하면 파일을 직접 읽는다.
+    """
+
+    by_file: dict[tuple[str, str], list[RepositorySearchHit]] = {}
+    for hit in hits:
+        file_hits = by_file.setdefault((hit.repository_id, hit.path), [])
+        if len(file_hits) < _SEARCH_HITS_PER_FILE:
+            file_hits.append(hit)
+    files = sorted(
+        by_file.items(),
+        key=lambda item: (classify_search_path(item[0][1]), item[0][0], item[0][1]),
+    )
+    selected: list[RepositorySearchHit] = []
+    for _category, group in groupby(files, key=lambda item: classify_search_path(item[0][1])):
+        queues = [list(file_hits) for _key, file_hits in group]
+        depth = 0
+        while queues and len(selected) < limit:
+            remaining = []
+            for queue in queues:
+                if depth < len(queue) and len(selected) < limit:
+                    selected.append(queue[depth])
+                if depth + 1 < len(queue):
+                    remaining.append(queue)
+            queues = remaining
+            depth += 1
+        if len(selected) >= limit:
+            break
+    return selected

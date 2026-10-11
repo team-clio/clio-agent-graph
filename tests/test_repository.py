@@ -4,7 +4,12 @@ from pathlib import Path
 import pytest
 
 from clio_agent_graph.context.pcm.models import ProjectContextSnapshot
-from clio_agent_graph.context.repository import GitRepositoryService, RepositoryError
+from clio_agent_graph.context.repository import (
+    GitRepositoryService,
+    RepositoryError,
+    SearchFileCategory,
+    classify_search_path,
+)
 from clio_agent_graph.context.tools.repository import RepositoryToolFactory
 
 
@@ -320,3 +325,147 @@ async def test_repository_register_rejects_non_https_source_uri(tmp_path: Path) 
             source_uri="http://git.example.internal/backend.git",
             branch="main",
         )
+
+
+@pytest.mark.parametrize(
+    ("path", "category"),
+    [
+        ("src/main/java/app/MarketQueryService.java", SearchFileCategory.SOURCE),
+        ("web/src/components/Chart.tsx", SearchFileCategory.SOURCE),
+        ("db/migration/V1__init.sql", SearchFileCategory.SOURCE),
+        ("src/test/java/app/MarketQueryServiceTest.java", SearchFileCategory.TEST),
+        ("app/MarketQueryServiceTests.java", SearchFileCategory.TEST),
+        ("tests/analysis/test_queries.py", SearchFileCategory.TEST),
+        ("pkg/query_test.go", SearchFileCategory.TEST),
+        ("web/src/Chart.spec.tsx", SearchFileCategory.TEST),
+        ("src/main/resources/application.yml", SearchFileCategory.CONFIG),
+        ("build.gradle", SearchFileCategory.CONFIG),
+        ("docs/tasks/overview.md", SearchFileCategory.DOCUMENT),
+        ("README.md", SearchFileCategory.DOCUMENT),
+        ("docs/notes.txt", SearchFileCategory.DOCUMENT),
+        ("tests/fixtures/README.md", SearchFileCategory.DOCUMENT),
+    ],
+)
+def test_search_results_classify_files_by_extension_and_path(
+    path: str, category: SearchFileCategory
+) -> None:
+    assert classify_search_path(path) is category
+
+
+async def _search_fixture(
+    tmp_path: Path, files: dict[str, str]
+) -> tuple[GitRepositoryService, ProjectContextSnapshot]:
+    source = tmp_path / "source"
+    source.mkdir()
+    git(source, "init", "-b", "main")
+    git(source, "config", "user.name", "Clio Test")
+    git(source, "config", "user.email", "clio@example.test")
+    for relative, content in files.items():
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    git(source, "add", ".")
+    git(source, "commit", "-m", "search fixture")
+    commit = git(source, "rev-parse", "HEAD")
+    service = GitRepositoryService(tmp_path / "pcm-repositories")
+    await service.register(
+        project_id="PROJECT-1", repository_id="backend", source_uri=str(source), branch="main"
+    )
+    snapshot = ProjectContextSnapshot(
+        project_id="PROJECT-1",
+        pcm_revision=0,
+        knowledge_index_revision=0,
+        repository_revisions={"backend": commit},
+    )
+    return service, snapshot
+
+
+@pytest.mark.asyncio
+async def test_code_search_returns_source_before_alphabetically_earlier_documents(
+    tmp_path: Path,
+) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "docs/candle-report.md": "Candle one\nCandle two\nCandle three\n",
+            "README.md": "Candle overview\n",
+            "src/main/java/app/CandleService.java": "class CandleService {}\n// Candle cache\n",
+            "src/test/java/app/CandleServiceTest.java": "class CandleServiceTest {}\n",
+            "src/main/resources/application.yml": "candle: enabled\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle", limit=4)
+
+    assert [(hit.path, hit.line) for hit in hits] == [
+        ("src/main/java/app/CandleService.java", 1),
+        ("src/main/java/app/CandleService.java", 2),
+        ("src/test/java/app/CandleServiceTest.java", 1),
+        ("src/main/resources/application.yml", 1),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_alternates_files_within_the_same_category(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "src/A.java": "candle 1\ncandle 2\ncandle 3\n",
+            "src/B.java": "candle 1\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle", limit=3)
+
+    assert [(hit.path, hit.line) for hit in hits] == [
+        ("src/A.java", 1),
+        ("src/B.java", 1),
+        ("src/A.java", 2),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_keeps_documents_after_code_when_room_remains(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {
+            "docs/tasks/minute-candle.md": "calculateMissingCandleTimes ignores stored candles\n",
+            "src/MarketQueryService.java": "void calculateMissingCandleTimes() {}\n",
+        },
+    )
+
+    hits = await service.search(snapshot=snapshot, query="calculateMissingCandleTimes")
+
+    assert [hit.path for hit in hits] == [
+        "src/MarketQueryService.java",
+        "docs/tasks/minute-candle.md",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_returns_at_most_two_lines_per_file(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {"src/CandleService.java": "".join(f"candle {index}\n" for index in range(5))},
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle")
+
+    assert [hit.line for hit in hits] == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_code_search_tool_reports_truncated_matches(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {"src/A.java": "candle 1\ncandle 2\ncandle 3\n", "src/B.java": "candle 1\n"},
+    )
+    search_tool = RepositoryToolFactory(service).create_tools(snapshot)[2]
+
+    truncated = await search_tool.ainvoke({"query": "candle", "limit": 2})
+    complete = await search_tool.ainvoke({"query": "candle B", "limit": 2})
+
+    assert len(truncated["results"]) == 2
+    assert truncated["total_matches"] == 4
+    assert truncated["truncated"] is True
+    assert complete == {"results": [], "total_matches": 0, "truncated": False}
