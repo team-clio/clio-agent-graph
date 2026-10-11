@@ -124,6 +124,8 @@ commit을 snapshot으로 고정하며, quality gate는 citation이 그 snapshot�
   PostgreSQL metadata와 immutable Markdown 저장소를 사용한다.
 - 문서는 heading 단위 source로 나뉘고 knowledge change set으로 commit된다.
 - repository는 server-managed bare Git mirror로 보관하며 검색과 읽기는 고정 commit만 사용한다.
+- 코드 검색은 고정 commit에서 `git grep`으로 전체 매칭을 모은 뒤 파일 종류(소스 → 테스트 → 설정 → 문서) 순으로,
+  같은 종류 안에서는 파일을 번갈아 파일당 최대 2줄을 고른다. Agent Tool은 전체 매칭 수와 잘림 여부를 함께 받는다.
 - knowledge 검색은 vector, PostgreSQL FTS, trigram 결과를 RRF로 합친다. 색인 실패 시
   canonical Markdown commit은 유지하고 keyword-only 검색으로 degrade한다.
 - repository lifecycle과 repository-derived PCM knowledge reconciliation은 현재 별도 책임이다.
