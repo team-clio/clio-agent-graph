@@ -4,7 +4,12 @@ from pathlib import Path
 import pytest
 
 from clio_agent_graph.context.pcm.models import ProjectContextSnapshot
-from clio_agent_graph.context.repository import GitRepositoryService, RepositoryError
+from clio_agent_graph.context.repository import (
+    GitRepositoryService,
+    RepositoryError,
+    SearchFileCategory,
+    classify_search_path,
+)
 from clio_agent_graph.context.tools.repository import RepositoryToolFactory
 
 
@@ -320,3 +325,28 @@ async def test_repository_register_rejects_non_https_source_uri(tmp_path: Path) 
             source_uri="http://git.example.internal/backend.git",
             branch="main",
         )
+
+
+@pytest.mark.parametrize(
+    ("path", "category"),
+    [
+        ("src/main/java/app/MarketQueryService.java", SearchFileCategory.SOURCE),
+        ("web/src/components/Chart.tsx", SearchFileCategory.SOURCE),
+        ("db/migration/V1__init.sql", SearchFileCategory.SOURCE),
+        ("src/test/java/app/MarketQueryServiceTest.java", SearchFileCategory.TEST),
+        ("app/MarketQueryServiceTests.java", SearchFileCategory.TEST),
+        ("tests/analysis/test_queries.py", SearchFileCategory.TEST),
+        ("pkg/query_test.go", SearchFileCategory.TEST),
+        ("web/src/Chart.spec.tsx", SearchFileCategory.TEST),
+        ("src/main/resources/application.yml", SearchFileCategory.CONFIG),
+        ("build.gradle", SearchFileCategory.CONFIG),
+        ("docs/tasks/overview.md", SearchFileCategory.DOCUMENT),
+        ("README.md", SearchFileCategory.DOCUMENT),
+        ("docs/notes.txt", SearchFileCategory.DOCUMENT),
+        ("tests/fixtures/README.md", SearchFileCategory.DOCUMENT),
+    ],
+)
+def test_search_results_classify_files_by_extension_and_path(
+    path: str, category: SearchFileCategory
+) -> None:
+    assert classify_search_path(path) is category

@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 from dataclasses import dataclass
+from enum import IntEnum
 from fnmatch import fnmatchcase
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
@@ -55,6 +56,50 @@ _SOURCE_EXTENSIONS = {
     ".yaml",
     ".yml",
 }
+
+# 검색 결과 우선순위를 정하는 파일 분류. 값이 작을수록 먼저 반환한다.
+_DOCUMENT_EXTENSIONS = {".adoc", ".md", ".mdx", ".rst", ".txt"}
+_CONFIG_EXTENSIONS = {
+    ".cfg",
+    ".conf",
+    ".gradle",
+    ".ini",
+    ".json",
+    ".properties",
+    ".toml",
+    ".xml",
+    ".yaml",
+    ".yml",
+}
+_TEST_DIRECTORIES = {"__tests__", "spec", "test", "tests"}
+_TEST_FILE_PATTERN = re.compile(
+    r"^(test_.+|.+_test\.[^.]+|.+Tests?\.[^.]+|.+\.(spec|test)\.[^.]+)$"
+)
+
+
+class SearchFileCategory(IntEnum):
+    """코드 검색 결과에서 파일 종류별 우선순위."""
+
+    SOURCE = 0
+    TEST = 1
+    CONFIG = 2
+    DOCUMENT = 3
+
+
+def classify_search_path(path: str) -> SearchFileCategory:
+    """확장자와 경로 규칙으로 검색 결과 파일의 종류를 판정한다."""
+
+    posix_path = PurePosixPath(path)
+    suffix = posix_path.suffix.casefold()
+    if suffix in _DOCUMENT_EXTENSIONS:
+        return SearchFileCategory.DOCUMENT
+    if _TEST_DIRECTORIES.intersection(posix_path.parts[:-1]) or _TEST_FILE_PATTERN.match(
+        posix_path.name
+    ):
+        return SearchFileCategory.TEST
+    if suffix in _CONFIG_EXTENSIONS:
+        return SearchFileCategory.CONFIG
+    return SearchFileCategory.SOURCE
 
 
 class RepositoryError(RuntimeError):
