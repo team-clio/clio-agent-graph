@@ -440,3 +440,15 @@ async def test_code_search_keeps_documents_after_code_when_room_remains(tmp_path
         "src/MarketQueryService.java",
         "docs/tasks/minute-candle.md",
     ]
+
+
+@pytest.mark.asyncio
+async def test_code_search_returns_at_most_two_lines_per_file(tmp_path: Path) -> None:
+    service, snapshot = await _search_fixture(
+        tmp_path,
+        {"src/CandleService.java": "".join(f"candle {index}\n" for index in range(5))},
+    )
+
+    hits = await service.search(snapshot=snapshot, query="candle")
+
+    assert [hit.line for hit in hits] == [1, 2]

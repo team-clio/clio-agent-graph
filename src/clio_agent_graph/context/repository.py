@@ -72,6 +72,8 @@ _CONFIG_EXTENSIONS = {
     ".yaml",
     ".yml",
 }
+# 한 파일이 결과 상한을 독차지하지 않도록 파일당 반환 줄 수를 제한한다.
+_SEARCH_HITS_PER_FILE = 2
 _TEST_DIRECTORIES = {"__tests__", "spec", "test", "tests"}
 _TEST_FILE_PATTERN = re.compile(
     r"^(test_.+|.+_test\.[^.]+|.+Tests?\.[^.]+|.+\.(spec|test)\.[^.]+)$"
@@ -736,11 +738,16 @@ class GitRepositoryService:
 def _select_search_hits(
     hits: list[RepositorySearchHit], *, limit: int
 ) -> list[RepositorySearchHit]:
-    """파일 종류 우선순위 안에서 파일별로 한 줄씩 번갈아 골라 상한까지 채운다."""
+    """파일 종류 우선순위 안에서 파일별로 한 줄씩 번갈아 골라 상한까지 채운다.
+
+    한 파일에서는 최대 ``_SEARCH_HITS_PER_FILE``줄만 고른다. 더 필요하면 파일을 직접 읽는다.
+    """
 
     by_file: dict[tuple[str, str], list[RepositorySearchHit]] = {}
     for hit in hits:
-        by_file.setdefault((hit.repository_id, hit.path), []).append(hit)
+        file_hits = by_file.setdefault((hit.repository_id, hit.path), [])
+        if len(file_hits) < _SEARCH_HITS_PER_FILE:
+            file_hits.append(hit)
     files = sorted(
         by_file.items(),
         key=lambda item: (classify_search_path(item[0][1]), item[0][0], item[0][1]),
